@@ -14,7 +14,7 @@
 			},
 			"windows": {
 				"program": "${workspaceFolder}/aoc-2018-day02.exe",
-				"miDebuggerPath": "gdb.exe"
+				"miDebuggerPath": "gdb32.exe"
 			},
 			"args": [],
 			"stopAtEntry": false,
