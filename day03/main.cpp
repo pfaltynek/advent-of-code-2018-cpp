@@ -38,6 +38,7 @@ void FillClaim(const claim_str claim, std::unordered_map<std::string, uint32_t> 
 	for (unsigned int i = 0; i < claim.width; ++i) {
 		for (unsigned int j = 0; j < claim.height; ++j) {
 			std::string key = std::to_string(claim.left + i) + "x" + std::to_string(claim.top + j);
+
 			if (map[key]) {
 				map[key] = CLAIM_X;
 			} else {
@@ -45,6 +46,20 @@ void FillClaim(const claim_str claim, std::unordered_map<std::string, uint32_t> 
 			}
 		}
 	}
+}
+
+bool CheckClaim(const claim_str claim, std::unordered_map<std::string, uint32_t> &map) {
+	for (unsigned int i = 0; i < claim.width; ++i) {
+		for (unsigned int j = 0; j < claim.height; ++j) {
+			std::string key = std::to_string(claim.left + i) + "x" + std::to_string(claim.top + j);
+
+			if (map[key] != claim.id) {
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 int main(void) {
@@ -118,6 +133,13 @@ int main(void) {
 	for (auto it = map.begin(); it != map.end(); ++it) {
 		if (it->second == CLAIM_X) {
 			result1++;
+		}
+	}
+
+	for (unsigned int i = 0; i < claims.size(); ++i) {
+		if (CheckClaim(claims[i], map)) {
+			result2 = claims[i].id;
+			break;
 		}
 	}
 
