@@ -119,7 +119,7 @@ uint32_t GetMostAsleepGuardID(const std::map<uint32_t, std::vector<shift_str>> &
 	return id;
 }
 
-uint32_t GetMostAsleepMinuteOfGuardID(const std::map<uint32_t, std::vector<shift_str>> &shifts, const uint32_t guard_id) {
+uint32_t GetMostAsleepMinuteOfGuardID(const std::map<uint32_t, std::vector<shift_str>> &shifts, const uint32_t guard_id, uint32_t &max_freq) {
 	std::map<uint32_t, uint32_t> map;
 	uint32_t max = 0, minute = 0;
 
@@ -138,11 +138,29 @@ uint32_t GetMostAsleepMinuteOfGuardID(const std::map<uint32_t, std::vector<shift
 			minute = it->first;
 		}
 	}
+	max_freq = max;
+
 	return minute;
 }
 
+uint32_t GetMostFrequentlyAsleepMinuteAndGuardID(const std::map<uint32_t, std::vector<shift_str>> &shifts) {
+	uint32_t max_freq = 0, id = 0, minute = 0, tmp_min, tmp_max;
+
+	for (auto it = shifts.begin(); it != shifts.end(); ++it) {
+		tmp_min = GetMostAsleepMinuteOfGuardID(shifts, it->first, tmp_max);
+		if (tmp_max > max_freq) {
+			id = it->first;
+			minute = tmp_min;
+			max_freq = tmp_max;
+		}
+	}
+
+	return id * minute;
+}
+
 int main(void) {
-	int result1 = 0, result2 = 0, id = 0, minute = 0;
+	int result1 = 0, result2 = 0;
+	uint32_t id = 0, minute = 0, freq = 0;
 	std::ifstream input;
 	std::string line;
 	std::vector<std::string> plans;
@@ -199,11 +217,14 @@ int main(void) {
 
 	id = GetMostAsleepGuardID(shifts);
 
-	minute = GetMostAsleepMinuteOfGuardID(shifts, id);
+	minute = GetMostAsleepMinuteOfGuardID(shifts, id, freq);
 
 	result1 = minute * id;
-
+	
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
+
+	result2 = GetMostFrequentlyAsleepMinuteAndGuardID(shifts);
+
 	std::cout << "Result is " << result2 << std::endl;
 }
