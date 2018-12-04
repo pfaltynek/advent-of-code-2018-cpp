@@ -6,7 +6,7 @@
 #include <regex>
 #include <vector>
 
-#define TEST1 1
+#define TEST1 0
 #define TEST2 0
 
 typedef struct shift {
@@ -102,8 +102,47 @@ bool FillShifts(const std::vector<std::string> plans, std::map<uint32_t, std::ve
 	return true;
 }
 
+uint32_t GetMostAsleepGuardID(const std::map<uint32_t, std::vector<shift_str>> &shifts) {
+	uint32_t id = 0, max = 0;
+
+	for (auto it = shifts.begin(); it != shifts.end(); ++it) {
+		uint32_t sum = 0;
+		for (unsigned int i = 0; i < it->second.size(); ++i) {
+			sum += it->second[i].time_sum;
+		}
+		if (sum > max) {
+			id = it->first;
+			max = sum;
+		}
+	}
+
+	return id;
+}
+
+uint32_t GetMostAsleepMinuteOfGuardID(const std::map<uint32_t, std::vector<shift_str>> &shifts, const uint32_t guard_id) {
+	std::map<uint32_t, uint32_t> map;
+	uint32_t max = 0, minute = 0;
+
+	map.clear();
+	for (unsigned int i = 0; i < shifts.at(guard_id).size(); ++i) {
+		for (unsigned int j = 0; j < shifts.at(guard_id)[i].sleep_times.size(); ++j) {
+			for (unsigned int t = 0; t < shifts.at(guard_id)[i].sleep_times[j].second; ++t) {
+				map[shifts.at(guard_id)[i].sleep_times[j].first + t]++;
+			}
+		}
+	}
+
+	for (auto it = map.begin(); it != map.end(); ++it) {
+		if (it->second > max) {
+			max = it->second;
+			minute = it->first;
+		}
+	}
+	return minute;
+}
+
 int main(void) {
-	int result1 = 0, result2 = 0, cnt = 0;
+	int result1 = 0, result2 = 0, id = 0, minute = 0;
 	std::ifstream input;
 	std::string line;
 	std::vector<std::string> plans;
@@ -157,6 +196,12 @@ int main(void) {
 	if (!FillShifts(plans, shifts)) {
 		return -1;
 	}
+
+	id = GetMostAsleepGuardID(shifts);
+
+	minute = GetMostAsleepMinuteOfGuardID(shifts, id);
+
+	result1 = minute * id;
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
