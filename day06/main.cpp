@@ -16,7 +16,7 @@ typedef struct limits {
 } limits_t;
 
 const std::regex coord_template("(\\d+), (\\d+)");
-const int extra = 10;
+const int extra = 100;
 
 limits_t GetCoordLimits(const std::vector<std::pair<int32_t, int32_t>> &coords) {
 	limits_t result{};
@@ -46,11 +46,17 @@ limits_t GetCoordLimits(const std::vector<std::pair<int32_t, int32_t>> &coords) 
 
 void FillClosestCoordinateMap(const std::vector<std::pair<int32_t, int32_t>> coords, const limits_t limits,
 							  std::unordered_map<std::string, std::pair<int32_t, int32_t>> &map) {
-	uint32_t i, j, k;
+	int32_t j, k, j1, j2, k1, k2;
+	uint32_t i;
+
+	k1 = limits.y_min - extra;
+	k2 = limits.y_max + extra;
+	j1 = limits.x_min - extra;
+	j2 = limits.x_max + extra;
 
 	for (i = 0; i < coords.size(); ++i) {
-		for (j = limits.x_min - extra; j <= limits.x_max + extra; ++j) {
-			for (k = limits.y_min - extra; k <= limits.y_max + extra; ++k) {
+		for (j = j1; j <= j2; ++j) {
+			for (k = k1; k <= k2; ++k) {
 				std::string key = std::to_string(j) + "x" + std::to_string(k);
 				int32_t distance = abs(coords[i].first - j) + abs(coords[i].second - k);
 				if (!i) {
@@ -66,22 +72,48 @@ void FillClosestCoordinateMap(const std::vector<std::pair<int32_t, int32_t>> coo
 			}
 		}
 	}
+}
 
-	/*	for (i = 0; i < coords.size(); ++i) {
-			map.erase(std::to_string(coords[i].first) + "x" + std::to_string(coords[i].second));
-		}*/
+int32_t GetRegionSize(const std::vector<std::pair<int32_t, int32_t>> coords, const limits_t limits, int32_t total_distance) {
+	int32_t result = 0, j, k, k1, k2, j1, j2;
+	uint32_t i;
+
+	k1 = limits.y_min - extra;
+	k2 = limits.y_max + extra;
+	j1 = limits.x_min - extra;
+	j2 = limits.x_max + extra;
+
+	for (k = k1; k <= k2; ++k) {
+		for (j = j1; j <= j2; ++j) {
+			uint32_t sum = 0;
+
+			for (i = 0; i < coords.size(); ++i) {
+				sum += abs(k - coords[i].second) + abs(j - coords[i].first);
+			}
+
+			if (sum < total_distance) {
+				result++;
+			}
+		}
+	}
+
+	return result;
 }
 
 int32_t GetLargestFiniteAreaSize(const std::vector<std::pair<int32_t, int32_t>> coords, const limits_t limits,
 								 std::unordered_map<std::string, std::pair<int32_t, int32_t>> map) {
-	uint32_t i, j, k;
-	int32_t result = 0;
+	int32_t result = 0, j, k, j1, j2, k1, k2;
 	std::unordered_map<int32_t, std::pair<int32_t, int32_t>> sizes;
 
 	sizes.clear();
 
-	for (k = limits.y_min - extra; k <= limits.y_max + extra; ++k) {
-		for (j = limits.x_min - extra; j <= limits.x_max + extra; ++j) {
+	k1 = limits.y_min - extra;
+	k2 = limits.y_max + extra;
+	j1 = limits.x_min - extra;
+	j2 = limits.x_max + extra;
+
+	for (k = k1; k <= k2; ++k) {
+		for (j = j1; j <= j2; ++j) {
 			std::string key = std::to_string(j) + "x" + std::to_string(k);
 			if (map[key].first) {
 				sizes[map[key].first].first++;
@@ -89,8 +121,13 @@ int32_t GetLargestFiniteAreaSize(const std::vector<std::pair<int32_t, int32_t>> 
 		}
 	}
 
-	for (k = limits.y_min - (extra / 2); k <= limits.y_max + (extra / 2); ++k) {
-		for (j = limits.x_min - (extra / 2); j <= limits.x_max + (extra / 2); ++j) {
+	k1 = limits.y_min - (extra / 2);
+	k2 = limits.y_max + (extra / 2);
+	j1 = limits.x_min - (extra / 2);
+	j2 = limits.x_max + (extra / 2);
+
+	for (k = k1; k <= k2; ++k) {
+		for (j = j1; j <= j2; ++j) {
 			std::string key = std::to_string(j) + "x" + std::to_string(k);
 			if (map[key].first) {
 				sizes[map[key].first].second++;
@@ -122,7 +159,7 @@ bool DecodeCoord(const std::string line, std::vector<std::pair<int32_t, int32_t>
 }
 
 int main(void) {
-	int result1 = 0, result2 = 0, cnt = 0;
+	int result1 = 0, result2 = 0, cnt = 0, total_distance;
 	std::ifstream input;
 	std::string line, polymer;
 	std::vector<std::pair<int32_t, int32_t>> coords;
@@ -142,6 +179,8 @@ int main(void) {
 	coords.push_back(std::pair<int32_t, int32_t>(3, 4));
 	coords.push_back(std::pair<int32_t, int32_t>(5, 5));
 	coords.push_back(std::pair<int32_t, int32_t>(8, 9));
+
+	total_distance = 32;
 #elif TEST2
 
 #else
@@ -162,6 +201,8 @@ int main(void) {
 	if (input.is_open()) {
 		input.close();
 	}
+
+	total_distance = 10000;
 #endif
 
 	limits = GetCoordLimits(coords);
@@ -169,6 +210,7 @@ int main(void) {
 	FillClosestCoordinateMap(coords, limits, map);
 
 	result1 = GetLargestFiniteAreaSize(coords, limits, map);
+	result2 = GetRegionSize(coords, limits, total_distance);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
