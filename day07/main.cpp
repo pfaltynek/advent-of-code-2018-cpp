@@ -10,17 +10,28 @@
 
 const std::regex condition_template("^Step ([A-Z]) must be finished before step ([A-Z]) can begin.$");
 
-std::string GetInstructionsOrder(const std::map<char, int32_t> counts, std::unordered_map<char, std::string> rules) {
-	std::string result = "", ready = "", done = "", tmp;
+std::string GetStepsReadyInitially(const std::map<char, int32_t> counts, std::unordered_map<char, std::string> rules) {
+	std::string result;
 	std::unordered_map<char, std::string>::iterator itr;
-	char item;
+
+	result.clear();
 
 	for (auto it = counts.begin(); it != counts.end(); ++it) {
 		itr = rules.find(it->first);
 		if (itr == rules.end()) {
-			ready += it->first;
+			result += it->first;
 		}
 	}
+
+	return result;
+}
+
+std::string GetInstructionsOrder(std::string ready, std::unordered_map<char, std::string> rules) {
+	std::string result, done;
+	std::unordered_map<char, std::string>::iterator itr;
+
+	result.clear();
+	done.clear();
 
 	while (rules.size()) {
 		char next;
@@ -35,8 +46,6 @@ std::string GetInstructionsOrder(const std::map<char, int32_t> counts, std::unor
 		for (auto it = rules.begin(); it != rules.end(); ++it) {
 			std::size_t pos;
 
-			item = it->first;
-			tmp = it->second;
 			pos = it->second.find(next);
 
 			if (pos != std::string::npos) {
@@ -69,6 +78,66 @@ std::string GetInstructionsOrder(const std::map<char, int32_t> counts, std::unor
 	return result;
 }
 
+int32_t GetTotalTime(std::string ready, std::unordered_map<char, std::string> rules, int32_t workers_max, int32_t step_base_time) {
+	std::string step_order, done, workers_done;
+	std::map<char, uint32_t> workers;
+	int32_t total_time;
+
+	workers.clear();
+	step_order.clear();
+	done.clear();
+	workers_done.clear();
+	total_time = 0;
+
+	while (rules.size() || workers.size() || ready.size()) {
+		char next;
+
+		while ((workers.size() < workers_max) && (ready.size())) {
+			workers[ready[0]] = step_base_time + ready[0] - 'A' + 1;
+			ready = ready.substr(1);
+		}
+
+		for (auto it = workers.begin(); it != workers.end(); ++it) {
+			if (!(--it->second)) {
+				workers_done += it->first;
+			}
+		}
+		total_time++;
+
+		for (uint32_t i = 0; i < workers_done.size(); ++i) {
+			next = workers_done[i];
+
+			for (auto it = rules.begin(); it != rules.end(); ++it) {
+				std::size_t pos;
+
+				pos = it->second.find(next);
+
+				if (pos != std::string::npos) {
+					if (it->second.size() == 1) {
+						ready += it->first;
+						it->second.clear();
+						done += it->first;
+					} else {
+						it->second = it->second.substr(0, pos) + it->second.substr(pos + 1);
+					}
+				}
+			}
+			step_order += workers_done[i];
+			workers.erase(workers_done[i]);
+		}
+
+		workers_done.clear();
+
+		for (uint32_t i = 0; i < done.size(); ++i) {
+			rules.erase(done[i]);
+		}
+
+		done.clear();
+	}
+
+	return total_time;
+}
+
 bool DecodeInstruction(const std::string line, std::unordered_map<char, std::string> &rules, std::map<char, int32_t> &counts) {
 	std::smatch sm;
 	char x, y;
@@ -85,9 +154,9 @@ bool DecodeInstruction(const std::string line, std::unordered_map<char, std::str
 }
 
 int main(void) {
-	int result2 = 0, cnt = 0;
+	int result2 = 0, cnt = 0, max_workers = 5, step_base_time = 60;
 	std::ifstream input;
-	std::string line, result1;
+	std::string line, result1, ready;
 	std::unordered_map<char, std::string> rules;
 	std::map<char, int32_t> counts;
 
@@ -107,6 +176,8 @@ int main(void) {
 	DecodeInstruction("Step D must be finished before step E can begin.", rules, counts);
 	DecodeInstruction("Step F must be finished before step E can begin.", rules, counts);
 
+	max_workers = 2;
+	step_base_time = 0;
 #elif TEST2
 
 #else
@@ -128,8 +199,9 @@ int main(void) {
 		input.close();
 	}
 #endif
-
-	result1 = GetInstructionsOrder(counts, rules);
+	ready = GetStepsReadyInitially(counts, rules);
+	result1 = GetInstructionsOrder(ready, rules);
+	result2 = GetTotalTime(ready, rules, max_workers, step_base_time);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
