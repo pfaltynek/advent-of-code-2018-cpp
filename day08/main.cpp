@@ -1,23 +1,31 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 #define TEST1 0
 #define TEST2 0
 
-void GetMetadataSum(std::stringstream& num, int32_t &result) {
+void GetMetadataSum(std::stringstream &num, int32_t &result1, int32_t &result2, std::vector<int32_t> upper_children_values) {
 	int32_t children, metadata_size, metadata;
+	std::vector<int32_t> children_values;
 
 	num >> children;
 	num >> metadata_size;
 
-	for (int32_t i = 0; i < children;++i){
-		GetMetadataSum(num, result);
-	}
+	if (children) {
+		for (int32_t i = 0; i < children; ++i) {
+			GetMetadataSum(num, result1, result2, children_values);
+		}
+	} else {
+		int32_t value = 0;
 
-	for (int32_t i = 0; i < metadata_size ;++i) {
-		num >> metadata;
-		result += metadata;
+		for (int32_t i = 0; i < metadata_size; ++i) {
+			num >> metadata;
+			value += metadata;
+		}
+		result1 += value;
+
 	}
 }
 
@@ -26,12 +34,14 @@ int main(void) {
 	std::ifstream input;
 	std::string line, numbers;
 	std::stringstream num;
+	std::vector<int32_t> children_values;
 
 	std::cout << "=== Advent of Code 2018 - day 8 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
 	numbers.clear();
-
+	children_values.clear();
+	
 #if TEST1
 	numbers = "2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2";
 #elif TEST2
@@ -47,9 +57,6 @@ int main(void) {
 	while (std::getline(input, line)) {
 		cnt++;
 		numbers.append(line);
-		// if (!DecodeInstruction(line, rules, counts)) {
-		//	std::cout << "Invalid instruction at line " << cnt << std::endl;
-		//}
 	}
 
 	if (input.is_open()) {
@@ -59,7 +66,7 @@ int main(void) {
 
 	num.str(numbers);
 
-	GetMetadataSum(num, result1);
+	GetMetadataSum(num, result1, result2, children_values);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
