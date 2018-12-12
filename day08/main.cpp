@@ -6,27 +6,39 @@
 #define TEST1 0
 #define TEST2 0
 
-void GetMetadataSum(std::stringstream &num, int32_t &result1, int32_t &result2, std::vector<int32_t> upper_children_values) {
+void GetMetadataSum(std::stringstream &num, int32_t &result1, int32_t &result2) {
 	int32_t children, metadata_size, metadata;
-	std::vector<int32_t> children_values;
+	int32_t value = 0, r = 0;
 
 	num >> children;
 	num >> metadata_size;
 
 	if (children) {
+		std::vector<int32_t> children_values(children);
+
 		for (int32_t i = 0; i < children; ++i) {
-			GetMetadataSum(num, result1, result2, children_values);
+			r = 0;
+			GetMetadataSum(num, result1, r);
+			children_values[i] = r;
+		}
+		for (int32_t i = 0; i < metadata_size; ++i) {
+			num >> metadata;
+			value += metadata;
+
+			if (metadata && (metadata <= children)) {
+				result2 += children_values[metadata - 1];
+			}
 		}
 	} else {
-		int32_t value = 0;
-
 		for (int32_t i = 0; i < metadata_size; ++i) {
 			num >> metadata;
 			value += metadata;
 		}
-		result1 += value;
 
+		result2 = value;
 	}
+
+	result1 += value;
 }
 
 int main(void) {
@@ -34,14 +46,12 @@ int main(void) {
 	std::ifstream input;
 	std::string line, numbers;
 	std::stringstream num;
-	std::vector<int32_t> children_values;
 
 	std::cout << "=== Advent of Code 2018 - day 8 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
 	numbers.clear();
-	children_values.clear();
-	
+
 #if TEST1
 	numbers = "2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2";
 #elif TEST2
@@ -66,7 +76,7 @@ int main(void) {
 
 	num.str(numbers);
 
-	GetMetadataSum(num, result1, result2, children_values);
+	GetMetadataSum(num, result1, result2);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
