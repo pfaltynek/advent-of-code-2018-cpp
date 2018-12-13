@@ -1,44 +1,64 @@
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <vector>
 
-#define TEST1 0
+#define TEST1 1
 #define TEST2 0
 
-void GetMetadataSum(std::stringstream &num, int32_t &result1, int32_t &result2) {
-	int32_t children, metadata_size, metadata;
-	int32_t value = 0, r = 0;
+int32_t GetMarbleManiaHighScore(const int32_t players_count, const int32_t last_marble_points) {
+	std::vector<int32_t> marbles;
+	std::vector<int32_t> scores;
+	int32_t result = 0;
+	uint32_t i, curr_marble_idx, player_idx;
 
-	num >> children;
-	num >> metadata_size;
+	marbles.clear();
+	scores.clear();
 
-	if (children) {
-		std::vector<int32_t> children_values(children);
-
-		for (int32_t i = 0; i < children; ++i) {
-			r = 0;
-			GetMetadataSum(num, result1, r);
-			children_values[i] = r;
-		}
-		for (int32_t i = 0; i < metadata_size; ++i) {
-			num >> metadata;
-			value += metadata;
-
-			if (metadata && (metadata <= children)) {
-				result2 += children_values[metadata - 1];
-			}
-		}
-	} else {
-		for (int32_t i = 0; i < metadata_size; ++i) {
-			num >> metadata;
-			value += metadata;
-		}
-
-		result2 = value;
+	for (i = 0; i < players_count; ++i) {
+		scores.push_back(0);
 	}
 
-	result1 += value;
+	marbles.push_back(0);
+	curr_marble_idx = 0;
+	player_idx = 0;
+
+	for (i = 1; i <= last_marble_points; ++i) {
+		uint32_t next;
+
+		if (i % 23) {
+			if (i == 1) {
+				marbles.push_back(i);
+				curr_marble_idx = 1;
+			} else {
+				next = (curr_marble_idx + 2) % (marbles.size() + 1);
+				marbles.insert(marbles.begin() + next, i);
+				curr_marble_idx = next;
+			}
+		} else {
+			scores[player_idx] += i;
+
+			next = curr_marble_idx;
+			while (next < 7) {
+				next += marbles.size();
+			}
+			next -= 7;
+
+			scores[player_idx] += marbles[next];
+			marbles.erase(marbles.begin() + next);
+
+			curr_marble_idx = (++next) % marbles.size();
+		}
+
+		player_idx = (++player_idx) % players_count;
+	}
+
+	for (i = 0; i < players_count; ++i) {
+		if (scores[i] > result) {
+			result = scores[i];
+		}
+	}
+
+	return result;
 }
 
 int main(void) {
@@ -50,7 +70,13 @@ int main(void) {
 	std::cout << "--- part 1 ---" << std::endl;
 
 #if TEST1
+	result1 = GetMarbleManiaHighScore(9, 25);
 
+	line = "10 players; last marble is worth 1618 points"; //: high score is 8317
+	line = "13 players; last marble is worth 7999 points"; //: high score is 146373
+	line = "17 players; last marble is worth 1104 points"; //: high score is 2764
+	line = "21 players; last marble is worth 6111 points"; //: high score is 54718
+	line = "30 players; last marble is worth 5807 points"; //: high score is 37305
 #elif TEST2
 
 #else
