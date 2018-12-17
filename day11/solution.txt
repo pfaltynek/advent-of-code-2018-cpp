@@ -1,2 +1,2 @@
-part1:	
+part1:	20,77
 part2:	
