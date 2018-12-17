@@ -2,7 +2,7 @@
 #include <iostream>
 #include <unordered_map>
 
-#define TEST1 0
+#define TEST1 1
 #define TEST2 0
 
 int32_t GetPowerLevel(uint32_t x, uint32_t y, uint32_t grid_sn) {
@@ -17,33 +17,45 @@ int32_t GetPowerLevel(uint32_t x, uint32_t y, uint32_t grid_sn) {
 	return result;
 }
 
-void GetLargestTotalPower(const int32_t grid_sn, int32_t grid_x, int32_t grid_y, int32_t area_x, int32_t area_y, uint32_t &result_x, uint32_t &result_y) {
-	int32_t grid[grid_x][grid_y];
-	int32_t max = INT32_MIN, sum;
-	uint32_t i, j, i1, j1;
+void GetLargestTotalPower(const int32_t grid_sn, int32_t grid_size, int32_t area_size, uint32_t &result_x1, uint32_t &result_y1, uint32_t &result_x2,
+						  uint32_t &result_y2, uint32_t &result_z2) {
+	int32_t grid[grid_size][grid_size];
+	int32_t max1 = INT32_MIN, max2 = INT32_MIN, sum;
+	uint32_t i, j, i1, j1, s;
 
-	result_x = 0;
-	result_y = 0;
+	result_x1 = 0;
+	result_y1 = 0;
+	result_x2 = 0;
+	result_y2 = 0;
+	result_z2 = 0;
 
-	for (i = 0; i < grid_x; ++i) {
-		for (j = 0; j < grid_y; ++j) {
+	for (i = 0; i < grid_size; ++i) {
+		for (j = 0; j < grid_size; ++j) {
 			grid[i][j] = GetPowerLevel(i + 1, j + 1, grid_sn);
 		}
 	}
 
-	for (i = 0; i < (grid_x - 3); ++i) {
-		for (j = 0; j < (grid_y - 3); ++j) {
-			sum = 0;
-			for (i1 = i; i1 < (i + 3); ++i1) {
-				for (j1 = j; j1 < (j + 3); ++j1) {
-					sum += grid[i1][j1];
+	for (s = 1; s <= grid_size; ++s) {
+		for (i = 0; i <= (grid_size - s); ++i) {
+			for (j = 0; j <= (grid_size - s); ++j) {
+				sum = 0;
+				for (i1 = i; i1 < (i + s); ++i1) {
+					for (j1 = j; j1 < (j + s); ++j1) {
+						sum += grid[i1][j1];
+					}
 				}
-			}
 
-			if (sum > max) {
-				max = sum;
-				result_x = i + 1;
-				result_y = j + 1;
+				if ((s == area_size) && (sum > max1)) {
+					max1 = sum;
+					result_x1 = i + 1;
+					result_y1 = j + 1;
+				}
+				if (sum > max2) {
+					max2 = sum;
+					result_x2 = i + 1;
+					result_y2 = j + 1;
+					result_z2 = s;
+				}
 			}
 		}
 	}
@@ -51,7 +63,7 @@ void GetLargestTotalPower(const int32_t grid_sn, int32_t grid_x, int32_t grid_y,
 
 int main(void) {
 	int cnt = 0;
-	uint32_t result1x = 0, result1y = 0, result2 = 0, grid_sn;
+	uint32_t result1x = 0, result1y = 0, result2x = 0, result2y = 0, result2z = 0, grid_sn;
 	std::ifstream input;
 	std::string line;
 
@@ -66,8 +78,8 @@ int main(void) {
 	test = GetPowerLevel(217, 196, 39); // 0
 	test = GetPowerLevel(101, 153, 71); // 4
 
-	GetLargestTotalPower(18, 300, 300, 3, 3, result1x, result1y);
-	GetLargestTotalPower(42, 300, 300, 3, 3, result1x, result1y);
+	GetLargestTotalPower(18, 300, 3, result1x, result1y, result2x, result2y, result2z); // 33,45,9,269,16
+	GetLargestTotalPower(42, 300, 3, result1x, result1y, result2x, result2y, result2z); // 21,61,232,251,12
 
 #elif TEST2
 
@@ -89,9 +101,10 @@ int main(void) {
 	}
 #endif
 
-	GetLargestTotalPower(grid_sn, 300, 300, 3, 3, result1x, result1y);
+	GetLargestTotalPower(grid_sn, 300, 3, result1x, result1y, result2x, result2y, result2z);
+
 	std::cout << "Result is " << result1x << "," << result1y << std::endl;
 
 	std::cout << "--- part 2 ---" << std::endl;
-	std::cout << "Result is " << result2 << std::endl;
+	std::cout << "Result is " << result2x << "," << result2y << "," << result2z << std::endl;
 }
