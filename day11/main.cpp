@@ -2,7 +2,7 @@
 #include <iostream>
 #include <unordered_map>
 
-#define TEST1 1
+#define TEST1 0
 #define TEST2 0
 
 int32_t GetPowerLevel(uint32_t x, uint32_t y, uint32_t grid_sn) {
@@ -36,12 +36,12 @@ void GetLargestTotalPower(const int32_t grid_sn, int32_t grid_size, int32_t area
 	}
 
 	for (s = 1; s <= grid_size; ++s) {
-		for (i = 0; i <= (grid_size - s); ++i) {
-			for (j = 0; j <= (grid_size - s); ++j) {
+		for (i = 0; i < (grid_size - s + 1); ++i) {
+			for (j = 0; j < (grid_size - s + 1); ++j) {
 				sum = 0;
-				for (i1 = i; i1 < (i + s); ++i1) {
-					for (j1 = j; j1 < (j + s); ++j1) {
-						sum += grid[i1][j1];
+				for (i1 = 0; i1 < s; ++i1) {
+					for (j1 = 0; j1 < s; ++j1) {
+						sum += grid[i + i1][j + j1];
 					}
 				}
 
@@ -50,6 +50,7 @@ void GetLargestTotalPower(const int32_t grid_sn, int32_t grid_size, int32_t area
 					result_x1 = i + 1;
 					result_y1 = j + 1;
 				}
+
 				if (sum > max2) {
 					max2 = sum;
 					result_x2 = i + 1;
@@ -78,7 +79,7 @@ int main(void) {
 	test = GetPowerLevel(217, 196, 39); // 0
 	test = GetPowerLevel(101, 153, 71); // 4
 
-	GetLargestTotalPower(18, 300, 3, result1x, result1y, result2x, result2y, result2z); // 33,45,9,269,16
+	GetLargestTotalPower(18, 300, 3, result1x, result1y, result2x, result2y, result2z); // 33,45,90,269,16
 	GetLargestTotalPower(42, 300, 3, result1x, result1y, result2x, result2y, result2z); // 21,61,232,251,12
 
 #elif TEST2
@@ -99,9 +100,9 @@ int main(void) {
 	if (input.is_open()) {
 		input.close();
 	}
-#endif
 
 	GetLargestTotalPower(grid_sn, 300, 3, result1x, result1y, result2x, result2y, result2z);
+#endif
 
 	std::cout << "Result is " << result1x << "," << result1y << std::endl;
 
