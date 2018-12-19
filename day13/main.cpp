@@ -1,20 +1,40 @@
 #include <fstream>
 #include <iostream>
+#include <vector>
+#include <map>
 
 #define TEST1 0
 #define TEST2 0
+
+char track_map[200][200];
 
 int main(void) {
 	int cnt = 0;
 	int32_t result1 = 0, result2 = 0;
 	std::ifstream input;
 	std::string line;
+	std::vector<std::string> map;
 
 	std::cout << "=== Advent of Code 2018 - day 13 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-#if TEST1
+	map.clear();
 
+#if TEST1
+/*
+/->-\        
+|   |  /----\
+| /-+--+-\  |
+| | |  | v  |
+\-+-/  \-+--/
+  \------/  
+*/
+	map.push_back("/->-\\        ");
+	map.push_back("|   |  /----\\");
+	map.push_back("| /-+--+-\\  |");
+	map.push_back("| | |  | v  |");
+	map.push_back("\\-+-/  \\-+--/");
+	map.push_back("  \\------/   ");
 #elif TEST2
 
 #else
@@ -26,6 +46,8 @@ int main(void) {
 	}
 
 	while (std::getline(input, line)) {
+
+		map.push_back(line);
 		cnt++;
 	}
 
