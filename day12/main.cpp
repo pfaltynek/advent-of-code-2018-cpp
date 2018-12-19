@@ -73,7 +73,7 @@ void MakeRulesComlete(std::unordered_map<std::string, char> &rules) {
 int64_t GetPlantNumbersSum(const std::string init_state, const std::unordered_map<std::string, char> rules, const uint64_t generations) {
 	uint64_t zero_pot_idx = 0;
 	std::string pots = init_state, next;
-	int64_t result = 0;
+	int64_t result = 0, prev_result = 0, diff = 0, prev_diff = 0, diff_cnt = 0, tip = 0;
 
 	for (uint64_t i = 0; i < generations; ++i) {
 		while (pots.substr(0, 5).compare(".....") != 0) {
@@ -96,12 +96,29 @@ int64_t GetPlantNumbersSum(const std::string init_state, const std::unordered_ma
 			next[j] = x;
 		}
 		pots = next;
-	}
 
-	for (uint64_t i = 0; i < pots.size(); ++i) {
-		if (pots[i] == '#') {
-			result += i - zero_pot_idx;
+		prev_result = result;
+		result = 0;
+
+		for (uint64_t i = 0; i < pots.size(); ++i) {
+			if (pots[i] == '#') {
+				result += i - zero_pot_idx;
+			}
 		}
+		prev_diff = diff;
+		diff = result - prev_result;
+
+		if (diff == prev_diff) {
+			diff_cnt++;
+			if ((diff_cnt >= 5) && !tip) {
+				tip = result + ((generations - i - 1) * diff);
+				return tip;
+			}
+		} else {
+			diff_cnt = 0;
+		}
+
+		//std::cout << i << ": Sum: " << result << " Prev. sum: " << prev_result << " Diff: " << diff << " Tip: " << tip << std::endl;
 	}
 
 	return result;
