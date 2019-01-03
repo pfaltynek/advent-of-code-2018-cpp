@@ -1,12 +1,30 @@
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include <map>
+#include <vector>
 
 #define TEST1 1
 #define TEST2 0
 
 char track_map[200][200];
+
+typedef enum CART_HEAD {
+	HEAD_TOP = '^',
+	HEAD_DOWN = 'v',
+	HEAD_LEFT = '<',
+	HEAD_RIGHT = '>'
+} cart_head_t;
+
+typedef struct cart {
+	uint32_t x;
+	uint32_t y;
+	cart_head_t head;
+} cart_str;
+
+bool DecodeMap(std::vector<std::string> &map, std::vector<cart_str> &carts) {
+	for (uint32_t i = 0; i < map.size(); ++i) {
+	}
+}
 
 int main(void) {
 	int cnt = 0;
@@ -21,14 +39,14 @@ int main(void) {
 	map.clear();
 
 #if TEST1
-/*
-/->-\        
-|   |  /----\
-| /-+--+-\  |
-| | |  | v  |
-\-+-/  \-+--/
-  \------/  
-*/
+	/*
+	/->-\
+	|   |  /----\
+	| /-+--+-\  |
+	| | |  | v  |
+	\-+-/  \-+--/
+	  \------/
+	*/
 	map.push_back("/->-\\        ");
 	map.push_back("|   |  /----\\");
 	map.push_back("| /-+--+-\\  |");
