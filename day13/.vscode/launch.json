@@ -8,13 +8,12 @@
 			"name": "(gdb) Launch",
 			"type": "cppdbg",
 			"request": "launch",
+			"program": "${workspaceFolder}/aoc-2018-day13",
 			"linux": {
-				"program": "${workspaceFolder}/aoc-2018-day13",
 				"miDebuggerPath": "gdb"
 			},
 			"windows": {
-				"program": "${workspaceFolder}/aoc-2018-day13.exe",
-				"miDebuggerPath": "gdb32.exe"
+				"miDebuggerPath": "gdb.exe"
 			},
 			"args": [],
 			"stopAtEntry": false,

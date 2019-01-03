@@ -3,7 +3,7 @@
 #include <vector>
 #include <map>
 
-#define TEST1 0
+#define TEST1 1
 #define TEST2 0
 
 char track_map[200][200];
