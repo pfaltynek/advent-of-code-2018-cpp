@@ -5,43 +5,35 @@
 #define TEST1 0
 #define TEST2 0
 
-uint64_t SimulateRecipes(uint64_t rounds) {
-	std::vector<uint8_t> recipes;
+std::string SimulateRecipes(uint64_t rounds) {
+	std::string recipes;
 	uint64_t result = 0, elf1, elf2, new_val;
 
+	recipes.reserve(rounds + 11);
+
 	recipes.clear();
-	recipes.push_back(3);
-	recipes.push_back(7);
+	recipes.append("37");
 	elf1 = 0;
 	elf2 = 1;
 
 	while (recipes.size() < (rounds + 10)) {
-		new_val = recipes[elf1] + recipes[elf2];
+		new_val = recipes[elf1] - '0' + recipes[elf2] - '0';
 
-		if (new_val >= 10) {
-			recipes.push_back(new_val / 10);
-			recipes.push_back(new_val % 10);
-		} else {
-			recipes.push_back(new_val);
-		}
+		recipes.append(std::to_string(new_val));
 
-		elf1 += 1 + recipes[elf1];
+		elf1 += 1 + recipes[elf1] - '0';
 		elf1 = elf1 % recipes.size();
-		elf2 += 1 + recipes[elf2];
+		elf2 += 1 + recipes[elf2] - '0';
 		elf2 = elf2 % recipes.size();
 	}
 
-	for (uint32_t i = 0; i < 10; ++i){
-		result *= 10;
-		result += recipes[rounds + i];
-	}
-
-	return result;
+	return recipes.substr(rounds, 10);
 }
 
 int main(void) {
 	int cnt = 0;
-	uint64_t result1 = 0, result2 = 0, rounds;
+	std::string result1;
+	uint64_t result2 = 0, rounds;
 	std::ifstream input;
 	std::string line, input_number;
 
@@ -49,9 +41,9 @@ int main(void) {
 	std::cout << "--- part 1 ---" << std::endl;
 
 #if TEST1
-	result1 = SimulateRecipes(9); // 5158916779
-	result1 = SimulateRecipes(5); // 0124515891
-	result1 = SimulateRecipes(18); // 9251071085
+	result1 = SimulateRecipes(9);	// 5158916779
+	result1 = SimulateRecipes(5);	// 0124515891
+	result1 = SimulateRecipes(18);   // 9251071085
 	result1 = SimulateRecipes(2018); // 5941429882
 
 #elif TEST2
