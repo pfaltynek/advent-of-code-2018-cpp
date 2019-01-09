@@ -1,7 +1,8 @@
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include <map>
+#include <vector>
+#include <algorithm>
 
 #define TEST1 1
 #define TEST2 0
@@ -58,6 +59,7 @@ class AOC2018Day15 {
 	std::vector<std::string> _map;
 	std::vector<Fighter> _fighters;
 	bool decode_map_input(std::vector<std::string> input);
+	void sort_fighters();
 };
 
 bool AOC2018Day15::init() {
@@ -90,9 +92,8 @@ bool AOC2018Day15::init(std::vector<std::string> test_data) {
 	return decode_map_input(test_data);
 }
 
-void AOC2018Day15::turn(){
-
-
+void AOC2018Day15::turn() {
+	sort_fighters();
 }
 
 bool AOC2018Day15::decode_map_input(std::vector<std::string> map) {
@@ -131,6 +132,20 @@ bool AOC2018Day15::decode_map_input(std::vector<std::string> map) {
 	}
 
 	return true;
+}
+
+bool compare_fighters_position(Fighter f1, Fighter f2) {
+	if (f1.get_y() < f2.get_y()) {
+		return true;
+	} else if (f1.get_y() > f2.get_y()) {
+		return false;
+	} else {
+		return (f1.get_x() < f2.get_x());
+	}
+}
+
+void AOC2018Day15::sort_fighters() {
+	std::sort(_fighters.begin(), _fighters.end(), compare_fighters_position);
 }
 
 int main(void) {
