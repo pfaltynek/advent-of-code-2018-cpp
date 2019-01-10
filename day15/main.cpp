@@ -4,7 +4,7 @@
 #include <vector>
 #include <algorithm>
 
-#define TEST1 1
+#define TEST1 0
 #define TEST2 0
 
 class Fighter {
@@ -60,6 +60,7 @@ class AOC2018Day15 {
 	std::vector<Fighter> _fighters;
 	bool decode_map_input(std::vector<std::string> input);
 	void sort_fighters();
+	void split_tartets(std::vector<Fighter> &elfs, std::vector<Fighter> &goblins);
 };
 
 bool AOC2018Day15::init() {
@@ -93,7 +94,10 @@ bool AOC2018Day15::init(std::vector<std::string> test_data) {
 }
 
 void AOC2018Day15::turn() {
+	std::vector<Fighter> elfs, goblins;
+
 	sort_fighters();
+	split_tartets(elfs, goblins);
 }
 
 bool AOC2018Day15::decode_map_input(std::vector<std::string> map) {
@@ -148,6 +152,19 @@ void AOC2018Day15::sort_fighters() {
 	std::sort(_fighters.begin(), _fighters.end(), compare_fighters_position);
 }
 
+void AOC2018Day15::split_tartets(std::vector<Fighter>& elfs, std::vector<Fighter>& goblins){
+	elfs.clear();
+	goblins.clear();
+
+	for (uint32_t i = 0; i < _fighters.size(); ++i) {
+		if (_fighters[i].get_is_elf()){
+			elfs.push_back(_fighters[i]);
+		} else {
+			goblins.push_back(_fighters[i]);
+		}
+	}
+}
+
 int main(void) {
 	uint64_t result1 = 0, result2 = 0;
 	AOC2018Day15 obj;
@@ -163,6 +180,8 @@ int main(void) {
 	if (!obj.init()) {
 		return -1;
 	}
+
+	obj.turn();
 #endif
 
 	std::cout << "Result is " << result1 << std::endl;
