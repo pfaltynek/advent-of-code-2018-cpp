@@ -31,16 +31,6 @@ bool Fight::init(std::vector<std::string> test_data) {
 	return decode_map_input(test_data);
 }
 
-void Fight::turn() {
-	std::vector<Fighter> elfs, goblins;
-
-	sort_fighters();
-	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
-	}
-
-	split_targets(elfs, goblins);
-}
-
 bool Fight::decode_map_input(std::vector<std::string> map) {
 	uint32_t i, w;
 	size_t pos;
@@ -79,6 +69,16 @@ bool Fight::decode_map_input(std::vector<std::string> map) {
 	return true;
 }
 
+bool Fight::compare_fighters_position(Fighter f1, Fighter f2) {
+	if (f1.get_y() < f2.get_y()) {
+		return true;
+	} else if (f1.get_y() > f2.get_y()) {
+		return false;
+	} else {
+		return (f1.get_x() < f2.get_x());
+	}
+}
+
 void Fight::sort_fighters() {
 	std::sort(_fighters.begin(), _fighters.end(), compare_fighters_position);
 }
@@ -94,4 +94,24 @@ void Fight::split_targets(std::vector<Fighter> &elfs, std::vector<Fighter> &gobl
 			goblins.push_back(_fighters[i]);
 		}
 	}
+}
+
+int Fight::make_fight(){
+
+	return 0;
+}
+
+void Fight::one_round(){
+
+}
+
+void Fight::one_turn() {
+	std::vector<Fighter> elfs, goblins;
+
+	sort_fighters();
+	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
+		std::vector<std::string> map(_map);
+	}
+
+	split_targets(elfs, goblins);
 }

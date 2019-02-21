@@ -1,15 +1,5 @@
 #include "main.hpp"
 
-bool compare_fighters_position(Fighter f1, Fighter f2) {
-	if (f1.get_y() < f2.get_y()) {
-		return true;
-	} else if (f1.get_y() > f2.get_y()) {
-		return false;
-	} else {
-		return (f1.get_x() < f2.get_x());
-	}
-}
-
 int main(void) {
 	uint64_t result1 = 0, result2 = 0;
 	Fight fight;
@@ -26,7 +16,7 @@ int main(void) {
 		return -1;
 	}
 
-	fight.turn();
+	result1 = fight.make_fight();
 #endif
 
 	std::cout << "Result is " << result1 << std::endl;
