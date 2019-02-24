@@ -96,22 +96,21 @@ void Fight::split_targets(std::vector<Fighter> &elfs, std::vector<Fighter> &gobl
 	}
 }
 
-int Fight::make_fight(){
+int Fight::make_fight() {
 
 	return 0;
 }
 
-void Fight::one_round(){
-
+void Fight::one_round() {
+	sort_fighters();
+	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
+		std::vector<std::string> map(_map);
+	}
 }
 
 void Fight::one_turn() {
 	std::vector<Fighter> elfs, goblins;
 
-	sort_fighters();
-	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
-		std::vector<std::string> map(_map);
-	}
 
 	split_targets(elfs, goblins);
 }
