@@ -66,6 +66,8 @@ bool Fight::decode_map_input(std::vector<std::string> map) {
 		_map.push_back(map[i]);
 	}
 
+	_no_fighters = map;
+
 	return true;
 }
 
@@ -83,19 +85,6 @@ void Fight::sort_fighters() {
 	std::sort(_fighters.begin(), _fighters.end(), compare_fighters_position);
 }
 
-void Fight::split_targets(std::vector<Fighter> &elfs, std::vector<Fighter> &goblins) {
-	elfs.clear();
-	goblins.clear();
-
-	for (uint32_t i = 0; i < _fighters.size(); ++i) {
-		if (_fighters[i].get_is_elf()) {
-			elfs.push_back(_fighters[i]);
-		} else {
-			goblins.push_back(_fighters[i]);
-		}
-	}
-}
-
 int Fight::make_fight() {
 
 	return 0;
@@ -108,9 +97,53 @@ void Fight::one_round() {
 	}
 }
 
-void Fight::one_turn() {
-	std::vector<Fighter> elfs, goblins;
+void Fight::one_turn(Fighter f) {
+	std::vector<std::string> map(_map);
+	std::vector<Fighter> enemies;
+	std::map<std::pair<uint32_t, uint32_t>, int> targets;
+	Fighter target;
+	bool target_found = false;
 
+	enemies.clear();
 
-	split_targets(elfs, goblins);
+	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
+		if (f.get_is_elf() != it->get_is_elf()) {
+			enemies.push_back(*it);
+		}
+		if (it->get_is_elf()) {
+			map[it->get_y()][it->get_x()] = 'E';
+		} else {
+			map[it->get_y()][it->get_x()] = 'G';
+		}
+	}
+
+	targets.clear();
+
+	for (auto it = enemies.begin(); it != enemies.end(); ++it) {
+		uint32_t x, y;
+
+		x = it->get_x();
+		y = it->get_y();
+
+		if (y > 0) {
+			if (map[y - 1][x] == '.') {
+				targets[std::make_pair(x, y - 1)] = 0;
+			}
+		}
+		if (x > 0) {
+			if (map[y][x - 1] == '.') {
+				targets[std::make_pair(x - 1, y)] = 0;
+			}
+		}
+		if ((x + 1) < map[0].size()) {
+			if (map[y][x + 1] == '.') {
+				targets[std::make_pair(x + 1, y)] = 0;
+			}
+		}
+		if ((y + 1) < map.size()) {
+			if (map[y + 1][x] == '.') {
+				targets[std::make_pair(x, y + 1)] = 0;
+			}
+		}
+	}
 }

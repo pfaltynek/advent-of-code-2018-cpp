@@ -20,6 +20,9 @@ class Fighter {
 		return _is_elf;
 	}
 
+	bool equals(Fighter &other);
+	bool is_adjacent(Fighter &other);
+
   private:
 	uint32_t _x;
 	uint32_t _y;
