@@ -7,16 +7,16 @@ class Fighter {
   public:
 	Fighter();
 	void init(uint32_t x, uint32_t y, bool is_elf);
-	uint32_t get_x() {
+	uint32_t get_x() const {
 		return _x;
 	}
-	uint32_t get_y() {
+	uint32_t get_y() const {
 		return _y;
 	}
 	uint32_t get_hit_points() {
 		return _hitpoints;
 	}
-	bool get_is_elf() {
+	bool get_is_elf() const {
 		return _is_elf;
 	}
 

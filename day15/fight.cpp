@@ -66,8 +66,6 @@ bool Fight::decode_map_input(std::vector<std::string> map) {
 		_map.push_back(map[i]);
 	}
 
-	_no_fighters = map;
-
 	return true;
 }
 
@@ -98,25 +96,35 @@ void Fight::one_round() {
 }
 
 void Fight::one_turn(Fighter f) {
-	std::vector<std::string> map(_map);
 	std::vector<Fighter> enemies;
 	std::map<std::pair<uint32_t, uint32_t>, int> targets;
 	Fighter target;
 	bool target_found = false;
 
+	place_fighters_and_get_enemies(f, enemies);
+	get_targets_of_enemies(enemies, targets);
+
+	
+}
+
+void Fight::place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies) {
+
 	enemies.clear();
+	_tmp_map = _map;
 
 	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
 		if (f.get_is_elf() != it->get_is_elf()) {
 			enemies.push_back(*it);
 		}
 		if (it->get_is_elf()) {
-			map[it->get_y()][it->get_x()] = 'E';
+			_tmp_map[it->get_y()][it->get_x()] = 'E';
 		} else {
-			map[it->get_y()][it->get_x()] = 'G';
+			_tmp_map[it->get_y()][it->get_x()] = 'G';
 		}
 	}
+}
 
+void Fight::get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets){
 	targets.clear();
 
 	for (auto it = enemies.begin(); it != enemies.end(); ++it) {
@@ -126,22 +134,22 @@ void Fight::one_turn(Fighter f) {
 		y = it->get_y();
 
 		if (y > 0) {
-			if (map[y - 1][x] == '.') {
+			if (_tmp_map[y - 1][x] == '.') {
 				targets[std::make_pair(x, y - 1)] = 0;
 			}
 		}
 		if (x > 0) {
-			if (map[y][x - 1] == '.') {
+			if (_tmp_map[y][x - 1] == '.') {
 				targets[std::make_pair(x - 1, y)] = 0;
 			}
 		}
-		if ((x + 1) < map[0].size()) {
-			if (map[y][x + 1] == '.') {
+		if ((x + 1) < _tmp_map[0].size()) {
+			if (_tmp_map[y][x + 1] == '.') {
 				targets[std::make_pair(x + 1, y)] = 0;
 			}
 		}
-		if ((y + 1) < map.size()) {
-			if (map[y + 1][x] == '.') {
+		if ((y + 1) < _tmp_map.size()) {
+			if (_tmp_map[y + 1][x] == '.') {
 				targets[std::make_pair(x, y + 1)] = 0;
 			}
 		}
