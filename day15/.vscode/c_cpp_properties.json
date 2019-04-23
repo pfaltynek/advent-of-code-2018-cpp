@@ -45,11 +45,11 @@
         {
             "name": "Win32",
             "includePath": [
-                "c:/Tools/MinGW/include/",
-                "c:/Tools/MinGW/lib/gcc/mingw32/6.3.0/include/",
-                "c:/Tools/MinGW/lib/gcc/mingw32/6.3.0/include/c++/",
-                "c:/Tools/MinGW/lib/gcc/mingw32/6.3.0/include/c++/tr1/",
-                "c:/Tools/MinGW/lib/gcc/mingw32/6.3.0/include/c++/mingw32/",
+                "c:/Tools/MinGW64/mingw64/include/",
+                "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/",
+                "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/",
+                "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/tr1/",
+                "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/",
                 "${workspaceRoot}"
             ],
             "defines": [
@@ -59,13 +59,13 @@
             "intelliSenseMode": "msvc-x64",
             "browse": {
                 "path": [
-                    "c:/Tools/MinGW/include/",
-                    "c:/Tools/MinGW/lib/gcc/mingw32/6.3.0/include/",
-                    "c:/Tools/MinGW/lib/gcc/mingw32/6.3.0/include/c++/",
-                    "c:/Tools/MinGW/lib/gcc/mingw32/6.3.0/include/c++/tr1/",
-                    "c:/Tools/MinGW/lib/gcc/mingw32/6.3.0/include/c++/mingw32/",
-                    "${workspaceRoot}"
-                ],
+					"c:/Tools/MinGW64/mingw64/include/",
+					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/",
+					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/",
+					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/tr1/",
+					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/",
+					"${workspaceRoot}"
+					],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
             }
