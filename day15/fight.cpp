@@ -127,35 +127,64 @@ namespace FightNS {
 		targets.clear();
 
 		for (auto it = enemies.begin(); it != enemies.end(); ++it) {
-			uint32_t x, y;
+			std::vector<std::pair<uint32_t, uint32_t>> tmp = get_free_adjacents(*it);
 
-			x = it->get_x();
-			y = it->get_y();
-
-			if (y > 0) {
-				if (_tmp_map[y - 1][x] == '.') {
-					targets[std::make_pair(x, y - 1)] = 0;
-				}
+			for (auto itv = tmp.begin(); itv != tmp.end(); ++itv) {
+				targets[*itv] = 0;
 			}
-			if (x > 0) {
-				if (_tmp_map[y][x - 1] == '.') {
-					targets[std::make_pair(x - 1, y)] = 0;
-				}
-			}
-			if ((x + 1) < _tmp_map[0].size()) {
-				if (_tmp_map[y][x + 1] == '.') {
-					targets[std::make_pair(x + 1, y)] = 0;
-				}
-			}
-			if ((y + 1) < _tmp_map.size()) {
-				if (_tmp_map[y + 1][x] == '.') {
-					targets[std::make_pair(x, y + 1)] = 0;
-				}
-			}
-		}
-
-		int32_t Fighter::get_shortest_path(Fighter from, Fighter to, direction_t & start_direction) {
-			//TODO: implement method
 		}
 	}
-}
+
+	std::vector<std::pair<uint32_t, uint32_t>> Fight::get_free_adjacents(Fighter f) {
+		std::vector<std::pair<uint32_t, uint32_t>> result;
+
+		result.clear();
+
+		uint32_t x, y;
+
+		x = f.get_x();
+		y = f.get_y();
+
+		if (y > 0) {
+			if (_tmp_map[y - 1][x] == '.') {
+				result.push_back(std::make_pair(x, y - 1));
+			}
+		}
+		if (x > 0) {
+			if (_tmp_map[y][x - 1] == '.') {
+				result.push_back(std::make_pair(x - 1, y));
+			}
+		}
+		if ((x + 1) < _tmp_map[0].size()) {
+			if (_tmp_map[y][x + 1] == '.') {
+				result.push_back(std::make_pair(x + 1, y));
+			}
+		}
+		if ((y + 1) < _tmp_map.size()) {
+			if (_tmp_map[y + 1][x] == '.') {
+				result.push_back(std::make_pair(x, y + 1));
+			}
+		}
+
+		return result;
+	}
+
+	int32_t Fight::get_shortest_path(Fighter from, Fighter to, direction_t &start_direction) {
+		// TODO: implement method
+		uint32_t steps, steps_max;
+
+		std::string path = "|";
+
+		return -1;
+	}
+
+	bool Fight::test(std::pair<uint32_t, uint32_t> next, std::pair<uint32_t, uint32_t> target, std::string &path, direction_t &start_directon, uint32_t &steps,
+					 uint32_t &steps_max) {
+		std::stringstream position;
+
+		position.clear();
+		position << "|" << next.first << "|" << next.second << "|";
+
+		return false;
+	}
+} // namespace FightNS

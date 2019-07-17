@@ -9,14 +9,14 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <sstream>
+
 namespace FightNS {
 
 	typedef enum Direction { UP = 1, DOWN = 4, LEFT = 2, RIGHT = 3 } direction_t;
 
 	class Fight {
 	  public:
-		typedef enum Direction { UP = 1, DOWN = 4, LEFT = 2, RIGHT = 3 } direction_t;
-
 		Fight(){};
 
 		bool init();
@@ -35,6 +35,9 @@ namespace FightNS {
 		void place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies);
 		void get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets);
 		int32_t get_shortest_path(Fighter from, Fighter to, direction_t &start_direction);
+		std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(Fighter f);
+		bool test(std::pair<uint32_t, uint32_t> next, std::pair<uint32_t, uint32_t> target, std::string &path,
+						 direction_t &start_directon, uint32_t &steps, uint32_t &steps_max);
 	};
 }
 #endif // FIGHT_HPP
