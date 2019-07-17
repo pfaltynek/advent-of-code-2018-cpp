@@ -2,13 +2,17 @@
 
 int main(void) {
 	uint64_t result1 = 0, result2 = 0;
-	Fight fight;
+	FightNS::Fight fight;
 
 	std::cout << "=== Advent of Code 2018 - day 15 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
 #if TEST1
+	std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
 
+	if (!fight.init(test)) {
+		return -1;
+	}
 #elif TEST2
 
 #else
@@ -16,8 +20,9 @@ int main(void) {
 		return -1;
 	}
 
-	result1 = fight.make_fight();
 #endif
+
+	result1 = fight.make_fight();
 
 	std::cout << "Result is " << result1 << std::endl;
 

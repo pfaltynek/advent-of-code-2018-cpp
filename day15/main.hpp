@@ -5,7 +5,7 @@
 #include "fight.hpp"
 #include "fighter.hpp"
 
-#define TEST1 0
+#define TEST1 1
 #define TEST2 0
 
 #endif // MAIN_HPP
