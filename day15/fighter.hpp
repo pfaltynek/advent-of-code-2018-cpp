@@ -2,6 +2,7 @@
 #define FIGHTER_HPP
 
 #include <stdint.h>
+#include "helpers.h"
 
 class Fighter {
   public:
@@ -21,7 +22,7 @@ class Fighter {
 	}
 
 	bool equals(Fighter &other);
-	bool is_adjacent(Fighter &other);
+	bool is_adjacent(Fighter &other, direction_t &direction);
 
   private:
 	uint32_t _x;

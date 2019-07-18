@@ -18,13 +18,23 @@ bool Fighter::equals(Fighter &other) {
 	return ((_x == other.get_x()) && (_y == other.get_y()));
 }
 
-bool Fighter::is_adjacent(Fighter &other) {
+bool Fighter::is_adjacent(Fighter &other, direction_t &direction) {
 	if (_x == other.get_x()) {
-		if (((_y + 1) == other.get_y()) || (_y == (other.get_y() + 1))) {
+		if ((_y + 1) == other.get_y()) {
+			direction = Direction::DOWN;
+			return true;
+		}
+		if (_y == (other.get_y() + 1)) {
+			direction = Direction::UP;
 			return true;
 		}
 	} else if (_y == other.get_y()) {
 		if (((_x + 1) == other.get_x()) || (_x == (other.get_x() + 1))) {
+			direction = Direction::RIGHT;
+			return true;
+		}
+		if (((_x + 1) == other.get_x()) || (_x == (other.get_x() + 1))) {
+			direction = Direction::LEFT;
 			return true;
 		}
 	}
