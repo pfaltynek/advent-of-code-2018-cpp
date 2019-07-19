@@ -134,16 +134,10 @@ void Fight::get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map
 	}
 }
 
-std::vector<std::pair<uint32_t, uint32_t>> Fight::get_free_adjacents(Fighter f) {
+std::vector<std::pair<uint32_t, uint32_t>> Fight::get_free_adjacents(uint32_t x, uint32_t y) {
 	std::vector<std::pair<uint32_t, uint32_t>> result;
 
 	result.clear();
-
-	uint32_t x, y;
-
-	x = f.get_x();
-	y = f.get_y();
-
 	if (y > 0) {
 		if (_tmp_map[y - 1][x] == '.') {
 			result.push_back(std::make_pair(x, y - 1));
@@ -168,11 +162,29 @@ std::vector<std::pair<uint32_t, uint32_t>> Fight::get_free_adjacents(Fighter f) 
 	return result;
 }
 
-int32_t Fight::get_shortest_path(Fighter from, Fighter to, direction_t &start_direction) {
-	// TODO: implement method
-	uint32_t steps, steps_max;
+std::vector<std::pair<uint32_t, uint32_t>> Fight::get_free_adjacents(Fighter f) {
+	return get_free_adjacents(f.get_x(), f.get_y());
+}
 
+int32_t Fight::get_shortest_path(Fighter from, Fighter to, direction_t &start_direction) {
+	if (from.is_adjacent(to, start_direction)) {
+		return 0;
+	}
+
+	uint32_t steps = 0, steps_max = UINT32_MAX;
 	std::string path = "|";
+	std::queue<path_info_str> paths;
+	path_info_str pi;
+
+	while (paths.size()) {
+		paths.pop();
+	}
+
+	pi.path = "|";
+	pi.x = from.get_x();
+	pi.y = from.get_y();
+	pi.steps = 0;
+	paths.push(pi);
 
 	return -1;
 }
