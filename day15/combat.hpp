@@ -1,5 +1,5 @@
-#ifndef FIGHT_HPP
-#define FIGHT_HPP
+#ifndef Combat_HPP
+#define Combat_HPP
 
 #include "fighter.hpp"
 #include <algorithm>
@@ -21,22 +21,29 @@ typedef struct PathInfo {
 	std::string path;
 } path_info_str;
 
-class Fight {
+class Combat {
   public:
-	Fight(){};
+	Combat(){};
 
 	bool init();
 	bool init(std::vector<std::string> test_data);
-	int make_fight();
+	int make_combat();
 	void one_turn(Fighter f);
 	void one_round();
 
+#if (TEST1 || TEST2)
+		void sort_fighters();
   protected:
   private:
+#else
+  protected:
+  private:
+		void sort_fighters();
+#endif
 	std::vector<std::string> _map, _tmp_map;
 	std::vector<Fighter> _fighters;
 	bool decode_map_input(const std::vector<std::string> input);
-	void sort_fighters();
+
 	static bool compare_fighters_position(const Fighter f1, const Fighter f2);
 	void place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies);
 	void get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets);
@@ -47,4 +54,4 @@ class Fight {
 	bool test(std::pair<uint32_t, uint32_t> next, std::pair<uint32_t, uint32_t> target, std::string &path, direction_t &start_directon, uint32_t &steps,
 			  uint32_t &steps_max);
 };
-#endif // FIGHT_HPP
+#endif // COMBAT_HPP

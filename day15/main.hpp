@@ -2,10 +2,8 @@
 #define MAIN_HPP
 
 #include <iostream>
-#include "fight.hpp"
+#include "combat.hpp"
 #include "fighter.hpp"
-
-#define TEST1 1
-#define TEST2 0
+#include "helpers.h"
 
 #endif // MAIN_HPP

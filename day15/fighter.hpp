@@ -20,6 +20,10 @@ class Fighter {
 	bool get_is_elf() const {
 		return _is_elf;
 	}
+	bool is_alive() {
+		return (_hitpoints > 0);
+	}
+	bool got_attacked(uint32_t by_attack_power);
 
 	bool equals(Fighter &other);
 	bool is_adjacent(Fighter &other, direction_t &direction);
@@ -30,6 +34,8 @@ class Fighter {
 	uint32_t _hitpoints;
 	uint32_t _attack_power;
 	bool _is_elf;
+	static const uint32_t _hitpoints_init = 200;
+	static const uint32_t _attack_power_init = 3;
 };
 
 #endif // FIGHTER_HPP

@@ -3,8 +3,8 @@
 Fighter::Fighter() {
 	_x = 0;
 	_y = 0;
-	_hitpoints = 200;
-	_attack_power = 3;
+	_hitpoints = _hitpoints_init;
+	_attack_power = _attack_power_init;
 	_is_elf = true;
 }
 
@@ -39,4 +39,14 @@ bool Fighter::is_adjacent(Fighter &other, direction_t &direction) {
 		}
 	}
 	return false;
+}
+
+bool Fighter::got_attacked(uint32_t by_attack_power) {
+	if (by_attack_power >= _hitpoints) {
+		_hitpoints = 0;
+	} else {
+		_hitpoints -= by_attack_power;
+	}
+
+	return is_alive();
 }

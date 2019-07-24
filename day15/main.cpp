@@ -2,7 +2,7 @@
 
 int main(void) {
 	uint64_t result1 = 0, result2 = 0;
-	Fight fight;
+	Combat combat;
 
 	std::cout << "=== Advent of Code 2018 - day 15 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
@@ -10,19 +10,22 @@ int main(void) {
 #if TEST1
 	std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
 
-	if (!fight.init(test)) {
+	if (!combat.init(test)) {
 		return -1;
 	}
+
+	// test the ordering
+	combat.sort_fighters();
 #elif TEST2
 
 #else
-	if (!fight.init()) {
+	if (!combat.init()) {
 		return -1;
 	}
 
+	result1 = combat.make_combat();
 #endif
 
-	result1 = fight.make_fight();
 
 	std::cout << "Result is " << result1 << std::endl;
 

@@ -1,7 +1,7 @@
-#include "fight.hpp"
+#include "combat.hpp"
 #include "main.hpp"
 
-bool Fight::init() {
+bool Combat::init() {
 	int cnt;
 	std::ifstream input;
 	std::string line;
@@ -27,11 +27,11 @@ bool Fight::init() {
 	return decode_map_input(map);
 }
 
-bool Fight::init(std::vector<std::string> test_data) {
+bool Combat::init(std::vector<std::string> test_data) {
 	return decode_map_input(test_data);
 }
 
-bool Fight::decode_map_input(std::vector<std::string> map) {
+bool Combat::decode_map_input(std::vector<std::string> map) {
 	uint32_t i, w;
 	size_t pos;
 
@@ -69,7 +69,7 @@ bool Fight::decode_map_input(std::vector<std::string> map) {
 	return true;
 }
 
-bool Fight::compare_fighters_position(Fighter f1, Fighter f2) {
+bool Combat::compare_fighters_position(Fighter f1, Fighter f2) {
 	if (f1.get_y() < f2.get_y()) {
 		return true;
 	} else if (f1.get_y() > f2.get_y()) {
@@ -79,23 +79,38 @@ bool Fight::compare_fighters_position(Fighter f1, Fighter f2) {
 	}
 }
 
-void Fight::sort_fighters() {
+void Combat::sort_fighters() {
 	std::sort(_fighters.begin(), _fighters.end(), compare_fighters_position);
 }
 
-int Fight::make_fight() {
+int Combat::make_combat() {
+	uint32_t elfs = 0, goblins = 0, idx = 0;
 
 	return 0;
 }
 
-void Fight::one_round() {
+void Combat::one_round() {
+	uint32_t elfs = 0, goblins = 0, idx = 0;
+
 	sort_fighters();
 	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
 		std::vector<std::string> map(_map);
 	}
+
+	while (idx < _fighters.size()) {
+		if (_fighters[idx].is_alive()) {
+			if (_fighters[idx].get_is_elf()) {
+				elfs++;
+			} else {
+				goblins++;
+			}
+		} else {
+			_fighters.erase(_fighters.begin() + idx);
+		}
+	}
 }
 
-void Fight::one_turn(Fighter f) {
+void Combat::one_turn(Fighter f) {
 	std::vector<Fighter> enemies;
 	std::map<std::pair<uint32_t, uint32_t>, int> targets;
 	Fighter target;
@@ -105,13 +120,13 @@ void Fight::one_turn(Fighter f) {
 	get_targets_of_enemies(enemies, targets);
 }
 
-void Fight::place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies) {
+void Combat::place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies) {
 
 	enemies.clear();
 	_tmp_map = _map;
 
 	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
-		if (f.get_is_elf() != it->get_is_elf()) {
+		if ((it->is_alive()) && (f.get_is_elf() != it->get_is_elf())) {
 			enemies.push_back(*it);
 		}
 		if (it->get_is_elf()) {
@@ -122,7 +137,7 @@ void Fight::place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter>
 	}
 }
 
-void Fight::get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets) {
+void Combat::get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets) {
 	targets.clear();
 
 	for (auto it = enemies.begin(); it != enemies.end(); ++it) {
@@ -134,7 +149,7 @@ void Fight::get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map
 	}
 }
 
-std::vector<std::pair<uint32_t, uint32_t>> Fight::get_free_adjacents(uint32_t x, uint32_t y) {
+std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(uint32_t x, uint32_t y) {
 	std::vector<std::pair<uint32_t, uint32_t>> result;
 
 	result.clear();
@@ -162,11 +177,11 @@ std::vector<std::pair<uint32_t, uint32_t>> Fight::get_free_adjacents(uint32_t x,
 	return result;
 }
 
-std::vector<std::pair<uint32_t, uint32_t>> Fight::get_free_adjacents(Fighter f) {
+std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(Fighter f) {
 	return get_free_adjacents(f.get_x(), f.get_y());
 }
 
-int32_t Fight::get_shortest_path(Fighter from, Fighter to, direction_t &start_direction) {
+int32_t Combat::get_shortest_path(Fighter from, Fighter to, direction_t &start_direction) {
 	if (from.is_adjacent(to, start_direction)) {
 		return 0;
 	}
@@ -189,7 +204,7 @@ int32_t Fight::get_shortest_path(Fighter from, Fighter to, direction_t &start_di
 	return -1;
 }
 
-bool Fight::test(std::pair<uint32_t, uint32_t> next, std::pair<uint32_t, uint32_t> target, std::string &path, direction_t &start_directon, uint32_t &steps,
+bool Combat::test(std::pair<uint32_t, uint32_t> next, std::pair<uint32_t, uint32_t> target, std::string &path, direction_t &start_directon, uint32_t &steps,
 				 uint32_t &steps_max) {
 	std::stringstream position;
 
