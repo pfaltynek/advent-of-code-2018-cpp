@@ -9,6 +9,13 @@ int main(void) {
 
 #if TEST1
 	std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
+	std::string jouza = "Jouza";
+
+	std::cout << jouza << std::endl;
+
+	for (int i = 0; i < test.size(); i++){
+		std::cout << test[i] << std::endl;
+	}
 
 	if (!combat.init(test)) {
 		return -1;

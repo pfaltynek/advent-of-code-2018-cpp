@@ -6,17 +6,41 @@
 		{
 			"label": "build AoC 2018 day 15",
 			"type": "shell",
-			"command": "g++",
-			"args": [
-				"-g", "main.cpp", "Combat.cpp", "fighter.cpp", "-o", "aoc-2018-day15"
-			],
+			"osx": {
+				"command": "clang++",
+				"args": [
+					"-std=c++17",
+					"-stdlib=libc++",
+					"main.cpp",
+					"combat.cpp",
+					"fighter.cpp",
+					"-o",
+					"aoc-2018-day15",
+					"--debug"
+				]
+			},
+			"windows": {
+				"command": "g++",
+				"args": [
+					"-Wc++11-extensions",
+					"-g",
+					"main.cpp",
+					"combat.cpp",
+					"fighter.cpp",
+					"-o",
+					"aoc-2018-day15"
+				]
+			},
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
 			"problemMatcher": {
 				"owner": "cpp",
-				"fileLocation": ["relative", "${workspaceFolder}"],
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
 				"pattern": {
 					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
 					"file": 1,
