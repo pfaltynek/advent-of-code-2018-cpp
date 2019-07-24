@@ -34,6 +34,7 @@ class Fighter {
 	uint32_t _hitpoints;
 	uint32_t _attack_power;
 	bool _is_elf;
+	
 	static const uint32_t _hitpoints_init = 200;
 	static const uint32_t _attack_power_init = 3;
 };

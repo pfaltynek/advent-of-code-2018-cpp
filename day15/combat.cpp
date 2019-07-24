@@ -83,14 +83,24 @@ void Combat::sort_fighters() {
 	std::sort(_fighters.begin(), _fighters.end(), compare_fighters_position);
 }
 
-int Combat::make_combat() {
-	uint32_t elfs = 0, goblins = 0, idx = 0;
+uint32_t Combat::make_combat() {
+	uint32_t remaining_hitpoints_sum = 0, rounds = 0;
+	bool combat_end = false;
 
-	return 0;
+	while (true) {
+		if (one_round(remaining_hitpoints_sum)) {
+			break;
+		}
+
+		rounds++;
+	}
+
+	return (rounds * remaining_hitpoints_sum);
 }
 
-void Combat::one_round() {
+bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 	uint32_t elfs = 0, goblins = 0, idx = 0;
+	bool combat_done = false;
 
 	sort_fighters();
 	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
@@ -108,6 +118,8 @@ void Combat::one_round() {
 			_fighters.erase(_fighters.begin() + idx);
 		}
 	}
+
+	return combat_done;
 }
 
 void Combat::one_turn(Fighter f) {
@@ -205,7 +217,7 @@ int32_t Combat::get_shortest_path(Fighter from, Fighter to, direction_t &start_d
 }
 
 bool Combat::test(std::pair<uint32_t, uint32_t> next, std::pair<uint32_t, uint32_t> target, std::string &path, direction_t &start_directon, uint32_t &steps,
-				 uint32_t &steps_max) {
+				  uint32_t &steps_max) {
 	std::stringstream position;
 
 	position.clear();
