@@ -125,10 +125,21 @@ bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 void Combat::one_turn(Fighter f) {
 	std::vector<Fighter> enemies;
 	std::map<std::pair<uint32_t, uint32_t>, int> targets;
+	std::vector<std::pair<uint32_t, uint32_t>> adjacents;
 	Fighter target;
 	bool target_found = false;
 
 	place_fighters_and_get_enemies(f, enemies);
+	adjacents = get_adjacents_ordered(f);
+
+	for (auto it = adjacents.begin(); it != adjacents.end(); it++) {
+		for (auto it2 = enemies.begin(); it2 != enemies.ned(); it2++) {
+			if ((it->first == it2->get_x()) && (it->second == it2->get_y())) {
+
+			}
+		}
+	}
+
 	get_targets_of_enemies(enemies, targets);
 }
 
@@ -161,28 +172,39 @@ void Combat::get_targets_of_enemies(const std::vector<Fighter> &enemies, std::ma
 	}
 }
 
-std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(uint32_t x, uint32_t y) {
+std::vector<std::pair<uint32_t, uint32_t>> Combat::get_adjacents_ordered(uint32_t x, uint32_t y) {
 	std::vector<std::pair<uint32_t, uint32_t>> result;
 
 	result.clear();
 	if (y > 0) {
-		if (_tmp_map[y - 1][x] == '.') {
-			result.push_back(std::make_pair(x, y - 1));
-		}
+		result.push_back(std::make_pair(x, y - 1));
 	}
 	if (x > 0) {
-		if (_tmp_map[y][x - 1] == '.') {
-			result.push_back(std::make_pair(x - 1, y));
-		}
+		result.push_back(std::make_pair(x - 1, y));
 	}
 	if ((x + 1) < _tmp_map[0].size()) {
-		if (_tmp_map[y][x + 1] == '.') {
-			result.push_back(std::make_pair(x + 1, y));
-		}
+		result.push_back(std::make_pair(x + 1, y));
 	}
 	if ((y + 1) < _tmp_map.size()) {
-		if (_tmp_map[y + 1][x] == '.') {
-			result.push_back(std::make_pair(x, y + 1));
+		result.push_back(std::make_pair(x, y + 1));
+	}
+
+	return result;
+}
+
+std::vector<std::pair<uint32_t, uint32_t>> Combat::get_adjacents_ordered(Fighter f) {
+	return get_adjacents_ordered(f.get_x(), f.get_y());
+}
+
+std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(uint32_t x, uint32_t y) {
+	std::vector<std::pair<uint32_t, uint32_t>> result, adjacents;
+
+	result.clear();
+	adjacents = get_adjacents_ordered(x, y);
+
+	for (auto it = adjacents.begin(); it != adjacents.end(); it++) {
+		if (_tmp_map[it->second][it->first] == '.') {
+			result.push_back(*it);
 		}
 	}
 

@@ -48,6 +48,8 @@ class Combat {
 	void place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies);
 	void get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets);
 	int32_t get_shortest_path(Fighter from, Fighter to, direction_t &start_direction);
+	std::vector<std::pair<uint32_t, uint32_t>> get_adjacents_ordered(Fighter f);
+	std::vector<std::pair<uint32_t, uint32_t>> get_adjacents_ordered(uint32_t x, uint32_t y);
 	std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(Fighter f);
 	std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(uint32_t x, uint32_t y);
 	bool test(std::pair<uint32_t, uint32_t> next, std::pair<uint32_t, uint32_t> target, std::string &path, direction_t &start_directon, uint32_t &steps,

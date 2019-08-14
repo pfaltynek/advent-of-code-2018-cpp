@@ -59,6 +59,12 @@
 		"xtree": "cpp",
 		"xutility": "cpp",
 		"deque": "cpp",
-		"queue": "cpp"
+		"queue": "cpp",
+		"atomic": "cpp",
+		"cstdarg": "cpp",
+		"memory": "cpp",
+		"memory_resource": "cpp",
+		"optional": "cpp",
+		"string_view": "cpp"
 	}
 }
