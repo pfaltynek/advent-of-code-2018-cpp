@@ -22,7 +22,6 @@
 			"windows": {
 				"command": "g++",
 				"args": [
-					"-Wc++11-extensions",
 					"-g",
 					"main.cpp",
 					"combat.cpp",
