@@ -38,12 +38,12 @@ class Combat {
   private:
 		void sort_fighters();
 #endif
-	std::vector<std::string> _map, _tmp_map;
-	std::vector<Fighter> _fighters;
+	std::vector<std::string> map_, tmp_map_;
+	std::vector<Fighter> fighters_;
 
 	bool decode_map_input(const std::vector<std::string> input);
 	bool one_round(uint32_t &remaining_hitpoints_sum);
-	void one_turn(Fighter f);
+	bool one_turn(Fighter f);
 	static bool compare_fighters_position(const Fighter f1, const Fighter f2);
 	void place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies);
 	void get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets);

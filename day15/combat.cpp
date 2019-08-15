@@ -35,8 +35,8 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 	uint32_t i, w;
 	size_t pos;
 
-	_map.clear();
-	_fighters.clear();
+	map_.clear();
+	fighters_.clear();
 
 	for (i = 0; i < map.size(); ++i) {
 		if (i) {
@@ -59,11 +59,11 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 			Fighter fighter;
 			fighter.init(pos, i, map[i][pos] == 'E');
 			map[i][pos] = '.';
-			_fighters.push_back(fighter);
+			fighters_.push_back(fighter);
 			pos = map[i].find_first_of("EG", pos + 1);
 		}
 
-		_map.push_back(map[i]);
+		map_.push_back(map[i]);
 	}
 
 	return true;
@@ -80,7 +80,7 @@ bool Combat::compare_fighters_position(Fighter f1, Fighter f2) {
 }
 
 void Combat::sort_fighters() {
-	std::sort(_fighters.begin(), _fighters.end(), compare_fighters_position);
+	std::sort(fighters_.begin(), fighters_.end(), compare_fighters_position);
 }
 
 uint32_t Combat::make_combat() {
@@ -100,29 +100,32 @@ uint32_t Combat::make_combat() {
 
 bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 	uint32_t elfs = 0, goblins = 0, idx = 0;
-	bool combat_done = false;
 
 	sort_fighters();
-	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
-		std::vector<std::string> map(_map);
+	for (auto it = fighters_.begin(); it != fighters_.end(); ++it) {
+		std::vector<std::string> map(map_);
+
+		if (one_turn(*it)) {
+			return true;
+		}
 	}
 
-	while (idx < _fighters.size()) {
-		if (_fighters[idx].is_alive()) {
-			if (_fighters[idx].get_is_elf()) {
+	while (idx < fighters_.size()) {
+		if (fighters_[idx].is_alive()) {
+			if (fighters_[idx].get_is_elf()) {
 				elfs++;
 			} else {
 				goblins++;
 			}
 		} else {
-			_fighters.erase(_fighters.begin() + idx);
+			fighters_.erase(fighters_.begin() + idx);
 		}
 	}
 
-	return combat_done;
+	return false;
 }
 
-void Combat::one_turn(Fighter f) {
+bool Combat::one_turn(Fighter f) {
 	std::vector<Fighter> enemies;
 	std::map<std::pair<uint32_t, uint32_t>, int> targets;
 	std::vector<std::pair<uint32_t, uint32_t>> adjacents;
@@ -130,32 +133,40 @@ void Combat::one_turn(Fighter f) {
 	bool target_found = false;
 
 	place_fighters_and_get_enemies(f, enemies);
+
+	if (!enemies.size()) {
+		return true;
+	}
+
 	adjacents = get_adjacents_ordered(f);
 
 	for (auto it = adjacents.begin(); it != adjacents.end(); it++) {
-		for (auto it2 = enemies.begin(); it2 != enemies.ned(); it2++) {
+		for (auto it2 = enemies.begin(); it2 != enemies.end(); it2++) {
 			if ((it->first == it2->get_x()) && (it->second == it2->get_y())) {
-
+				it2->got_attacked(f.get_attack_power());
+				return false;
 			}
 		}
 	}
 
 	get_targets_of_enemies(enemies, targets);
+
+	return false;
 }
 
 void Combat::place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies) {
 
 	enemies.clear();
-	_tmp_map = _map;
+	tmp_map_ = map_;
 
-	for (auto it = _fighters.begin(); it != _fighters.end(); ++it) {
+	for (auto it = fighters_.begin(); it != fighters_.end(); ++it) {
 		if ((it->is_alive()) && (f.get_is_elf() != it->get_is_elf())) {
 			enemies.push_back(*it);
 		}
 		if (it->get_is_elf()) {
-			_tmp_map[it->get_y()][it->get_x()] = 'E';
+			tmp_map_[it->get_y()][it->get_x()] = 'E';
 		} else {
-			_tmp_map[it->get_y()][it->get_x()] = 'G';
+			tmp_map_[it->get_y()][it->get_x()] = 'G';
 		}
 	}
 }
@@ -182,10 +193,10 @@ std::vector<std::pair<uint32_t, uint32_t>> Combat::get_adjacents_ordered(uint32_
 	if (x > 0) {
 		result.push_back(std::make_pair(x - 1, y));
 	}
-	if ((x + 1) < _tmp_map[0].size()) {
+	if ((x + 1) < tmp_map_[0].size()) {
 		result.push_back(std::make_pair(x + 1, y));
 	}
-	if ((y + 1) < _tmp_map.size()) {
+	if ((y + 1) < tmp_map_.size()) {
 		result.push_back(std::make_pair(x, y + 1));
 	}
 
@@ -203,7 +214,7 @@ std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(uint32_t x
 	adjacents = get_adjacents_ordered(x, y);
 
 	for (auto it = adjacents.begin(); it != adjacents.end(); it++) {
-		if (_tmp_map[it->second][it->first] == '.') {
+		if (tmp_map_[it->second][it->first] == '.') {
 			result.push_back(*it);
 		}
 	}
