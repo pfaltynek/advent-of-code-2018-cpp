@@ -130,7 +130,7 @@ bool Combat::one_turn(Fighter f) {
 	std::map<std::pair<uint32_t, uint32_t>, int> targets;
 	std::vector<std::pair<uint32_t, uint32_t>> adjacents;
 	Fighter target;
-	bool target_found = false;
+	uint32_t steps_max = UINT32_MAX;
 
 	place_fighters_and_get_enemies(f, enemies);
 
@@ -226,18 +226,15 @@ std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(Fighter f)
 	return get_free_adjacents(f.get_x(), f.get_y());
 }
 
-int32_t Combat::get_shortest_path(Fighter from, Fighter to, direction_t &start_direction) {
-	if (from.is_adjacent(to, start_direction)) {
-		return 0;
-	}
-
-	uint32_t steps = 0, steps_max = UINT32_MAX;
+int32_t Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t &max_steps, direction_t &start_direction) {
+	uint32_t steps = 0;
 	std::string path = "|";
 	std::queue<path_info_str> paths;
-	path_info_str pi;
+	path_info_str pi, tmp;
+	std::vector<std::pair<uint32_t, uint32_t>> next_pos;
 
 	while (paths.size()) {
-		paths.pop();
+		paths.pop(); // for sure - clear queue
 	}
 
 	pi.path = "|";
@@ -245,6 +242,13 @@ int32_t Combat::get_shortest_path(Fighter from, Fighter to, direction_t &start_d
 	pi.y = from.get_y();
 	pi.steps = 0;
 	paths.push(pi);
+
+	while (paths.size()) {
+		tmp = paths.front();
+		paths.pop();
+		next_pos = get_adjacents_ordered(tmp.x, tmp.y);
+
+	}
 
 	return -1;
 }

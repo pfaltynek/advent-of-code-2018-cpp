@@ -47,7 +47,7 @@ class Combat {
 	static bool compare_fighters_position(const Fighter f1, const Fighter f2);
 	void place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies);
 	void get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets);
-	int32_t get_shortest_path(Fighter from, Fighter to, direction_t &start_direction);
+	int32_t get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t& max_steps, direction_t &start_direction);
 	std::vector<std::pair<uint32_t, uint32_t>> get_adjacents_ordered(Fighter f);
 	std::vector<std::pair<uint32_t, uint32_t>> get_adjacents_ordered(uint32_t x, uint32_t y);
 	std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(Fighter f);

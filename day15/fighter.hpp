@@ -29,8 +29,7 @@ class Fighter {
 	bool got_attacked(uint32_t by_attack_power);
 
 	bool equals(Fighter &other);
-	bool is_adjacent(Fighter &other, direction_t &direction);
-
+	
   private:
 	uint32_t x_;
 	uint32_t y_;
