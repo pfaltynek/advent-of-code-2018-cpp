@@ -26,6 +26,7 @@
 					"main.cpp",
 					"combat.cpp",
 					"fighter.cpp",
+					"pathinfo.cpp",
 					"-o",
 					"aoc-2018-day15"
 				]

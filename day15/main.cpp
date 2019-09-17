@@ -21,8 +21,7 @@ int main(void) {
 		return -1;
 	}
 
-	// test the ordering
-	combat.sort_fighters();
+	combat.make_combat();
 #elif TEST2
 
 #else

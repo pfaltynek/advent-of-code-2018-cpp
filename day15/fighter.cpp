@@ -27,3 +27,7 @@ bool Fighter::got_attacked(uint32_t by_attack_power) {
 
 	return is_alive();
 }
+void Fighter::move_to(uint32_t x, uint32_t y){
+	x_ = x;
+	y_ = y;
+}

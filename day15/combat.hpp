@@ -13,14 +13,6 @@
 #include "helpers.h"
 #include <queue>
 
-typedef struct PathInfo {
-	direction_t first_step;
-	uint32_t x;
-	uint32_t y;
-	uint32_t steps;
-	std::string path;
-} path_info_str;
-
 class Combat {
   public:
 	Combat(){};
@@ -43,16 +35,15 @@ class Combat {
 
 	bool decode_map_input(const std::vector<std::string> input);
 	bool one_round(uint32_t &remaining_hitpoints_sum);
-	bool one_turn(Fighter f);
+	bool one_turn(Fighter &f);
 	static bool compare_fighters_position(const Fighter f1, const Fighter f2);
 	void place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies);
 	void get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets);
-	int32_t get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t& max_steps, direction_t &start_direction);
+	int32_t get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t &x1, uint32_t &y1, uint32_t max_steps);
 	std::vector<std::pair<uint32_t, uint32_t>> get_adjacents_ordered(Fighter f);
 	std::vector<std::pair<uint32_t, uint32_t>> get_adjacents_ordered(uint32_t x, uint32_t y);
 	std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(Fighter f);
 	std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(uint32_t x, uint32_t y);
-	bool test(std::pair<uint32_t, uint32_t> next, std::pair<uint32_t, uint32_t> target, std::string &path, direction_t &start_directon, uint32_t &steps,
-			  uint32_t &steps_max);
+	bool attack_if_possible(Fighter &f, std::vector<Fighter> &enemies);
 };
 #endif // COMBAT_HPP

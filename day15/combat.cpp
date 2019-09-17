@@ -1,5 +1,6 @@
 #include "combat.hpp"
 #include "main.hpp"
+#include "pathinfo.hpp"
 
 bool Combat::init() {
 	int cnt;
@@ -125,12 +126,27 @@ bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 	return false;
 }
 
-bool Combat::one_turn(Fighter f) {
+bool Combat::attack_if_possible(Fighter &f, std::vector<Fighter> &enemies) {
+	std::vector<std::pair<uint32_t, uint32_t>> adjacents;
+	adjacents = get_adjacents_ordered(f);
+
+	for (auto it = adjacents.begin(); it != adjacents.end(); it++) {
+		for (auto it2 = enemies.begin(); it2 != enemies.end(); it2++) {
+			if (it2->is_alive()) {
+				if ((it->first == it2->get_x()) && (it->second == it2->get_y())) {
+					it2->got_attacked(f.get_attack_power());
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool Combat::one_turn(Fighter &f) {
 	std::vector<Fighter> enemies;
 	std::map<std::pair<uint32_t, uint32_t>, int> targets;
-	std::vector<std::pair<uint32_t, uint32_t>> adjacents;
-	Fighter target;
-	uint32_t steps_max = UINT32_MAX;
+	uint32_t steps_max = UINT32_MAX, x1st, y1st;
 
 	place_fighters_and_get_enemies(f, enemies);
 
@@ -138,18 +154,43 @@ bool Combat::one_turn(Fighter f) {
 		return true;
 	}
 
-	adjacents = get_adjacents_ordered(f);
+	if (attack_if_possible(f, enemies)) {
+		return false;
+	}
 
-	for (auto it = adjacents.begin(); it != adjacents.end(); it++) {
-		for (auto it2 = enemies.begin(); it2 != enemies.end(); it2++) {
-			if ((it->first == it2->get_x()) && (it->second == it2->get_y())) {
-				it2->got_attacked(f.get_attack_power());
-				return false;
+	get_targets_of_enemies(enemies, targets);
+
+	bool found = false;
+	for (auto it = targets.begin(); it != targets.end(); it++) {
+		uint32_t x1, y1;
+
+		int32_t steps = get_shortest_path(f, it->first.first, it->first.second, x1, y1, steps_max);
+
+		if (steps > 0) {
+			if (steps < steps_max) {
+				x1st = x1;
+				y1st = y1;
+				steps_max = steps;
+				found = true;
+			} else if (steps < UINT32_MAX) {
+				if (steps == steps_max) {
+					if ((y1 < y1st) || ((y1 == y1st) && (x1 < x1st))) {
+						x1st = x1;
+						y1st = y1;
+						steps_max = steps;
+						found = true;
+					}
+				}
 			}
 		}
 	}
 
-	get_targets_of_enemies(enemies, targets);
+	if (found) {
+		f.move_to(x1st, y1st);
+		attack_if_possible(f, enemies);
+	} else {
+		int z = 6;
+	}
 
 	return false;
 }
@@ -226,39 +267,42 @@ std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(Fighter f)
 	return get_free_adjacents(f.get_x(), f.get_y());
 }
 
-int32_t Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t &max_steps, direction_t &start_direction) {
+int32_t Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t &x1, uint32_t &y1, uint32_t max_steps) {
 	uint32_t steps = 0;
-	std::string path = "|";
-	std::queue<path_info_str> paths;
-	path_info_str pi, tmp;
+	std::queue<PathInfo> paths;
 	std::vector<std::pair<uint32_t, uint32_t>> next_pos;
 
 	while (paths.size()) {
 		paths.pop(); // for sure - clear queue
 	}
 
-	pi.path = "|";
-	pi.x = from.get_x();
-	pi.y = from.get_y();
-	pi.steps = 0;
-	paths.push(pi);
+	paths.push(PathInfo(from.get_x(), from.get_y()));
 
 	while (paths.size()) {
-		tmp = paths.front();
+		PathInfo tmp = paths.front();
 		paths.pop();
-		next_pos = get_adjacents_ordered(tmp.x, tmp.y);
 
+		if (tmp.get_steps() >= max_steps) {
+			break;
+		}
+
+		next_pos = get_free_adjacents(tmp.get_x(), tmp.get_y());
+
+		for (auto it = next_pos.begin(); it != next_pos.end(); it++) {
+			PathInfo pi(tmp);
+
+			if (!pi.was_at(it->first, it->second)) {
+				pi.move_to(it->first, it->second);
+
+				if ((pi.get_x() == target_x) && (pi.get_y() == target_y)) {
+					x1 = pi.get_x_1st();
+					y1 = pi.get_y_1st();
+					return pi.get_steps();
+				}
+				paths.push(pi);
+			}
+		}
 	}
 
 	return -1;
-}
-
-bool Combat::test(std::pair<uint32_t, uint32_t> next, std::pair<uint32_t, uint32_t> target, std::string &path, direction_t &start_directon, uint32_t &steps,
-				  uint32_t &steps_max) {
-	std::stringstream position;
-
-	position.clear();
-	position << "|" << next.first << "|" << next.second << "|";
-
-	return false;
 }

@@ -29,7 +29,9 @@ class Fighter {
 	bool got_attacked(uint32_t by_attack_power);
 
 	bool equals(Fighter &other);
-	
+
+	void move_to(uint32_t x, uint32_t y);
+
   private:
 	uint32_t x_;
 	uint32_t y_;
