@@ -103,13 +103,18 @@ bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 	uint32_t elfs = 0, goblins = 0, idx = 0;
 
 	sort_fighters();
+
+	// print_map();
+
 	for (auto it = fighters_.begin(); it != fighters_.end(); ++it) {
-		std::vector<std::string> map(map_);
+		print_map();
 
 		if (one_turn(*it)) {
 			return true;
 		}
 	}
+
+	print_map();
 
 	while (idx < fighters_.size()) {
 		if (fighters_[idx].is_alive()) {
@@ -269,11 +274,12 @@ std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(Fighter f)
 	return get_free_adjacents(f.get_x(), f.get_y());
 }
 
-bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t &x1, uint32_t &y1, uint32_t steps, uint32_t max_steps) {
+bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t &x1, uint32_t &y1, uint32_t &steps, uint32_t max_steps) {
 	std::queue<PathInfo> paths;
 	std::vector<std::pair<uint32_t, uint32_t>> next_pos;
+	bool found = false;
 
-	steps = 0;
+	steps = max_steps;
 
 	while (paths.size()) {
 		paths.pop(); // for sure - clear queue
@@ -298,15 +304,44 @@ bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_
 				pi.move_to(it->first, it->second);
 
 				if ((pi.get_x() == target_x) && (pi.get_y() == target_y)) {
-					x1 = pi.get_x_1st();
-					y1 = pi.get_y_1st();
-					steps = pi.get_steps();
-					return true;
+					if (pi.get_steps() < steps) {
+						x1 = pi.get_x_1st();
+						y1 = pi.get_y_1st();
+						steps = pi.get_steps();
+						found = true;
+					} else if (pi.get_steps() == steps) {
+						if ((y1 > pi.get_y_1st()) || ((y1 == pi.get_y_1st()) && (x1 > pi.get_y_1st()))) {
+							x1 = pi.get_x_1st();
+							y1 = pi.get_y_1st();
+							steps = pi.get_steps();
+							found = true;
+						}
+					}
 				}
 				paths.push(pi);
 			}
 		}
 	}
 
-	return false;
+	return found;
+}
+
+void Combat::print_map() {
+#if DEBUG_PRINT
+	std::vector<std::string> tmp = map_;
+
+	for (uint32_t i = 0; i < fighters_.size(); ++i) {
+		if (fighters_[i].get_is_elf()) {
+			tmp[fighters_[i].get_y()][fighters_[i].get_x()] = 'E';
+		} else {
+			tmp[fighters_[i].get_y()][fighters_[i].get_x()] = 'G';
+		}
+	}
+
+	for (uint32_t i = 0; i < tmp.size(); ++i) {
+		std::cout << tmp[i] << std::endl;
+	}
+
+	std::cout << std::endl;
+#endif
 }
