@@ -126,25 +126,33 @@ bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 	return false;
 }
 
-bool Combat::attack_if_possible(Fighter &f, std::vector<Fighter> &enemies) {
-	std::vector<std::pair<uint32_t, uint32_t>> adjacents;
-	adjacents = get_adjacents_ordered(f);
+bool Combat::attack_if_possible(Fighter &f, std::vector<uint32_t> &enemies) {
+	std::vector<std::pair<uint32_t, uint32_t>> adjacents = get_adjacents_ordered(f);
+	std::vector<uint32_t>::iterator target = enemies.end();
+	uint32_t hp = UINT32_MAX;
 
 	for (auto it = adjacents.begin(); it != adjacents.end(); it++) {
 		for (auto it2 = enemies.begin(); it2 != enemies.end(); it2++) {
-			if (it2->is_alive()) {
-				if ((it->first == it2->get_x()) && (it->second == it2->get_y())) {
-					it2->got_attacked(f.get_attack_power());
-					return true;
+			if (fighters_[*it2].is_alive()) {
+				if ((it->first == fighters_[*it2].get_x()) && (it->second == fighters_[*it2].get_y())) {
+					if (fighters_[*it2].get_hit_points() < hp) {
+						target = it2;
+						hp = fighters_[*it2].get_hit_points();
+					}
 				}
 			}
 		}
 	}
+
+	if (target != enemies.end()) {
+		fighters_[*target].got_attacked(f.get_attack_power());
+	}
+
 	return false;
 }
 
 bool Combat::one_turn(Fighter &f) {
-	std::vector<Fighter> enemies;
+	std::vector<uint32_t> enemies;
 	std::map<std::pair<uint32_t, uint32_t>, int> targets;
 	uint32_t steps_max = UINT32_MAX, x1st, y1st;
 
@@ -162,24 +170,20 @@ bool Combat::one_turn(Fighter &f) {
 
 	bool found = false;
 	for (auto it = targets.begin(); it != targets.end(); it++) {
-		uint32_t x1, y1;
+		uint32_t x1, y1, steps;
 
-		int32_t steps = get_shortest_path(f, it->first.first, it->first.second, x1, y1, steps_max);
-
-		if (steps > 0) {
+		if (get_shortest_path(f, it->first.first, it->first.second, x1, y1, steps, steps_max)) {
 			if (steps < steps_max) {
 				x1st = x1;
 				y1st = y1;
 				steps_max = steps;
 				found = true;
-			} else if (steps < UINT32_MAX) {
-				if (steps == steps_max) {
-					if ((y1 < y1st) || ((y1 == y1st) && (x1 < x1st))) {
-						x1st = x1;
-						y1st = y1;
-						steps_max = steps;
-						found = true;
-					}
+			} else if (steps == steps_max) {
+				if ((y1 < y1st) || ((y1 == y1st) && (x1 < x1st))) {
+					x1st = x1;
+					y1st = y1;
+					steps_max = steps;
+					found = true;
 				}
 			}
 		}
@@ -188,35 +192,33 @@ bool Combat::one_turn(Fighter &f) {
 	if (found) {
 		f.move_to(x1st, y1st);
 		attack_if_possible(f, enemies);
-	} else {
-		int z = 6;
 	}
 
 	return false;
 }
 
-void Combat::place_fighters_and_get_enemies(const Fighter f, std::vector<Fighter> &enemies) {
+void Combat::place_fighters_and_get_enemies(const Fighter f, std::vector<uint32_t> &enemies) {
 
 	enemies.clear();
 	tmp_map_ = map_;
 
-	for (auto it = fighters_.begin(); it != fighters_.end(); ++it) {
-		if ((it->is_alive()) && (f.get_is_elf() != it->get_is_elf())) {
-			enemies.push_back(*it);
+	for (uint32_t i = 0; i < fighters_.size(); ++i) {
+		if ((fighters_[i].is_alive()) && (f.get_is_elf() != fighters_[i].get_is_elf())) {
+			enemies.push_back(i);
 		}
-		if (it->get_is_elf()) {
-			tmp_map_[it->get_y()][it->get_x()] = 'E';
+		if (fighters_[i].get_is_elf()) {
+			tmp_map_[fighters_[i].get_y()][fighters_[i].get_x()] = 'E';
 		} else {
-			tmp_map_[it->get_y()][it->get_x()] = 'G';
+			tmp_map_[fighters_[i].get_y()][fighters_[i].get_x()] = 'G';
 		}
 	}
 }
 
-void Combat::get_targets_of_enemies(const std::vector<Fighter> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets) {
+void Combat::get_targets_of_enemies(const std::vector<uint32_t> &enemies, std::map<std::pair<uint32_t, uint32_t>, int> &targets) {
 	targets.clear();
 
 	for (auto it = enemies.begin(); it != enemies.end(); ++it) {
-		std::vector<std::pair<uint32_t, uint32_t>> tmp = get_free_adjacents(*it);
+		std::vector<std::pair<uint32_t, uint32_t>> tmp = get_free_adjacents(fighters_[*it]);
 
 		for (auto itv = tmp.begin(); itv != tmp.end(); ++itv) {
 			targets[*itv] = 0;
@@ -267,10 +269,11 @@ std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(Fighter f)
 	return get_free_adjacents(f.get_x(), f.get_y());
 }
 
-int32_t Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t &x1, uint32_t &y1, uint32_t max_steps) {
-	uint32_t steps = 0;
+bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t &x1, uint32_t &y1, uint32_t steps, uint32_t max_steps) {
 	std::queue<PathInfo> paths;
 	std::vector<std::pair<uint32_t, uint32_t>> next_pos;
+
+	steps = 0;
 
 	while (paths.size()) {
 		paths.pop(); // for sure - clear queue
@@ -297,12 +300,13 @@ int32_t Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t targ
 				if ((pi.get_x() == target_x) && (pi.get_y() == target_y)) {
 					x1 = pi.get_x_1st();
 					y1 = pi.get_y_1st();
-					return pi.get_steps();
+					steps = pi.get_steps();
+					return true;
 				}
 				paths.push(pi);
 			}
 		}
 	}
 
-	return -1;
+	return false;
 }

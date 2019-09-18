@@ -8,20 +8,15 @@ int main(void) {
 	std::cout << "--- part 1 ---" << std::endl;
 
 #if TEST1
-	std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
-	std::string jouza = "Jouza";
-
-	std::cout << jouza << std::endl;
-
-	for (int i = 0; i < test.size(); i++){
-		std::cout << test[i] << std::endl;
-	}
+	//std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
+	std::vector<std::string> test = {"#######", "#.E...#", "#.....#", "#...G.#", "#######"};
 
 	if (!combat.init(test)) {
 		return -1;
 	}
-
-	combat.make_combat();
+	uint32_t x;
+	
+	combat.one_round(x);
 #elif TEST2
 
 #else
