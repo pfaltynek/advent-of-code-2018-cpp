@@ -2,7 +2,7 @@
 #define PATHINFO_HPP
 
 #include <stdint.h>
-#include <string>
+#include <unordered_set>
 
 class PathInfo {
   private:
@@ -11,8 +11,8 @@ class PathInfo {
 	uint32_t x_1st_;
 	uint32_t y_1st_;
 	uint32_t steps_;
-	std::string path_;
-	std::string get_coord(uint32_t x, uint32_t y);
+	std::unordered_set<uint32_t> path_;
+	uint32_t get_coord(uint32_t x, uint32_t y);
 
   public:
 	PathInfo();

@@ -1,5 +1,4 @@
 #include "pathinfo.hpp"
-#include <sstream>
 
 uint32_t PathInfo::get_x() {
 	return x_;
@@ -25,17 +24,19 @@ PathInfo::PathInfo() {
 }
 
 PathInfo::PathInfo(uint32_t x, uint32_t y) {
-	path_ = get_coord(x, y);
+	path_.emplace(get_coord(x, y));
 	x_ = x;
 	y_ = y;
 	steps_ = 0;
 }
 
-std::string PathInfo::get_coord(uint32_t x, uint32_t y) {
-	std::stringstream ss;
+uint32_t PathInfo::get_coord(uint32_t x, uint32_t y) {
+	uint32_t result = x;
 
-	ss << '|' << x << ',' << y << '|';
-	return ss.str();
+	result &= 0x0000FFFF;
+	result = result << 16;
+	result |= y & 0x0000FFFF;
+	return result;
 }
 
 void PathInfo::move_to(uint32_t x, uint32_t y) {
@@ -46,11 +47,11 @@ void PathInfo::move_to(uint32_t x, uint32_t y) {
 		y_1st_ = y;
 	}
 	steps_++;
-	path_.append(get_coord(x, y));
+	path_.emplace(get_coord(x, y));
 }
 
 bool PathInfo::was_at(uint32_t x, uint32_t y) {
-	if (path_.find(get_coord(x, y)) == std::string::npos) {
+	if (path_.find(get_coord(x, y)) == path_.end()) {
 		return false;
 	} else {
 		return true;
