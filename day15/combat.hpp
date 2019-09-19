@@ -46,7 +46,7 @@ class Combat {
 	std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(Fighter f);
 	std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(uint32_t x, uint32_t y);
 	bool attack_if_possible(Fighter &f, std::vector<uint32_t> &enemies);
-	void print_map();
+	void print_map(std::string title);
 
 	static bool compare_fighters_position(const Fighter f1, const Fighter f2);
 	static bool compare_positions(uint32_t f1x, uint32_t f1y, uint32_t f2x, uint32_t f2y);

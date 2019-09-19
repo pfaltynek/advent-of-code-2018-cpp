@@ -92,12 +92,16 @@ uint32_t Combat::make_combat() {
 	uint32_t remaining_hitpoints_sum = 0, rounds = 0;
 	bool combat_end = false;
 
+	print_map("Initially:");
+
 	while (true) {
 		if (one_round(remaining_hitpoints_sum)) {
 			break;
 		}
 
 		rounds++;
+
+		print_map("After round " + std::to_string(rounds) + ":");
 	}
 
 	return (rounds * remaining_hitpoints_sum);
@@ -108,12 +112,10 @@ bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 
 	sort_fighters();
 
-	print_map();
+	// print_map("");
 
 	i = 0;
 	while (i < fighters_.size()) {
-		// print_map();
-
 		if (one_turn(fighters_[i])) {
 			return true;
 		}
@@ -131,10 +133,9 @@ bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 		}
 
 		i++;
-		// print_map()
 	}
 
-	print_map();
+	// print_map("");
 
 	return false;
 }
@@ -210,7 +211,6 @@ bool Combat::one_turn(Fighter &f) {
 }
 
 void Combat::place_fighters_and_get_enemies(const Fighter f, std::vector<uint32_t> &enemies) {
-
 	enemies.clear();
 	tmp_map_ = map_;
 
@@ -340,20 +340,52 @@ bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_
 	return found;
 }
 
-void Combat::print_map() {
+void Combat::print_map(std::string title) {
 #if DEBUG_PRINT
-	std::vector<std::string> tmp = map_;
+	std::vector<std::string> tmp = map_, x;
+	std::vector<std::vector<std::string>> lives;
+
+	x.clear();
+	lives.clear();
+	for (uint32_t i = 0; i < tmp.size(); ++i) {
+		lives.push_back(x);
+	}
+
+	if (!title.empty()) {
+		std::cout << title << std::endl;
+	}
 
 	for (uint32_t i = 0; i < fighters_.size(); ++i) {
+		std::string live = " ";
+		char type;
+
 		if (fighters_[i].get_is_elf()) {
-			tmp[fighters_[i].get_y()][fighters_[i].get_x()] = 'E';
+			type = 'E';
 		} else {
-			tmp[fighters_[i].get_y()][fighters_[i].get_x()] = 'G';
+			type = 'G';
 		}
+
+		tmp[fighters_[i].get_y()][fighters_[i].get_x()] = type;
+
+		live += type;
+
+		live.append("(");
+		live.append(std::to_string(fighters_[i].get_hit_points()));
+		live.append(")");
+
+		lives[fighters_[i].get_y()].push_back(live);
 	}
 
 	for (uint32_t i = 0; i < tmp.size(); ++i) {
-		std::cout << tmp[i] << std::endl;
+		std::cout << tmp[i];
+
+		if (lives[i].size()) {
+			std::cout << "  ";
+			for (uint32_t j = 0; j < lives[i].size(); ++j) {
+				std::cout << lives[i][j];
+			}
+		}
+		std::cout << std::endl;
 	}
 
 	std::cout << std::endl;
