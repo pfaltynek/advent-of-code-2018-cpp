@@ -8,9 +8,8 @@ int main(void) {
 	std::cout << "--- part 1 ---" << std::endl;
 
 #if TEST1
-	// std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
-	// std::vector<std::string> test = {"#######", "#.E...#", "#.....#", "#...G.#", "#######"};
-	std::vector<std::string> test = {"#########", "#G..G..G#", "#.......#", "#.......#", "#G..E..G#", "#.......#", "#.......#", "#G..G..G#", "#########"};
+	//std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
+	std::vector<std::string> test = {"#######", "#.E...#", "#.....#", "#...G.#", "#######"};
 	
 	if (!combat.init(test)) {
 		return -1;
@@ -19,6 +18,16 @@ int main(void) {
 
 	combat.one_round(x);
 #elif TEST2
+	std::vector<std::string> test = {"#########", "#G..G..G#", "#.......#", "#.......#", "#G..E..G#", "#.......#", "#.......#", "#G..G..G#", "#########"};
+	
+	if (!combat.init(test)) {
+		return -1;
+	}
+	uint32_t x;
+
+	combat.one_round(x);
+	combat.one_round(x);
+	combat.one_round(x);
 
 #else
 	if (!combat.init()) {

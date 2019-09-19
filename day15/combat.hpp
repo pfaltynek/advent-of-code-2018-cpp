@@ -49,5 +49,6 @@ class Combat {
 	void print_map();
 
 	static bool compare_fighters_position(const Fighter f1, const Fighter f2);
+	static bool compare_positions(uint32_t f1x, uint32_t f1y, uint32_t f2x, uint32_t f2y);
 };
 #endif // COMBAT_HPP

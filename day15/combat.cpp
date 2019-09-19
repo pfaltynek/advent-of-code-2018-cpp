@@ -71,12 +71,16 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 }
 
 bool Combat::compare_fighters_position(Fighter f1, Fighter f2) {
-	if (f1.get_y() < f2.get_y()) {
+	return compare_positions(f1.get_x(), f1.get_y(), f2.get_x(), f2.get_y());
+}
+
+bool Combat::compare_positions(uint32_t f1x, uint32_t f1y, uint32_t f2x, uint32_t f2y) {
+	if (f1y < f2y) {
 		return true;
-	} else if (f1.get_y() > f2.get_y()) {
+	} else if (f1y > f2y) {
 		return false;
 	} else {
-		return (f1.get_x() < f2.get_x());
+		return (f1x < f2x);
 	}
 }
 
@@ -100,33 +104,37 @@ uint32_t Combat::make_combat() {
 }
 
 bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
-	uint32_t elfs = 0, goblins = 0, idx = 0;
+	uint32_t idx, i;
 
 	sort_fighters();
 
-	// print_map();
+	print_map();
 
-	for (auto it = fighters_.begin(); it != fighters_.end(); ++it) {
-		print_map();
+	i = 0;
+	while (i < fighters_.size()) {
+		// print_map();
 
-		if (one_turn(*it)) {
+		if (one_turn(fighters_[i])) {
 			return true;
 		}
+
+		// remove dead fighters
+		idx = 0;
+		while (idx < fighters_.size()) {
+			if (!fighters_[idx].is_alive()) {
+				if (idx <= i) {
+					i--;
+				}
+				fighters_.erase(fighters_.begin() + idx);
+			}
+			idx++;
+		}
+
+		i++;
+		// print_map()
 	}
 
 	print_map();
-
-	while (idx < fighters_.size()) {
-		if (fighters_[idx].is_alive()) {
-			if (fighters_[idx].get_is_elf()) {
-				elfs++;
-			} else {
-				goblins++;
-			}
-		} else {
-			fighters_.erase(fighters_.begin() + idx);
-		}
-	}
 
 	return false;
 }
@@ -138,12 +146,10 @@ bool Combat::attack_if_possible(Fighter &f, std::vector<uint32_t> &enemies) {
 
 	for (auto it = adjacents.begin(); it != adjacents.end(); it++) {
 		for (auto it2 = enemies.begin(); it2 != enemies.end(); it2++) {
-			if (fighters_[*it2].is_alive()) {
-				if ((it->first == fighters_[*it2].get_x()) && (it->second == fighters_[*it2].get_y())) {
-					if (fighters_[*it2].get_hit_points() < hp) {
-						target = it2;
-						hp = fighters_[*it2].get_hit_points();
-					}
+			if ((it->first == fighters_[*it2].get_x()) && (it->second == fighters_[*it2].get_y())) {
+				if (fighters_[*it2].get_hit_points() < hp) {
+					target = it2;
+					hp = fighters_[*it2].get_hit_points();
 				}
 			}
 		}
@@ -151,6 +157,7 @@ bool Combat::attack_if_possible(Fighter &f, std::vector<uint32_t> &enemies) {
 
 	if (target != enemies.end()) {
 		fighters_[*target].got_attacked(f.get_attack_power());
+		return true;
 	}
 
 	return false;
@@ -184,7 +191,7 @@ bool Combat::one_turn(Fighter &f) {
 				steps_max = steps;
 				found = true;
 			} else if (steps == steps_max) {
-				if ((y1 < y1st) || ((y1 == y1st) && (x1 < x1st))) {
+				if (compare_positions(x1, y1, x1st, y1st)) {
 					x1st = x1;
 					y1st = y1;
 					steps_max = steps;
@@ -208,7 +215,7 @@ void Combat::place_fighters_and_get_enemies(const Fighter f, std::vector<uint32_
 	tmp_map_ = map_;
 
 	for (uint32_t i = 0; i < fighters_.size(); ++i) {
-		if ((fighters_[i].is_alive()) && (f.get_is_elf() != fighters_[i].get_is_elf())) {
+		if (f.get_is_elf() != fighters_[i].get_is_elf()) {
 			enemies.push_back(i);
 		}
 		if (fighters_[i].get_is_elf()) {
@@ -303,22 +310,29 @@ bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_
 			if (!pi.was_at(it->first, it->second)) {
 				pi.move_to(it->first, it->second);
 
+				uint32_t steps_new = pi.get_steps();
+
 				if ((pi.get_x() == target_x) && (pi.get_y() == target_y)) {
-					if (pi.get_steps() < steps) {
+					if (steps_new < steps) {
 						x1 = pi.get_x_1st();
 						y1 = pi.get_y_1st();
-						steps = pi.get_steps();
+						steps = steps_new;
 						found = true;
-					} else if (pi.get_steps() == steps) {
-						if ((y1 > pi.get_y_1st()) || ((y1 == pi.get_y_1st()) && (x1 > pi.get_y_1st()))) {
+						break;
+					} else if (steps_new == steps) {
+						if (compare_positions(pi.get_x_1st(), pi.get_y_1st(), x1, y1)) {
 							x1 = pi.get_x_1st();
 							y1 = pi.get_y_1st();
-							steps = pi.get_steps();
+							steps = steps_new;
 							found = true;
+							break;
 						}
 					}
+				} else {
+					if (steps_new < steps) {
+						paths.push(pi);
+					}
 				}
-				paths.push(pi);
 			}
 		}
 	}
