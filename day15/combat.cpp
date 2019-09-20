@@ -297,9 +297,13 @@ std::vector<std::pair<uint32_t, uint32_t>> Combat::get_free_adjacents(Fighter f)
 bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_y, uint32_t &x1, uint32_t &y1, uint32_t &steps, uint32_t max_steps) {
 	std::queue<PathInfo> paths;
 	std::vector<std::pair<uint32_t, uint32_t>> next_pos;
+	std::unordered_set<uint32_t> visited;
 	bool found = false;
 
 	steps = max_steps;
+
+	visited.clear();
+	visited.emplace(get_coord(from.get_x(), from.get_y()));
 
 	while (paths.size()) {
 		paths.pop(); // for sure - clear queue
@@ -318,11 +322,12 @@ bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_
 		next_pos = get_free_adjacents(tmp.get_x(), tmp.get_y());
 
 		for (auto it = next_pos.begin(); it != next_pos.end(); it++) {
-			PathInfo pi(tmp);
+			uint32_t coords = get_coord(it->first, it->second);
 
-			if (!pi.was_at(it->first, it->second)) {
+			if (visited.find(coords) == visited.end()) {
+				visited.emplace(coords);
+				PathInfo pi(tmp);
 				pi.move_to(it->first, it->second);
-
 				uint32_t steps_new = pi.get_steps();
 
 				if ((pi.get_x() == target_x) && (pi.get_y() == target_y)) {
@@ -331,7 +336,7 @@ bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_
 						y1 = pi.get_y_1st();
 						steps = steps_new;
 						found = true;
-						return true;
+						//return true;
 						break;
 					} else if (steps_new == steps) {
 						if (compare_positions(pi.get_x_1st(), pi.get_y_1st(), x1, y1)) {
@@ -412,4 +417,13 @@ void Combat::print_map(std::string title) {
 
 	std::cout << std::endl;
 #endif
+}
+
+uint32_t Combat::get_coord(uint32_t x, uint32_t y) {
+	uint32_t result = x;
+
+	result &= 0x0000FFFF;
+	result = result << 16;
+	result |= y & 0x0000FFFF;
+	return result;
 }
