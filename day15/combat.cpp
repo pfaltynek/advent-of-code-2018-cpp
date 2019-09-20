@@ -102,6 +102,11 @@ uint32_t Combat::make_combat() {
 		rounds++;
 
 		print_map("After round " + std::to_string(rounds) + ":");
+#if TEST3
+		if (rounds>=3){
+			break;
+		}
+#endif
 	}
 
 	return (rounds * remaining_hitpoints_sum);
@@ -112,7 +117,9 @@ bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 
 	sort_fighters();
 
-	// print_map("");
+#if TEST1 || TEST2
+	print_map("Initially:");
+#endif
 
 	i = 0;
 	while (i < fighters_.size()) {
@@ -135,7 +142,9 @@ bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 		i++;
 	}
 
-	// print_map("");
+#if TEST1 || TEST2
+	print_map("After round 1:");
+#endif
 
 	return false;
 }
@@ -344,9 +353,13 @@ void Combat::print_map(std::string title) {
 #if DEBUG_PRINT
 	std::vector<std::string> tmp = map_, x;
 	std::vector<std::vector<std::string>> lives;
+	std::vector<Fighter> shadow(fighters_);
 
 	x.clear();
 	lives.clear();
+
+	std::sort(shadow.begin(), shadow.end(), compare_fighters_position);
+
 	for (uint32_t i = 0; i < tmp.size(); ++i) {
 		lives.push_back(x);
 	}
@@ -355,25 +368,25 @@ void Combat::print_map(std::string title) {
 		std::cout << title << std::endl;
 	}
 
-	for (uint32_t i = 0; i < fighters_.size(); ++i) {
+	for (uint32_t i = 0; i < shadow.size(); ++i) {
 		std::string live = " ";
 		char type;
 
-		if (fighters_[i].get_is_elf()) {
+		if (shadow[i].get_is_elf()) {
 			type = 'E';
 		} else {
 			type = 'G';
 		}
 
-		tmp[fighters_[i].get_y()][fighters_[i].get_x()] = type;
+		tmp[shadow[i].get_y()][shadow[i].get_x()] = type;
 
 		live += type;
 
 		live.append("(");
-		live.append(std::to_string(fighters_[i].get_hit_points()));
+		live.append(std::to_string(shadow[i].get_hit_points()));
 		live.append(")");
 
-		lives[fighters_[i].get_y()].push_back(live);
+		lives[shadow[i].get_y()].push_back(live);
 	}
 
 	for (uint32_t i = 0; i < tmp.size(); ++i) {
@@ -383,6 +396,10 @@ void Combat::print_map(std::string title) {
 			std::cout << "  ";
 			for (uint32_t j = 0; j < lives[i].size(); ++j) {
 				std::cout << lives[i][j];
+
+				if (j < (lives[i].size()-1)) {
+					std::cout << ",";
+				}
 			}
 		}
 		std::cout << std::endl;

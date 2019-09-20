@@ -8,7 +8,23 @@ int main(void) {
 	std::cout << "--- part 1 ---" << std::endl;
 
 #if TEST1
-	// std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
+	std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
+
+	if (!combat.init(test)) {
+		return -1;
+	}
+	uint32_t x;
+
+	combat.one_round(x);
+/*
+After round 1:
+#######
+#.EG..#
+#.G.#.#
+#...#G#
+#######
+*/
+#elif TEST2
 	std::vector<std::string> test = {"#######", "#.E...#", "#.....#", "#...G.#", "#######"};
 
 	if (!combat.init(test)) {
@@ -17,7 +33,15 @@ int main(void) {
 	uint32_t x;
 
 	combat.one_round(x);
-#elif TEST2
+/*
+After round 1:
+#######
+#..E..#
+#...G.#
+#.....#
+#######
+*/
+#elif TEST3
 	std::vector<std::string> test = {"#########", "#G..G..G#", "#.......#", "#.......#", "#G..E..G#", "#.......#", "#.......#", "#G..G..G#", "#########"};
 
 	if (!combat.init(test)) {
@@ -26,7 +50,52 @@ int main(void) {
 	uint32_t x;
 
 	result1 = combat.make_combat();
-#elif TEST3
+/*
+Initially:
+#########
+#G..G..G#
+#.......#
+#.......#
+#G..E..G#
+#.......#
+#.......#
+#G..G..G#
+#########
+
+After round 1:
+#########
+#.G...G.#
+#...G...#
+#...E..G#
+#.G.....#
+#.......#
+#G..G..G#
+#.......#
+#########
+
+After round 2:
+#########
+#..G.G..#
+#...G...#
+#.G.E.G.#
+#.......#
+#G..G..G#
+#.......#
+#.......#
+#########
+
+After round 3:
+#########
+#.......#
+#..GGG..#
+#..GEG..#
+#G..G...#
+#......G#
+#.......#
+#.......#
+#########
+*/
+#elif TEST4
 	std::vector<std::string> test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"};
 
 	if (!combat.init(test)) {
@@ -34,6 +103,8 @@ int main(void) {
 	}
 
 	result1 = combat.make_combat();
+/*
+*/
 #else
 	if (!combat.init()) {
 		return -1;
