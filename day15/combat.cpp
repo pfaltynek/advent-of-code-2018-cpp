@@ -90,23 +90,23 @@ void Combat::sort_fighters() {
 
 uint32_t Combat::make_combat() {
 	uint32_t remaining_hitpoints_sum = 0, rounds = 0;
-	bool combat_end = false;
 
 	print_map("Initially:");
 
 	while (true) {
 		if (one_round(remaining_hitpoints_sum)) {
+			print_map("End in round " + std::to_string(rounds + 1) + ":");
 			break;
-		}
+		} else {
+			rounds++;
 
-		rounds++;
-
-		print_map("After round " + std::to_string(rounds) + ":");
+			print_map("After round " + std::to_string(rounds) + ":");
 #if TEST3
-		if (rounds>=3){
-			break;
-		}
+			if (rounds >= 3) {
+				break;
+			}
 #endif
+		}
 	}
 
 	return (rounds * remaining_hitpoints_sum);
@@ -124,6 +124,10 @@ bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 	i = 0;
 	while (i < fighters_.size()) {
 		if (one_turn(fighters_[i])) {
+			remaining_hitpoints_sum = 0;
+			for (auto it = fighters_.begin(); it != fighters_.end(); ++it) {
+				remaining_hitpoints_sum += it->get_hit_points();
+			}
 			return true;
 		}
 
@@ -327,6 +331,7 @@ bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_
 						y1 = pi.get_y_1st();
 						steps = steps_new;
 						found = true;
+						return true;
 						break;
 					} else if (steps_new == steps) {
 						if (compare_positions(pi.get_x_1st(), pi.get_y_1st(), x1, y1)) {
@@ -397,7 +402,7 @@ void Combat::print_map(std::string title) {
 			for (uint32_t j = 0; j < lives[i].size(); ++j) {
 				std::cout << lives[i][j];
 
-				if (j < (lives[i].size()-1)) {
+				if (j < (lives[i].size() - 1)) {
 					std::cout << ",";
 				}
 			}
