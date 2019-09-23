@@ -33,20 +33,22 @@ bool Combat::init(std::vector<std::string> test_data) {
 }
 
 bool Combat::decode_map_input(std::vector<std::string> map) {
-	uint32_t i, w, j;
+	uint32_t i, j;
 	size_t pos;
 
 	nodes.clear();
 	fighters_.clear();
 
+	height_ = map.size();
+
 	for (i = 0; i < map.size(); ++i) {
 		if (i) {
-			if (map[i].size() != w) {
+			if (map[i].size() != width_) {
 				std::cout << "Invalid input map line " << i + 1 << std::endl;
 				return false;
 			}
 		} else {
-			w = map[i].size();
+			width_ = map[i].size();
 		}
 
 		pos = map[i].find_first_not_of("EG#.");
@@ -55,7 +57,7 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 			return false;
 		}
 
-		for (j = 0; j < w; ++j) {
+		for (j = 0; j < width_; ++j) {
 			char type = map[i][j];
 
 			if (type != '#') {
@@ -71,6 +73,10 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 	}
 
 	return true;
+}
+
+Combat::is_wall(uint32_t x, uint32_t y) {
+	return (nodes.count(coord_pack(x, y)) == 0);
 }
 
 bool Combat::sort_by_reading_order(const Node n1, const Node n2) {
@@ -361,64 +367,35 @@ bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_
 
 	return found;
 }
-
+*/
 void Combat::print_map(std::string title) {
 #if DEBUG_PRINT
-	std::vector<std::string> tmp = map_, x;
-	std::vector<std::vector<std::string>> lives;
-	std::vector<Fighter> shadow(fighters_);
-
-	x.clear();
-	lives.clear();
-
-	std::sort(shadow.begin(), shadow.end(), compare_fighters_position);
-
-	for (uint32_t i = 0; i < tmp.size(); ++i) {
-		lives.push_back(x);
-	}
+	std::string lives;
 
 	if (!title.empty()) {
 		std::cout << title << std::endl;
 	}
 
-	for (uint32_t i = 0; i < shadow.size(); ++i) {
-		std::string live = " ";
-		char type;
-
-		if (shadow[i].get_is_elf()) {
-			type = 'E';
-		} else {
-			type = 'G';
-		}
-
-		tmp[shadow[i].get_y()][shadow[i].get_x()] = type;
-
-		live += type;
-
-		live.append("(");
-		live.append(std::to_string(shadow[i].get_hit_points()));
-		live.append(")");
-
-		lives[shadow[i].get_y()].push_back(live);
-	}
-
-	for (uint32_t i = 0; i < tmp.size(); ++i) {
-		std::cout << tmp[i];
-
-		if (lives[i].size()) {
-			std::cout << "  ";
-			for (uint32_t j = 0; j < lives[i].size(); ++j) {
-				std::cout << lives[i][j];
-
-				if (j < (lives[i].size() - 1)) {
-					std::cout << ",";
+	for (uint32_t i = 0; i < height_; ++i) {
+		lives.clear();
+		for (uint32_t j = 0; j < width_; j++) {
+			if (is_wall(j, i)) {
+				std::cout << '#';
+			} else {
+				std::cout << nodes[coord_pack(j, i)].get_type();
+				if ((nodes[coord_pack(j, i)].get_type() == 'E') || (nodes[coord_pack(j, i)].get_type() == 'G')) {
+					if (lives.empty()) {
+						lives = "  ";
+					}
+					lives.append(" ");
+					lives+=nodes[coord_pack(j, i)].get_type();
+					lives.append("(");
+					lives.append(std::to_string(nodes[coord_pack(j, i)].get_hit_points()) + ")");
 				}
 			}
 		}
-		std::cout << std::endl;
+		std::cout << lives<< std::endl;
 	}
-
 	std::cout << std::endl;
 #endif
 }
-*/

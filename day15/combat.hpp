@@ -37,7 +37,10 @@ class Combat {
 #endif
 	std::map<uint64_t, Node> nodes, tmp_map_;
 	std::vector<Node> fighters_;
+	uint32_t width_;
+	uint32_t height_;
 
+	is_wall(uint32_t x, uint32_t y);
 	bool decode_map_input(const std::vector<std::string> input);
 	/*	bool one_turn(Fighter &f);
 		void place_fighters_and_get_enemies(const Fighter f, std::vector<uint32_t> &enemies);
@@ -48,8 +51,8 @@ class Combat {
 		std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(Fighter f);
 		std::vector<std::pair<uint32_t, uint32_t>> get_free_adjacents(uint32_t x, uint32_t y);
 		bool attack_if_possible(Fighter &f, std::vector<uint32_t> &enemies);
-		void print_map(std::string title);
 	*/
+	void print_map(std::string title);
 	static bool sort_by_reading_order(const Node n1, const Node n2);
 	static bool compare_by_reading_order(const uint32_t f1x, const uint32_t f1y, const uint32_t f2x, const uint32_t f2y);
 };
