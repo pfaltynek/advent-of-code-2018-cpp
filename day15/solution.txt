@@ -1,2 +1,2 @@
-part1:	7116398711
-part2:	20316365
+part1:	Answer: 198900
+part2:	

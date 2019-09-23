@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include "combat.hpp"
-#include "fighter.hpp"
 #include "helpers.h"
 
 #endif // MAIN_HPP

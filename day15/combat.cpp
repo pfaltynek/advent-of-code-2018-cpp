@@ -1,6 +1,7 @@
 #include "combat.hpp"
 #include "main.hpp"
 #include "pathinfo.hpp"
+#include "coord.hpp"
 
 bool Combat::init() {
 	int cnt;
@@ -33,10 +34,10 @@ bool Combat::init(std::vector<std::string> test_data) {
 }
 
 bool Combat::decode_map_input(std::vector<std::string> map) {
-	uint32_t i, w;
+	uint32_t i, w, j;
 	size_t pos;
 
-	map_.clear();
+	nodes.clear();
 	fighters_.clear();
 
 	for (i = 0; i < map.size(); ++i) {
@@ -55,26 +56,29 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 			return false;
 		}
 
-		pos = map[i].find_first_of("EG");
-		while (pos != std::string::npos) {
-			Fighter fighter;
-			fighter.init(pos, i, map[i][pos] == 'E');
-			map[i][pos] = '.';
-			fighters_.push_back(fighter);
-			pos = map[i].find_first_of("EG", pos + 1);
-		}
+		for (j = 0; j < w; ++j) {
+			char type = map[i][j];
 
-		map_.push_back(map[i]);
+			if (type != '#') {
+				Node node;
+
+				node.init(j, i, type);
+				nodes[coord_pack(j,i)] = node;
+				if (type != '.') {
+					fighters_.push_back(node);
+				}
+			}
+		}
 	}
 
 	return true;
 }
 
-bool Combat::compare_fighters_position(Fighter f1, Fighter f2) {
-	return compare_positions(f1.get_x(), f1.get_y(), f2.get_x(), f2.get_y());
+bool Combat::sort_by_reading_order(Node f1, Node f2) {
+	return compare_by_reading_order(f1.get_x(), f1.get_y(), f2.get_x(), f2.get_y());
 }
 
-bool Combat::compare_positions(uint32_t f1x, uint32_t f1y, uint32_t f2x, uint32_t f2y) {
+bool Combat::compare_by_reading_order(uint32_t f1x, uint32_t f1y, uint32_t f2x, uint32_t f2y) {
 	if (f1y < f2y) {
 		return true;
 	} else if (f1y > f2y) {
@@ -85,12 +89,12 @@ bool Combat::compare_positions(uint32_t f1x, uint32_t f1y, uint32_t f2x, uint32_
 }
 
 void Combat::sort_fighters() {
-	std::sort(fighters_.begin(), fighters_.end(), compare_fighters_position);
+	std::sort(fighters_.begin(), fighters_.end(), sort_by_reading_order);
 }
 
 uint32_t Combat::make_combat() {
 	uint32_t remaining_hitpoints_sum = 0, rounds = 0;
-
+/*
 	print_map("Initially:");
 
 	while (true) {
@@ -108,10 +112,10 @@ uint32_t Combat::make_combat() {
 #endif
 		}
 	}
-
+*/
 	return (rounds * remaining_hitpoints_sum);
 }
-
+/*
 bool Combat::one_round(uint32_t &remaining_hitpoints_sum) {
 	uint32_t idx, i;
 
@@ -336,7 +340,7 @@ bool Combat::get_shortest_path(Fighter from, uint32_t target_x, uint32_t target_
 						y1 = pi.get_y_1st();
 						steps = steps_new;
 						found = true;
-						//return true;
+						// return true;
 						break;
 					} else if (steps_new == steps) {
 						if (compare_positions(pi.get_x_1st(), pi.get_y_1st(), x1, y1)) {
@@ -418,12 +422,4 @@ void Combat::print_map(std::string title) {
 	std::cout << std::endl;
 #endif
 }
-
-uint32_t Combat::get_coord(uint32_t x, uint32_t y) {
-	uint32_t result = x;
-
-	result &= 0x0000FFFF;
-	result = result << 16;
-	result |= y & 0x0000FFFF;
-	return result;
-}
+*/
