@@ -1,7 +1,6 @@
 #include "combat.hpp"
 #include "main.hpp"
 #include "pathinfo.hpp"
-#include "coord.hpp"
 
 bool Combat::init() {
 	int cnt;
@@ -63,7 +62,7 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 				Node node;
 
 				node.init(j, i, type);
-				nodes[coord_pack(j,i)] = node;
+				nodes[coord_pack(j, i)] = node;
 				if (type != '.') {
 					fighters_.push_back(node);
 				}
@@ -74,11 +73,11 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 	return true;
 }
 
-bool Combat::sort_by_reading_order(Node f1, Node f2) {
-	return compare_by_reading_order(f1.get_x(), f1.get_y(), f2.get_x(), f2.get_y());
+bool Combat::sort_by_reading_order(const Node n1, const Node n2) {
+	return compare_by_reading_order(n1.get_x(), n1.get_y(), n2.get_x(), n2.get_y());
 }
 
-bool Combat::compare_by_reading_order(uint32_t f1x, uint32_t f1y, uint32_t f2x, uint32_t f2y) {
+bool Combat::compare_by_reading_order(const uint32_t f1x, const uint32_t f1y, const uint32_t f2x, const uint32_t f2y) {
 	if (f1y < f2y) {
 		return true;
 	} else if (f1y > f2y) {
@@ -94,25 +93,25 @@ void Combat::sort_fighters() {
 
 uint32_t Combat::make_combat() {
 	uint32_t remaining_hitpoints_sum = 0, rounds = 0;
-/*
-	print_map("Initially:");
+	/*
+		print_map("Initially:");
 
-	while (true) {
-		if (one_round(remaining_hitpoints_sum)) {
-			print_map("End in round " + std::to_string(rounds + 1) + ":");
-			break;
-		} else {
-			rounds++;
-
-			print_map("After round " + std::to_string(rounds) + ":");
-#if TEST3
-			if (rounds >= 3) {
+		while (true) {
+			if (one_round(remaining_hitpoints_sum)) {
+				print_map("End in round " + std::to_string(rounds + 1) + ":");
 				break;
+			} else {
+				rounds++;
+
+				print_map("After round " + std::to_string(rounds) + ":");
+	#if TEST3
+				if (rounds >= 3) {
+					break;
+				}
+	#endif
 			}
-#endif
 		}
-	}
-*/
+	*/
 	return (rounds * remaining_hitpoints_sum);
 }
 /*
