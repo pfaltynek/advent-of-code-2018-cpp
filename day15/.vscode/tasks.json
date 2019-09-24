@@ -13,7 +13,8 @@
 					"-stdlib=libc++",
 					"main.cpp",
 					"combat.cpp",
-					"fighter.cpp",
+					"node.cpp",
+					"coord.cpp",
 					"-o",
 					"aoc-2018-day15",
 					"--debug"
@@ -27,7 +28,6 @@
 					"combat.cpp",
 					"node.cpp",
 					"coord.cpp",
-					"pathinfo.cpp",
 					"-o",
 					"aoc-2018-day15"
 				]

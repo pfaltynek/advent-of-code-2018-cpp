@@ -12,7 +12,7 @@ IndentWidth: 4
 Language: Cpp
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
-PointerAlignment: Right
+PointerAlignment: Left
 SortIncludes: true
 SpaceBeforeParens: ControlStatements
 Standard: Auto

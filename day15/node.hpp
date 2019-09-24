@@ -25,9 +25,9 @@ class Node {
 	bool is_alive() {
 		return (hitpoints_ > 0);
 	}
-	bool got_attacked(uint32_t by_attack_power);
-
-	void move_to(uint32_t x, uint32_t y);
+	void got_attacked(uint32_t by_attack_power);
+	void moved_to(uint32_t x, uint32_t y);
+	void swap(Node other);
 
   private:
 	uint32_t x_;

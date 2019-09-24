@@ -9,16 +9,16 @@ void Node::init(uint32_t x, uint32_t y, char type) {
 }
 
 
-bool Node::got_attacked(uint32_t by_attack_power) {
+void Node::got_attacked(uint32_t by_attack_power) {
 	if (by_attack_power >= hitpoints_) {
 		hitpoints_ = 0;
+		type_ = '.';
 	} else {
 		hitpoints_ -= by_attack_power;
 	}
-
-	return is_alive();
 }
-void Node::move_to(uint32_t x, uint32_t y){
+
+void Node::moved_to(uint32_t x, uint32_t y){
 	x_ = x;
 	y_ = y;
 }
