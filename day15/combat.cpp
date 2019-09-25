@@ -38,6 +38,14 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 	nodes_.clear();
 	fighters_.clear();
 
+	// fill adjacent nodes diffs
+	adjacent_diffs.clear();
+	// {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
+	adjacent_diffs.push_back(coord_str(0, -1));
+	adjacent_diffs.push_back(coord_str(-1, 0));
+	adjacent_diffs.push_back(coord_str(1, 0));
+	adjacent_diffs.push_back(coord_str(0, 1));
+
 	height_ = map.size();
 
 	for (i = 0; i < map.size(); ++i) {
@@ -63,7 +71,7 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 				Node node;
 
 				node.init(j, i, type);
-				nodes_[coord_pack(j, i)] = node;
+				nodes_[coord_str(j, i)] = node;
 				if (type != '.') {
 					fighters_.push_back(node);
 				}
@@ -74,11 +82,11 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 	return true;
 }
 
-Combat::is_wall(uint32_t x, uint32_t y) {
-	return is_wall(coord_pack(x, y));
+Combat::is_wall(int32_t x, int32_t y) {
+	return is_wall(coord_str(x, y));
 }
 
-Combat::is_wall(uint64_t coord) {
+Combat::is_wall(coord_str coord) {
 	return (nodes_.count(coord) == 0);
 }
 
@@ -94,7 +102,7 @@ bool Combat::sort_by_reading_order(const Node n1, const Node n2) {
 	return compare_by_reading_order(n1.get_x(), n1.get_y(), n2.get_x(), n2.get_y());
 }
 
-bool Combat::compare_by_reading_order(const uint32_t f1x, const uint32_t f1y, const uint32_t f2x, const uint32_t f2y) {
+bool Combat::compare_by_reading_order(const int32_t f1x, const int32_t f1y, const int32_t f2x, const int32_t f2y) {
 	if (f1y < f2y) {
 		return true;
 	} else if (f1y > f2y) {
@@ -104,12 +112,8 @@ bool Combat::compare_by_reading_order(const uint32_t f1x, const uint32_t f1y, co
 	}
 }
 
-bool Combat::compare_by_reading_order(const uint64_t coord1, const uint64_t coord2) {
-	uint32_t f1x, f1y, f2x, f2y;
-
-	coord_unpack(coord1, f1x, f1y);
-	coord_unpack(coord2, f2x, f2y);
-	return compare_by_reading_order(f1x, f1y, f2x, f2y);
+bool Combat::compare_by_reading_order(const coord_str coord1, const coord_str coord2) {
+	return compare_by_reading_order(coord1.x, coord1.y, coord2.x, coord2.y);
 }
 
 void Combat::sort_fighters() {
@@ -129,14 +133,6 @@ bool Combat::have_opponents(char opp_type) {
 uint32_t Combat::make_combat() {
 	uint32_t remaining_hitpoints_sum = 0, rounds = 0;
 	bool game_over = false;
-
-	// fill adjacent nodes diffs
-	adjacent_diffs.clear();
-	// {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
-	adjacent_diffs.push_back(coord_pack(0, 0xFFFFFFFF));
-	adjacent_diffs.push_back(coord_pack(0xFFFFFFFF, 0));
-	adjacent_diffs.push_back(coord_pack(1, 0));
-	adjacent_diffs.push_back(coord_pack(0, 1));
 
 	print_map("Initially:");
 
@@ -178,119 +174,118 @@ bool Combat::one_round(uint32_t& remaining_hitpoints_sum) {
 		}
 
 		// perform one fighter's turn
-		if (one_turn(coord_pack(fighters_[i].get_x(), fighters_[i].get_y()), x, y)) {
-			fighters_[i].moved_to(x, y);
-		}
+		one_turn(coord_str(fighters_[i].get_x(), fighters_[i].get_y()));
 	}
 
-	// remove dead fighters
-	i = 0;
-	while (i < fighters_.size()) {
-		if (fighters_[i].get_type() == '.') {
-			fighters_.erase(fighters_.begin() + i);
-		} else {
-			i++;
+	// reselect remaining fighters with actual positions
+	fighters_.clear();
+	for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
+		if (is_fighter(it->second.get_type())) {
+			fighters_.push_back(it->second);
 		}
 	}
 
 	return false; // combat not finished yet
 }
 
-bool Combat::one_turn(uint64_t node_coords, uint32_t& new_x, uint32_t& new_y) {
-	uint32_t x, y;
-	Node node = nodes_[node_coords];
+bool Combat::one_turn(coord_str node_coords) {
+	coord_str new_pos;
 
-	if (attack(node)) {
+	if (attack(nodes_[node_coords])) {
 		return false;
 	}
 
-	if (get_shortest_path(node, x, y)) {
-		// TODO: correct this!
-		/*
-		uint64_t new_coord = coord_pack(x, y);
-		Node tmp(node);
-		nodes_[new_coord].type
+	if (get_shortest_path(nodes_[node_coords], new_pos)) {
+		nodes_[node_coords].swap(nodes_[new_pos]);
 
-			attack(nodes_[coord_pack(x, y)]);
-		*/
+		attack(nodes_[new_pos]);
 		return true; // signal that fighter has moved
 	}
 
 	return false;
 }
 
-bool Combat::get_shortest_path(Node from, uint32_t& target_x, uint32_t& target_y) {
-	uint64_t coord, tmp;
+bool Combat::get_shortest_path(Node from, coord_str& target) {
+	coord_str coord, tmp;
 	char op;
+	path_info_str pi, pi_new;
 
 	visited.clear();
 	queue = {};
 	distances.clear();
 	matches.clear();
 
-	coord = coord_pack(from.get_x(), from.get_y());
-	queue.push(coord);
+	coord = from.get_coord();
+	pi.coord = coord;
+	pi.step1_initialized = false;
+
+	queue.push(pi);
 	distances[coord] = 0;
 	visited.emplace(coord);
 	op = get_opponent_type(nodes_[coord].get_type());
 
 	while (!queue.empty()) {
-		coord = queue.front();
+		pi = queue.front();
 		queue.pop();
 
 		for (uint32_t i = 0; i < adjacent_diffs.size(); ++i) {
-			tmp = coord + adjacent_diffs[i];
+			tmp = pi.coord + adjacent_diffs[i];
 
 			if (is_wall(tmp) || visited.count(tmp)) {
 				continue;
 			}
 
 			if (nodes_[tmp].get_type() == op) {
-				matches.push_back(coord);
+				matches.push_back(pi);
 				continue;
 			}
 
-			if (nodes_[tmp].get_type() != '.'){
+			if (nodes_[tmp].get_type() != '.') {
 				continue;
 			}
 
-			distances[tmp] = distances[coord] + 1;
-			queue.push(tmp);
+			pi_new = pi;
+			pi_new.coord = tmp;
+			if (!pi_new.step1_initialized) {
+				pi_new.step1 = tmp;
+				pi_new.step1_initialized = true;
+			}
+			distances[tmp] = distances[pi.coord] + 1;
+			queue.push(pi_new);
 			visited.emplace(tmp);
 		}
 	}
 
-	if (matches.empty()){
-		target_x = 0;
-		target_y = 0;
+	if (matches.empty()) {
+		target = coord_str(0, 0);
 		return false;
 	}
 
-	uint64_t match;
-	uint32_t distance = distances[matches[0]];
-	for (uint32_t i = 1; i < matches.size(); ++i){
-		if (distances[matches[i]] < distance){
-			distance = distances[matches[i]];
+	path_info_str match;
+	uint32_t distance = UINT32_MAX;
+	for (uint32_t i = 0; i < matches.size(); ++i) {
+		if (distances[matches[i].coord] < distance) {
+			distance = distances[matches[i].coord];
 			match = matches[i];
-		} else if (distances[matches[i]] == distance) {
-			if (compare_by_reading_order(match, matches[i])){
-				distance = distances[matches[i]];
+		} else if (distances[matches[i].coord] == distance) {
+			if (compare_by_reading_order(matches[i].coord, match.coord)) {
+				distance = distances[matches[i].coord];
 				match = matches[i];
 			}
 		}
 	}
 
-	coord_unpack(match, target_x, target_y);
+	target = match.step1;
 	return true;
 }
 
 bool Combat::attack(Node attacker) {
-	uint64_t coord, nc, target_coord;
+	coord_str coord, nc, target_coord;
 	bool found = false;
 	uint32_t hp = UINT32_MAX;
 	char op = get_opponent_type(attacker.get_type());
 
-	nc = coord_pack(attacker.get_x(), attacker.get_y());
+	nc = attacker.get_coord();
 
 	for (uint32_t i = 0; i < adjacent_diffs.size(); ++i) {
 		coord = nc + adjacent_diffs[i];
@@ -327,15 +322,15 @@ void Combat::print_map(std::string title) {
 			if (is_wall(j, i)) {
 				std::cout << '#';
 			} else {
-				std::cout << nodes_[coord_pack(j, i)].get_type();
-				if (is_fighter(nodes_[coord_pack(j, i)].get_type())) {
+				std::cout << nodes_[coord_str(j, i)].get_type();
+				if (is_fighter(nodes_[coord_str(j, i)].get_type())) {
 					if (lives.empty()) {
 						lives = "  ";
 					}
 					lives.append(" ");
-					lives += nodes_[coord_pack(j, i)].get_type();
+					lives += nodes_[coord_str(j, i)].get_type();
 					lives.append("(");
-					lives.append(std::to_string(nodes_[coord_pack(j, i)].get_hit_points()) + ")");
+					lives.append(std::to_string(nodes_[coord_str(j, i)].get_hit_points()) + ")");
 				}
 			}
 		}

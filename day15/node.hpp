@@ -3,15 +3,19 @@
 
 #include <stdint.h>
 #include "helpers.h"
+#include "coord.hpp"
 
 class Node {
   public:
 	void init(uint32_t x, uint32_t y, char type);
 	uint32_t get_x() const {
-		return x_;
+		return coord_.x;
 	}
 	uint32_t get_y() const {
-		return y_;
+		return coord_.y;
+	}
+	coord_str get_coord() const {
+		return coord_;
 	}
 	char get_type(){
 		return type_;
@@ -26,12 +30,10 @@ class Node {
 		return (hitpoints_ > 0);
 	}
 	void got_attacked(uint32_t by_attack_power);
-	void moved_to(uint32_t x, uint32_t y);
-	void swap(Node other);
+	void swap(Node& other);
 
   private:
-	uint32_t x_;
-	uint32_t y_;
+	coord_str coord_;
 	uint32_t hitpoints_;
 	uint32_t attack_power_;
 	char type_;
