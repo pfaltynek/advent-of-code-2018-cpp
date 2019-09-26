@@ -69,7 +69,7 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 
 			if (type != '#') {
 				Node node;
-				coord_str coord = coord_str(j,i);
+				coord_str coord = coord_str(j, i);
 
 				node.init(j, i, type);
 				nodes_[coord] = node;
@@ -158,18 +158,14 @@ bool Combat::one_round(uint32_t& remaining_hitpoints_sum) {
 
 	sort_fighters();
 
-	for (i = 0; i < fighters_.size(); ++i) {
-		if (nodes_[fighters_[i]].get_type() == '.') {
-			continue;
-		}
-
-		op = get_opponent_type(nodes_[fighters_[i]].get_type());
+	while (!fighters_.empty()) {
+		op = get_opponent_type(nodes_[fighters_[0]].get_type());
 
 		if (!have_opponents(op)) { // check if finished
 			remaining_hitpoints_sum = 0;
 
-			for (auto it = nodes_.begin(); it!= nodes_.end(); it++) {
-				if (is_fighter(it->second.get_type()) ){
+			for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
+				if (is_fighter(it->second.get_type())) {
 					remaining_hitpoints_sum += it->second.get_hit_points();
 				}
 			}
@@ -177,11 +173,21 @@ bool Combat::one_round(uint32_t& remaining_hitpoints_sum) {
 		}
 
 		// perform one fighter's turn
-		one_turn(fighters_[i]);
+		if (one_turn(fighters_[0])) { // if during turn the victim has died then remove it from this round
+			i = 1;
+
+			while (i < fighters_.size()) {
+				if (nodes_[fighters_[i]].get_type() == '.') {
+					fighters_.erase(fighters_.begin() + i);
+				} else {
+					i++;
+				}
+			}
+		}
+		fighters_.erase(fighters_.begin());
 	}
 
 	// reselect remaining fighters with actual positions
-	fighters_.clear();
 	for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
 		if (is_fighter(it->second.get_type())) {
 			fighters_.push_back(it->second.get_coord());
@@ -192,17 +198,23 @@ bool Combat::one_round(uint32_t& remaining_hitpoints_sum) {
 }
 
 bool Combat::one_turn(coord_str node_coords) {
-	coord_str new_pos;
+	coord_str new_pos, victim;
 
-	if (attack(nodes_[node_coords])) {
+	if (attack(nodes_[node_coords], victim)) {
+		if (!nodes_[victim].is_alive()) {
+			return true; // signal that attacked fighter has died
+		}
 		return false;
 	}
 
 	if (get_shortest_path(nodes_[node_coords], new_pos)) {
 		nodes_[node_coords].swap(nodes_[new_pos]);
 
-		attack(nodes_[new_pos]);
-		return true; // signal that fighter has moved
+		if (attack(nodes_[new_pos], victim)) {
+			if (!nodes_[victim].is_alive()) {
+				return true; // signal that attacked fighter has died
+			}
+		}
 	}
 
 	return false;
@@ -282,8 +294,8 @@ bool Combat::get_shortest_path(Node from, coord_str& target) {
 	return true;
 }
 
-bool Combat::attack(Node attacker) {
-	coord_str coord, nc, target_coord;
+bool Combat::attack(Node attacker, coord_str& victim) {
+	coord_str coord, nc;
 	bool found = false;
 	uint32_t hp = UINT32_MAX;
 	char op = get_opponent_type(attacker.get_type());
@@ -297,14 +309,14 @@ bool Combat::attack(Node attacker) {
 				if (nodes_[coord].get_hit_points() < hp) {
 					found = true;
 					hp = nodes_[coord].get_hit_points();
-					target_coord = coord;
+					victim = coord;
 				}
 			}
 		}
 	}
 
 	if (found) {
-		nodes_[target_coord].got_attacked(attacker.get_attack_power());
+		nodes_[victim].got_attacked(attacker.get_attack_power());
 		return true;
 	}
 

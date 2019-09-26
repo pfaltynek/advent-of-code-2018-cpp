@@ -1,6 +1,7 @@
 #ifndef Combat_HPP
 #define Combat_HPP
 
+#include "coord.hpp"
 #include "helpers.h"
 #include "node.hpp"
 #include <algorithm>
@@ -8,13 +9,12 @@
 #include <iostream>
 #include <map>
 #include <queue>
-#include <sstream>
-#include <string>
 #include <set>
+#include <sstream>
+#include <stdint.h>
+#include <string>
 #include <utility>
 #include <vector>
-#include "coord.hpp"
-#include <stdint.h>
 
 typedef struct PATH_INFO {
 	coord_str coord;
@@ -46,7 +46,7 @@ class Combat {
   protected:
   private:
 	void sort_fighters();
-	bool one_round(uint32_t &remaining_hitpoints_sum);
+	bool one_round(uint32_t& remaining_hitpoints_sum);
 	std::map<coord_str, Node> nodes_;
 	std::vector<coord_str> fighters_;
 	uint32_t width_;
@@ -63,12 +63,12 @@ class Combat {
 	char get_opponent_type(char node_type);
 	bool decode_map_input(const std::vector<std::string> input);
 	bool one_turn(coord_str node_coords);
-	bool get_shortest_path(Node from, coord_str &target);
+	bool get_shortest_path(Node from, coord_str& target);
 	void print_map(std::string title);
 	static bool sort_by_reading_order(const coord_str coord1, const coord_str coord2);
 	static bool compare_by_reading_order(const int32_t f1x, const int32_t f1y, const int32_t f2x, const int32_t f2y);
 	static bool compare_by_reading_order(const coord_str coord1, const coord_str coord2);
 	bool have_opponents(char opp_type);
-	bool attack(Node n);
+	bool attack(Node n, coord_str& victim);
 };
 #endif // COMBAT_HPP
