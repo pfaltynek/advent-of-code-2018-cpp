@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "helpers.h"
 #include "coord.hpp"
+#include <vector>
 
 class Node {
   public:
@@ -23,17 +24,22 @@ class Node {
 	int32_t get_hit_points() {
 		return hitpoints_;
 	}
+	int32_t get_edges_count() {
+		return edges_.size();
+	}
 	int32_t get_attack_power() {
 		return attack_power_;
 	}
 	bool is_alive() {
 		return (hitpoints_ > 0);
 	}
+	coord_str get_edge(int32_t idx);
 	void got_attacked(int32_t by_attack_power);
 	void swap(Node& other);
 
   private:
 	coord_str coord_;
+	std::vector<coord_str> edges_;
 	int32_t hitpoints_;
 	int32_t attack_power_;
 	char type_;

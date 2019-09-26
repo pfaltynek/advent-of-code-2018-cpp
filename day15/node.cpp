@@ -6,12 +6,18 @@ void Node::init(int32_t x, int32_t y, char type) {
 	type_ = type;
 	hitpoints_ = hitpoints_init_;
 	attack_power_ = attack_power_init_;
+	edges_.clear();
+	// {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
+	edges_.push_back(coord_str(x, y - 1));
+	edges_.push_back(coord_str(x - 1, y));
+	edges_.push_back(coord_str(x + 1, y));
+	edges_.push_back(coord_str(x, y + 1));
 }
 
 void Node::got_attacked(int32_t by_attack_power) {
 	hitpoints_ -= by_attack_power;
 
-	if (hitpoints_ <0) {
+	if (hitpoints_ < 0) {
 		hitpoints_ = 0;
 		type_ = '.';
 	}
@@ -27,4 +33,12 @@ void Node::swap(Node& other) {
 	this->hitpoints_ = tmp.hitpoints_;
 	this->attack_power_ = tmp.attack_power_;
 	this->type_ = tmp.type_;
+}
+
+coord_str Node::get_edge(int32_t idx) {
+	if ((idx >=0) && (idx < edges_.size())){
+		return edges_[idx];
+	} else {
+		return coord_;
+	}
 }

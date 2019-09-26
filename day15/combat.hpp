@@ -55,7 +55,7 @@ class Combat {
 	std::queue<path_info_str> queue;
 	std::map<coord_str, uint32_t> distances;
 	std::vector<path_info_str> matches;
-	std::vector<coord_str> adjacent_diffs;
+	//std::vector<coord_str> adjacent_diffs;
 
 	is_wall(int32_t x, int32_t y);
 	is_wall(coord_str coord);

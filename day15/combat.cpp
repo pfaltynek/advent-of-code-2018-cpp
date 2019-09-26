@@ -38,14 +38,6 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 	nodes_.clear();
 	fighters_.clear();
 
-	// fill adjacent nodes diffs
-	adjacent_diffs.clear();
-	// {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
-	adjacent_diffs.push_back(coord_str(0, -1));
-	adjacent_diffs.push_back(coord_str(-1, 0));
-	adjacent_diffs.push_back(coord_str(1, 0));
-	adjacent_diffs.push_back(coord_str(0, 1));
-
 	height_ = map.size();
 
 	for (i = 0; i < map.size(); ++i) {
@@ -243,8 +235,8 @@ bool Combat::get_shortest_path(Node from, coord_str& target) {
 		pi = queue.front();
 		queue.pop();
 
-		for (uint32_t i = 0; i < adjacent_diffs.size(); ++i) {
-			tmp = pi.coord + adjacent_diffs[i];
+		for (uint32_t i = 0; i < nodes_[pi.coord].get_edges_count(); ++i) {
+			tmp = nodes_[pi.coord].get_edge(i);
 
 			if (is_wall(tmp) || visited.count(tmp)) {
 				continue;
@@ -302,8 +294,8 @@ bool Combat::attack(Node attacker, coord_str& victim) {
 
 	nc = attacker.get_coord();
 
-	for (uint32_t i = 0; i < adjacent_diffs.size(); ++i) {
-		coord = nc + adjacent_diffs[i];
+	for (uint32_t i = 0; i < attacker.get_edges_count(); ++i) {
+		coord = attacker.get_edge(i);
 		if (!is_wall(coord)) {
 			if (nodes_[coord].get_type() == op) {
 				if (nodes_[coord].get_hit_points() < hp) {

@@ -14,7 +14,6 @@
 					"main.cpp",
 					"combat.cpp",
 					"node.cpp",
-					"coord.cpp",
 					"tests.cpp",
 					"-o",
 					"aoc-2018-day15",
@@ -28,7 +27,6 @@
 					"main.cpp",
 					"combat.cpp",
 					"node.cpp",
-					"coord.cpp",
 					"tests.cpp",
 					"-o",
 					"aoc-2018-day15"
