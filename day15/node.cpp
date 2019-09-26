@@ -1,6 +1,6 @@
 #include "node.hpp"
 
-void Node::init(uint32_t x, uint32_t y, char type) {
+void Node::init(int32_t x, int32_t y, char type) {
 	coord_.x = x;
 	coord_.y = y;
 	type_ = type;
@@ -8,12 +8,12 @@ void Node::init(uint32_t x, uint32_t y, char type) {
 	attack_power_ = attack_power_init_;
 }
 
-void Node::got_attacked(uint32_t by_attack_power) {
-	if (by_attack_power >= hitpoints_) {
+void Node::got_attacked(int32_t by_attack_power) {
+	hitpoints_ -= by_attack_power;
+
+	if (hitpoints_ <0) {
 		hitpoints_ = 0;
 		type_ = '.';
-	} else {
-		hitpoints_ -= by_attack_power;
 	}
 }
 

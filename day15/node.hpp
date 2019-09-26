@@ -7,11 +7,11 @@
 
 class Node {
   public:
-	void init(uint32_t x, uint32_t y, char type);
-	uint32_t get_x() const {
+	void init(int32_t x, int32_t y, char type);
+	int32_t get_x() const {
 		return coord_.x;
 	}
-	uint32_t get_y() const {
+	int32_t get_y() const {
 		return coord_.y;
 	}
 	coord_str get_coord() const {
@@ -20,26 +20,26 @@ class Node {
 	char get_type(){
 		return type_;
 	}
-	uint32_t get_hit_points() {
+	int32_t get_hit_points() {
 		return hitpoints_;
 	}
-	uint32_t get_attack_power() {
+	int32_t get_attack_power() {
 		return attack_power_;
 	}
 	bool is_alive() {
 		return (hitpoints_ > 0);
 	}
-	void got_attacked(uint32_t by_attack_power);
+	void got_attacked(int32_t by_attack_power);
 	void swap(Node& other);
 
   private:
 	coord_str coord_;
-	uint32_t hitpoints_;
-	uint32_t attack_power_;
+	int32_t hitpoints_;
+	int32_t attack_power_;
 	char type_;
 
-	static const uint32_t hitpoints_init_ = 200;
-	static const uint32_t attack_power_init_ = 3;
+	static const int32_t hitpoints_init_ = 200;
+	static const int32_t attack_power_init_ = 3;
 };
 
 #endif // NODE_HPP

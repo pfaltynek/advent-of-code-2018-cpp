@@ -69,11 +69,12 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 
 			if (type != '#') {
 				Node node;
+				coord_str coord = coord_str(j,i);
 
 				node.init(j, i, type);
-				nodes_[coord_str(j, i)] = node;
+				nodes_[coord] = node;
 				if (type != '.') {
-					fighters_.push_back(node);
+					fighters_.push_back(coord);
 				}
 			}
 		}
@@ -98,8 +99,8 @@ bool Combat::is_fighter(char node_type) {
 	return (node_type == 'E') || (node_type == 'G');
 }
 
-bool Combat::sort_by_reading_order(const Node n1, const Node n2) {
-	return compare_by_reading_order(n1.get_x(), n1.get_y(), n2.get_x(), n2.get_y());
+bool Combat::sort_by_reading_order(const coord_str coord1, const coord_str coord2) {
+	return compare_by_reading_order(coord1, coord2);
 }
 
 bool Combat::compare_by_reading_order(const int32_t f1x, const int32_t f1y, const int32_t f2x, const int32_t f2y) {
@@ -121,8 +122,8 @@ void Combat::sort_fighters() {
 }
 
 bool Combat::have_opponents(char opp_type) {
-	for (uint32_t i = 0; i < fighters_.size(); ++i) {
-		if (fighters_[i].get_type() == opp_type) {
+	for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
+		if (it->second.get_type() == opp_type) {
 			return true;
 		}
 	}
@@ -158,30 +159,32 @@ bool Combat::one_round(uint32_t& remaining_hitpoints_sum) {
 	sort_fighters();
 
 	for (i = 0; i < fighters_.size(); ++i) {
-		if (fighters_[i].get_type() == '.') {
+		if (nodes_[fighters_[i]].get_type() == '.') {
 			continue;
 		}
 
-		op = get_opponent_type(fighters_[i].get_type());
+		op = get_opponent_type(nodes_[fighters_[i]].get_type());
 
 		if (!have_opponents(op)) { // check if finished
 			remaining_hitpoints_sum = 0;
 
-			for (uint32_t j = 0; j < fighters_.size(); ++j) {
-				remaining_hitpoints_sum += fighters_[j].get_hit_points();
+			for (auto it = nodes_.begin(); it!= nodes_.end(); it++) {
+				if (is_fighter(it->second.get_type()) ){
+					remaining_hitpoints_sum += it->second.get_hit_points();
+				}
 			}
 			return true; // combat finished
 		}
 
 		// perform one fighter's turn
-		one_turn(coord_str(fighters_[i].get_x(), fighters_[i].get_y()));
+		one_turn(fighters_[i]);
 	}
 
 	// reselect remaining fighters with actual positions
 	fighters_.clear();
 	for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
 		if (is_fighter(it->second.get_type())) {
-			fighters_.push_back(it->second);
+			fighters_.push_back(it->second.get_coord());
 		}
 	}
 

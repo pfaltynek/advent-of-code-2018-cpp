@@ -48,7 +48,7 @@ class Combat {
 	void sort_fighters();
 	bool one_round(uint32_t &remaining_hitpoints_sum);
 	std::map<coord_str, Node> nodes_;
-	std::vector<Node> fighters_;
+	std::vector<coord_str> fighters_;
 	uint32_t width_;
 	uint32_t height_;
 	std::set<coord_str> visited;
@@ -65,7 +65,7 @@ class Combat {
 	bool one_turn(coord_str node_coords);
 	bool get_shortest_path(Node from, coord_str &target);
 	void print_map(std::string title);
-	static bool sort_by_reading_order(const Node n1, const Node n2);
+	static bool sort_by_reading_order(const coord_str coord1, const coord_str coord2);
 	static bool compare_by_reading_order(const int32_t f1x, const int32_t f1y, const int32_t f2x, const int32_t f2y);
 	static bool compare_by_reading_order(const coord_str coord1, const coord_str coord2);
 	bool have_opponents(char opp_type);
