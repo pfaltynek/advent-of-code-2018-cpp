@@ -32,10 +32,11 @@ int main(void) {
 	}
 
 	result1 = combat.make_combat_part1();
-	result2 = combat.make_combat_part2();
 
 	std::cout << "Result is " << result1 << std::endl;
-
 	std::cout << "--- part 2 ---" << std::endl;
+
+	result2 = combat.make_combat_part2();
+
 	std::cout << "Result is " << result2 << std::endl;
 }
