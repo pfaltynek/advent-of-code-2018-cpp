@@ -7,23 +7,32 @@ int main(void) {
 	std::cout << "=== Advent of Code 2018 - day 15 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-#if TEST
-	combat.test01();
-	combat.test02();
-	combat.test03();
-	combat.test04();
-	combat.test05();
-	combat.test06();
-	combat.test07();
-	combat.test08();
-	combat.test09();
-#else
+#if TEST1
+	combat.test_part1_01();
+	combat.test_part1_02();
+	combat.test_part1_03();
+	combat.test_part1_04();
+	combat.test_part1_05();
+	combat.test_part1_06();
+	combat.test_part1_07();
+	combat.test_part1_08();
+	combat.test_part1_09();
+#endif
+
+#if TEST2
+	combat.test_part2_01();
+	//combat.test_part2_02();
+	//combat.test_part2_03();
+	//combat.test_part2_04();
+	//combat.test_part2_05();
+#endif
+
 	if (!combat.init()) {
 		return -1;
 	}
 
-	result1 = combat.make_combat();
-#endif
+	result1 = combat.make_combat_part1();
+	result2 = combat.make_combat_part2();
 
 	std::cout << "Result is " << result1 << std::endl;
 

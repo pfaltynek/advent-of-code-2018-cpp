@@ -1,14 +1,14 @@
 #include "combat.hpp"
 
-uint32_t x;
+int32_t x;
 
-#if TEST
-void Combat::test01() {
+#if TEST1
+void Combat::test_part1_01() {
 	std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
 
 	if (init(test)) {
 		print_map("Initially:");
-		one_round(x);
+		one_round_part1(x);
 		/*
 		After round 1:
 		#######
@@ -21,12 +21,12 @@ void Combat::test01() {
 	}
 }
 
-void Combat::test02() {
+void Combat::test_part1_02() {
 	std::vector<std::string> test = {"#######", "#.E...#", "#.....#", "#...G.#", "#######"};
 
 	if (init(test)) {
 		print_map("Initially:");
-		one_round(x);
+		one_round_part1(x);
 		/*
 		After round 1:
 		#######
@@ -39,7 +39,7 @@ void Combat::test02() {
 	}
 }
 
-void Combat::test03() {
+void Combat::test_part1_03() {
 	std::vector<std::string> test = {"#########", "#G..G..G#", "#.......#", "#.......#", "#G..E..G#", "#.......#", "#.......#", "#G..G..G#", "#########"};
 
 	if (init(test)) {
@@ -56,7 +56,7 @@ void Combat::test03() {
 		#G..G..G#
 		#########
 		*/
-		one_round(x);
+		one_round_part1(x);
 		/*
 		After round 1:
 		#########
@@ -70,7 +70,7 @@ void Combat::test03() {
 		#########
 		*/
 		print_map("After round 1");
-		one_round(x);
+		one_round_part1(x);
 		/*
 		After round 2:
 		#########
@@ -84,7 +84,7 @@ void Combat::test03() {
 		#########
 		*/
 		print_map("After round 2");
-		one_round(x);
+		one_round_part1(x);
 		/*
 		After round 3:
 		#########
@@ -101,11 +101,11 @@ void Combat::test03() {
 	}
 }
 
-void Combat::test04() {
+void Combat::test_part1_04() {
 	std::vector<std::string> test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"};
 
 	if (init(test)) {
-		x = make_combat();
+		x = make_combat_part1();
 		/*
 		After round 47:
 		#######
@@ -122,11 +122,11 @@ void Combat::test04() {
 	}
 }
 
-void Combat::test05() {
+void Combat::test_part1_05() {
 	std::vector<std::string> test = {"#######", "#G..#E#", "#E#E.E#", "#G.##.#", "#...#E#", "#...E.#", "#######"};
 
 	if (init(test)) {
-		x = make_combat();
+		x = make_combat_part1();
 		/*
 		#######       #######
 		#G..#E#       #...#E#   E(200)
@@ -144,11 +144,11 @@ void Combat::test05() {
 	}
 }
 
-void Combat::test06() {
+void Combat::test_part1_06() {
 	std::vector<std::string> test = {"#######", "#E..EG#", "#.#G.E#", "#E.##E#", "#G..#.#", "#..E#.#", "#######"};
 
 	if (init(test)) {
-		x = make_combat();
+		x = make_combat_part1();
 		/*
 		#######       #######
 		#E..EG#       #.E.E.#   E(164), E(197)
@@ -166,11 +166,11 @@ void Combat::test06() {
 	}
 }
 
-void Combat::test07() {
+void Combat::test_part1_07() {
 	std::vector<std::string> test = {"#######", "#E.G#.#", "#.#G..#", "#G.#.G#", "#G..#.#", "#...E.#", "#######"};
 
 	if (init(test)) {
-		x = make_combat();
+		x = make_combat_part1();
 		/*
 		#######       #######
 		#E.G#.#       #G.G#.#   G(200), G(98)
@@ -188,11 +188,11 @@ void Combat::test07() {
 	}
 }
 
-void Combat::test08() {
+void Combat::test_part1_08() {
 	std::vector<std::string> test = {"#######", "#.E...#", "#.#..G#", "#.###.#", "#E#G#G#", "#...#G#", "#######"};
 
 	if (init(test)) {
-		x = make_combat();
+		x = make_combat_part1();
 		/*
 		#######       #######
 		#.E...#       #.....#
@@ -210,11 +210,11 @@ void Combat::test08() {
 	}
 }
 
-void Combat::test09() {
+void Combat::test_part1_09() {
 	std::vector<std::string> test = {"#########", "#G......#", "#.E.#...#", "#..##..G#", "#...##..#", "#...#...#", "#.G...G.#", "#.....G.#", "#########"};
 
 	if (init(test)) {
-		x = make_combat();
+		x = make_combat_part1();
 		/*
 		#########       #########
 		#G......#       #.G.....#   G(137)
@@ -231,6 +231,114 @@ void Combat::test09() {
 		Outcome: 20 * 937 = 18740
 		*/
 		std::cout << "Result is " << x << "." << std::endl;
+	}
+}
+
+#endif
+
+#if TEST2
+void Combat::test_part2_01() {
+	std::vector<std::string> test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"}; 
+
+	if (init(test)) {
+		x = make_combat_part2();
+		/*
+		#######
+		#..E..#   E(158)
+		#...E.#   E(14)
+		#.#.#.#
+		#...#.#
+		#.....#
+		#######
+
+		Combat ends after 29 full rounds
+		Elves win with 172 total hit points left
+		Outcome: 29 * 172 = 4988
+		*/
+	}
+}
+
+void Combat::test_part2_02() {
+	std::vector<std::string> test = {"#######", "#.E...#", "#.....#", "#...G.#", "#######"};
+
+	if (init(test)) {
+		x = make_combat_part2();
+		/*
+		After round 15:
+		#######
+		#.E.#.#   E(8)
+		#.#E..#   E(86)
+		#..#..#
+		#...#.#
+		#.....#
+		#######
+
+		Combat ends after 37 full rounds
+		Elves win with 94 total hit points left
+		Outcome: 37 * 94 = 3478		*/
+	}
+}
+
+void Combat::test_part2_03() {
+	std::vector<std::string> test = {"#########", "#G..G..G#", "#.......#", "#.......#", "#G..E..G#", "#.......#", "#.......#", "#G..G..G#", "#########"};
+
+	if (init(test)) {
+		x = make_combat_part2();
+		/*
+		After round 15:
+		#######
+		#.E.#.#   E(8)
+		#.#E..#   E(86)
+		#..#..#
+		#...#.#
+		#.....#
+		#######
+
+		Combat ends after 37 full rounds
+		Elves win with 94 total hit points left
+		Outcome: 37 * 94 = 3478		*/
+	}
+}
+
+void Combat::test_part2_04() {
+	std::vector<std::string> test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"};
+
+	if (init(test)) {
+		x = make_combat_part2();
+		/*
+		After round 15:
+		#######
+		#.E.#.#   E(8)
+		#.#E..#   E(86)
+		#..#..#
+		#...#.#
+		#.....#
+		#######
+
+		Combat ends after 37 full rounds
+		Elves win with 94 total hit points left
+		Outcome: 37 * 94 = 3478		*/
+	}
+}
+
+void Combat::test_part2_05() {
+	std::vector<std::string> test = {"#######", "#G..#E#", "#E#E.E#", "#G.##.#", "#...#E#", "#...E.#", "#######"};
+
+	if (init(test)) {
+		x = make_combat_part2();
+		/*
+		After round 15:
+		#######
+		#.E.#.#   E(8)
+		#.#E..#   E(86)
+		#..#..#
+		#...#.#
+		#.....#
+		#######
+
+		Combat ends after 37 full rounds
+		Elves win with 94 total hit points left
+		Outcome: 37 * 94 = 3478		*/
 	}
 }
 

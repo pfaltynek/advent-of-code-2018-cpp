@@ -72,7 +72,21 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 		}
 	}
 
+	nodes_backup_ = nodes_;
+	fighters_backup_ = fighters_;
+
 	return true;
+}
+
+void Combat::restart(int32_t elf_attack_power) {
+	nodes_ = nodes_backup_;
+	fighters_ = fighters_backup_;
+
+	for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
+		if (it->second.get_type() == 'E') {
+			it->second.set_attack_power(elf_attack_power);
+		}
+	}
 }
 
 Combat::is_wall(int32_t x, int32_t y) {
@@ -123,14 +137,14 @@ bool Combat::have_opponents(char opp_type) {
 	return false;
 }
 
-uint32_t Combat::make_combat() {
-	uint32_t remaining_hitpoints_sum = 0, rounds = 0;
+int32_t Combat::make_combat_part1() {
+	int32_t remaining_hitpoints_sum = 0, rounds = 0;
 	bool game_over = false;
 
 	print_map("Initially:");
 
 	while (!game_over) {
-		game_over = one_round(remaining_hitpoints_sum);
+		game_over = one_round_part1(remaining_hitpoints_sum);
 		if (game_over) {
 			print_map("End in round " + std::to_string(rounds + 1) + ":");
 			break;
@@ -144,9 +158,74 @@ uint32_t Combat::make_combat() {
 	return (rounds * remaining_hitpoints_sum);
 }
 
-bool Combat::one_round(uint32_t& remaining_hitpoints_sum) {
+int32_t Combat::make_combat_part2() {
+	int32_t remaining_hitpoints_sum = 0, rounds = 0, max_fail = 0, min_success = INT32_MAX, next = 10;
+	bool game_over = false, part2_failed, one_success = false, solved = false;
+
+	restart(next);
+
+	print_map("Initially with attack power " + std::to_string(next) + ":");
+
+	while (!solved) {
+		game_over = one_round_part2(remaining_hitpoints_sum, part2_failed);
+
+		if (game_over) {
+			if (part2_failed) {
+				print_map("Failed for attack power " + std::to_string(next) + ":");
+
+				max_fail = next;
+
+				if (one_success) {
+					if ((min_success - max_fail) == 1) {
+						next++;
+					} else {
+						next = ((min_success - max_fail) / 2) + max_fail;
+					}
+				} else {
+					next += 10;
+				}
+
+				rounds = 0;
+				restart(next);
+				print_map("Initially with attack power " + std::to_string(next) + ":");
+
+			} else {
+				min_success = next;
+
+				if ((next - max_fail) == 1) {
+					solved = true;
+					print_map("End in round " + std::to_string(rounds + 1) + ":");
+					break;
+				}
+
+				one_success = true;
+
+				if ((min_success - max_fail) == 1) {
+					next++;
+				} else {
+					next = ((min_success - max_fail) / 2) + max_fail;
+				}
+
+				rounds = 0;
+				restart(next);
+				print_map("Initially with attack power " + std::to_string(next) + ":");
+			}
+		} else {
+			rounds++;
+
+			print_map("After round " + std::to_string(rounds) + ":");
+		}
+	}
+
+	print_map("End in round " + std::to_string(rounds + 1) + ":");
+
+	return (rounds * remaining_hitpoints_sum);
+}
+
+bool Combat::one_round_part1(int32_t& remaining_hitpoints_sum) {
 	uint32_t i, x, y;
 	char op;
+	bool unused_flag;
 
 	sort_fighters();
 
@@ -165,7 +244,7 @@ bool Combat::one_round(uint32_t& remaining_hitpoints_sum) {
 		}
 
 		// perform one fighter's turn
-		if (one_turn(fighters_[0])) { // if during turn the victim has died then remove it from this round
+		if (one_turn(fighters_[0], unused_flag)) { // if during turn the victim has died then remove it from this round
 			i = 1;
 
 			while (i < fighters_.size()) {
@@ -189,11 +268,66 @@ bool Combat::one_round(uint32_t& remaining_hitpoints_sum) {
 	return false; // combat not finished yet
 }
 
-bool Combat::one_turn(coord_str node_coords) {
-	coord_str new_pos, victim;
+bool Combat::one_round_part2(int32_t& remaining_hitpoints_sum, bool& part2_failed) {
+	uint32_t i, x, y;
+	char op;
 
-	if (attack(nodes_[node_coords], victim)) {
+	sort_fighters();
+
+	while (!fighters_.empty()) {
+		op = get_opponent_type(nodes_[fighters_[0]].get_type());
+
+		if (!have_opponents(op)) { // check if finished
+			remaining_hitpoints_sum = 0;
+
+			for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
+				if (is_fighter(it->second.get_type())) {
+					remaining_hitpoints_sum += it->second.get_hit_points();
+				}
+			}
+			return true; // combat finished
+		}
+
+		// perform one fighter's turn
+		if (one_turn(fighters_[0], part2_failed)) { // if during turn the victim has died then remove it from this round
+			i = 1;
+
+			while (i < fighters_.size()) {
+				if (nodes_[fighters_[i]].get_type() == '.') {
+					fighters_.erase(fighters_.begin() + i);
+				} else {
+					i++;
+				}
+			}
+		}
+		fighters_.erase(fighters_.begin());
+
+		if (part2_failed) { // if elf has died then cancel combat
+			remaining_hitpoints_sum = 0;
+			return true;
+		}
+	}
+
+	// reselect remaining fighters with actual positions
+	for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
+		if (is_fighter(it->second.get_type())) {
+			fighters_.push_back(it->second.get_coord());
+		}
+	}
+
+	return false; // combat not finished yet
+}
+
+bool Combat::one_turn(coord_str node_coords, bool& elf_killed) {
+	coord_str new_pos, victim;
+	bool elf_attacked;
+	elf_killed = false;
+
+	if (attack(nodes_[node_coords], victim, elf_attacked)) {
 		if (!nodes_[victim].is_alive()) {
+			if (elf_attacked) {
+				elf_killed = true;
+			}
 			return true; // signal that attacked fighter has died
 		}
 		return false;
@@ -202,8 +336,11 @@ bool Combat::one_turn(coord_str node_coords) {
 	if (get_shortest_path(nodes_[node_coords], new_pos)) {
 		nodes_[node_coords].swap(nodes_[new_pos]);
 
-		if (attack(nodes_[new_pos], victim)) {
+		if (attack(nodes_[new_pos], victim, elf_attacked)) {
 			if (!nodes_[victim].is_alive()) {
+				if (elf_attacked) {
+					elf_killed = true;
+				}
 				return true; // signal that attacked fighter has died
 			}
 		}
@@ -286,11 +423,12 @@ bool Combat::get_shortest_path(Node from, coord_str& target) {
 	return true;
 }
 
-bool Combat::attack(Node attacker, coord_str& victim) {
+bool Combat::attack(Node attacker, coord_str& victim, bool& victim_was_elf) {
 	coord_str coord, nc;
 	bool found = false;
 	uint32_t hp = UINT32_MAX;
 	char op = get_opponent_type(attacker.get_type());
+	victim_was_elf = (op == 'E');
 
 	nc = attacker.get_coord();
 

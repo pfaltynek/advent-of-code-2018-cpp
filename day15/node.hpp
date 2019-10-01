@@ -35,6 +35,7 @@ class Node {
 	}
 	coord_str get_edge(int32_t idx);
 	void got_attacked(int32_t by_attack_power);
+	void set_attack_power(int32_t new_value);
 	void swap(Node& other);
 
   private:

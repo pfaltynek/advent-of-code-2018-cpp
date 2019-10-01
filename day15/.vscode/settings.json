@@ -73,6 +73,7 @@
 		"shared_mutex": "cpp",
 		"thread": "cpp",
 		"valarray": "cpp",
-		"forward_list": "cpp"
+		"forward_list": "cpp",
+		"bitset": "cpp"
 	}
 }

@@ -19,6 +19,9 @@ void Node::got_attacked(int32_t by_attack_power) {
 
 	if (hitpoints_ < 0) {
 		hitpoints_ = 0;
+	}
+
+	if (hitpoints_ == 0) {
 		type_ = '.';
 	}
 }
@@ -41,4 +44,8 @@ coord_str Node::get_edge(int32_t idx) {
 	} else {
 		return coord_;
 	}
+}
+
+void Node::set_attack_power(int32_t new_value) {
+	attack_power_ = new_value;
 }
