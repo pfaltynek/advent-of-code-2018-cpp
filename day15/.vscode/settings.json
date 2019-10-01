@@ -74,6 +74,25 @@
 		"thread": "cpp",
 		"valarray": "cpp",
 		"forward_list": "cpp",
-		"bitset": "cpp"
+		"bitset": "cpp",
+		"cfenv": "cpp",
+		"chrono": "cpp",
+		"cinttypes": "cpp",
+		"codecvt": "cpp",
+		"complex": "cpp",
+		"condition_variable": "cpp",
+		"csetjmp": "cpp",
+		"csignal": "cpp",
+		"cuchar": "cpp",
+		"iomanip": "cpp",
+		"numeric": "cpp",
+		"random": "cpp",
+		"ratio": "cpp",
+		"scoped_allocator": "cpp",
+		"set": "cpp",
+		"stack": "cpp",
+		"typeindex": "cpp",
+		"xfunctional": "cpp",
+		"charconv": "cpp"
 	}
 }

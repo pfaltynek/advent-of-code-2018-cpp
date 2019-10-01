@@ -21,10 +21,10 @@ int main(void) {
 
 #if TEST2
 	combat.test_part2_01();
-	//combat.test_part2_02();
-	//combat.test_part2_03();
-	//combat.test_part2_04();
-	//combat.test_part2_05();
+	combat.test_part2_02();
+	combat.test_part2_03();
+	combat.test_part2_04();
+	combat.test_part2_05();
 #endif
 
 	if (!combat.init()) {

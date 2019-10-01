@@ -238,7 +238,7 @@ void Combat::test_part1_09() {
 
 #if TEST2
 void Combat::test_part2_01() {
-	std::vector<std::string> test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"}; 
+	std::vector<std::string> test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part2();
@@ -259,33 +259,31 @@ void Combat::test_part2_01() {
 }
 
 void Combat::test_part2_02() {
-	std::vector<std::string> test = {"#######", "#.E...#", "#.....#", "#...G.#", "#######"};
+	std::vector<std::string> test = {"#######", "#E..EG#", "#.#G.E#", "#E.##E#", "#G..#.#", "#..E#.#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part2();
 		/*
-		After round 15:
 		#######
-		#.E.#.#   E(8)
-		#.#E..#   E(86)
-		#..#..#
+		#.E.E.#   E(200), E(23)
+		#.#E..#   E(200)
+		#E.##E#   E(125), E(200)
+		#.E.#.#   E(200)
 		#...#.#
-		#.....#
 		#######
 
-		Combat ends after 37 full rounds
-		Elves win with 94 total hit points left
-		Outcome: 37 * 94 = 3478		*/
+		Combat ends after 33 full rounds
+		Elves win with 948 total hit points left
+		Outcome: 33 * 948 = 31284*/
 	}
 }
 
 void Combat::test_part2_03() {
-	std::vector<std::string> test = {"#########", "#G..G..G#", "#.......#", "#.......#", "#G..E..G#", "#.......#", "#.......#", "#G..G..G#", "#########"};
+	std::vector<std::string> test = {"#######", "#E.G#.#", "#.#G..#", "#G.#.G#", "#G..#.#", "#...E.#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part2();
 		/*
-		After round 15:
 		#######
 		#.E.#.#   E(8)
 		#.#E..#   E(86)
@@ -296,49 +294,49 @@ void Combat::test_part2_03() {
 
 		Combat ends after 37 full rounds
 		Elves win with 94 total hit points left
-		Outcome: 37 * 94 = 3478		*/
+		Outcome: 37 * 94 = 3478*/
 	}
 }
 
 void Combat::test_part2_04() {
-	std::vector<std::string> test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"};
+	std::vector<std::string> test = {"#######", "#.E...#", "#.#..G#", "#.###.#", "#E#G#G#", "#...#G#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part2();
 		/*
-		After round 15:
 		#######
-		#.E.#.#   E(8)
-		#.#E..#   E(86)
-		#..#..#
+		#...E.#   E(14)
+		#.#..E#   E(152)
+		#.###.#
+		#.#.#.#
 		#...#.#
-		#.....#
 		#######
 
-		Combat ends after 37 full rounds
-		Elves win with 94 total hit points left
-		Outcome: 37 * 94 = 3478		*/
+		Combat ends after 39 full rounds
+		Elves win with 166 total hit points left
+		Outcome: 39 * 166 = 6474*/
 	}
 }
 
 void Combat::test_part2_05() {
-	std::vector<std::string> test = {"#######", "#G..#E#", "#E#E.E#", "#G.##.#", "#...#E#", "#...E.#", "#######"};
+	std::vector<std::string> test = {"#########", "#G......#", "#.E.#...#", "#..##..G#", "#...##..#", "#...#...#", "#.G...G.#", "#.....G.#", "#########"};
 
 	if (init(test)) {
 		x = make_combat_part2();
 		/*
-		After round 15:
-		#######
-		#.E.#.#   E(8)
-		#.#E..#   E(86)
-		#..#..#
-		#...#.#
-		#.....#
-		#######
+		#########
+		#.......#
+		#.E.#...#   E(38)
+		#..##...#
+		#...##..#
+		#...#...#
+		#.......#
+		#.......#
+		#########
 
-		Combat ends after 37 full rounds
-		Elves win with 94 total hit points left
-		Outcome: 37 * 94 = 3478		*/
+		Combat ends after 30 full rounds
+		Elves win with 38 total hit points left
+		Outcome: 30 * 38 = 1140*/
 	}
 }
 
