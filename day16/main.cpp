@@ -31,10 +31,7 @@ typedef struct INSTRUCTION {
 	int32_t A, B, C;
 } instr_str;
 
-typedef struct REGISTERS {
-	// int32_t r0, r1, r2, r3;
-	int32_t r[4];
-} registers_str;
+typedef struct REGISTERS { int32_t r[4]; } registers_str;
 
 typedef struct SNIPPET {
 	registers_str before;
@@ -60,7 +57,7 @@ bool parse_instruction(const std::string line, instr_str& instruction) {
 		instruction.B = stoi(sm.str(3));
 		instruction.C = stoi(sm.str(4));
 
-		if ((instruction.opcode < 0) || (instruction.opcode > 15)){
+		if ((instruction.opcode < 0) || (instruction.opcode > 15)) {
 			std::cout << "Invalid opcode in '" << line << "'" << std::endl;
 			return false;
 		}
@@ -79,13 +76,9 @@ bool parse_registers(const std::string line, const bool before, registers_str& r
 	std::smatch sm;
 
 	if (std::regex_match(line, sm, before ? regex_bef : regex_aft)) {
-		// registers.r0 = stoi(sm.str(1));
 		registers.r[0] = stoi(sm.str(1));
-		// registers.r1 = stoi(sm.str(2));
 		registers.r[1] = stoi(sm.str(2));
-		// registers.r2 = stoi(sm.str(3));
 		registers.r[2] = stoi(sm.str(3));
-		// registers.r3 = stoi(sm.str(4));
 		registers.r[3] = stoi(sm.str(4));
 
 		return true;
@@ -256,15 +249,42 @@ std::vector<instruction_t> FindApplicableInstructions(const snippet_str snippet)
 
 int32_t Part1(const std::vector<snippet_str> debug_lines) {
 	int32_t result = 0;
-	std::vector<instruction_t> applicable;
+	std::vector<instruction_t> applicable, z, c;
+	std::map<int32_t, std::vector<instruction_t>> x;
+	std::map<int32_t, instruction_t> m;
 
-	for (uint32_t i = 0; i < debug_lines.size(); ++i){
+	x.clear();
+
+	for (uint32_t i = 0; i < debug_lines.size(); ++i) {
 		applicable = FindApplicableInstructions(debug_lines[i]);
 
-		if (applicable.size() >= 3){
+		if (applicable.size() >= 3) {
 			result++;
 		}
+
+		if (!x.count(debug_lines[i].instruction.opcode)) {
+			x[debug_lines[i].instruction.opcode] = applicable;
+		} else {
+			z = x[debug_lines[i].instruction.opcode];
+			c.clear();
+
+			for (uint32_t j = 0; j < z.size(); ++j) {
+				if (std::find(applicable.begin(), applicable.end(), z[j]) != applicable.end()) {
+					c.push_back(z[j]);
+				}
+			}
+			x[debug_lines[i].instruction.opcode] = c;
+		}
 	}
+
+	for (uint32_t i = 0; i < x.size(); ++i) {
+		std::cout << "[" << i << "]:" << std::endl;
+		for (uint32_t j = 0; j < x[i].size(); ++j) {
+			std::cout << x[i][j] << " ";
+		}
+		std::cout << std::endl << std::endl;
+	}
+
 	return result;
 }
 
