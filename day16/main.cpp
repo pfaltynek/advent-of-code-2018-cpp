@@ -31,7 +31,9 @@ typedef struct INSTRUCTION {
 	int32_t A, B, C;
 } instr_str;
 
-typedef struct REGISTERS { int32_t r[4]; } registers_str;
+typedef struct REGISTERS {
+	int32_t r[4];
+} registers_str;
 
 typedef struct SNIPPET {
 	registers_str before;
@@ -182,6 +184,59 @@ bool init(std::vector<snippet_str>& debug_lines, std::vector<instr_str>& instruc
 	return init(lines, debug_lines, instructions);
 }
 
+void DoInstruction(const instruction_t operation, const instr_str instruction, registers_str& regs) {
+	switch (operation) {
+		case INSTRUCTION_TYPE::addr:
+			regs.r[instruction.C] = regs.r[instruction.A] + regs.r[instruction.B];
+			break;
+		case INSTRUCTION_TYPE::addi:
+			regs.r[instruction.C] = regs.r[instruction.A] + instruction.B;
+			break;
+		case INSTRUCTION_TYPE::mulr:
+			regs.r[instruction.C] = regs.r[instruction.A] * regs.r[instruction.B];
+			break;
+		case INSTRUCTION_TYPE::muli:
+			regs.r[instruction.C] = regs.r[instruction.A] * instruction.B;
+			break;
+		case INSTRUCTION_TYPE::banr:
+			regs.r[instruction.C] = regs.r[instruction.A] & regs.r[instruction.B];
+			break;
+		case INSTRUCTION_TYPE::bani:
+			regs.r[instruction.C] = regs.r[instruction.A] & instruction.B;
+			break;
+		case INSTRUCTION_TYPE::borr:
+			regs.r[instruction.C] = regs.r[instruction.A] | regs.r[instruction.B];
+			break;
+		case INSTRUCTION_TYPE::bori:
+			regs.r[instruction.C] = regs.r[instruction.A] | instruction.B;
+			break;
+		case INSTRUCTION_TYPE::setr:
+			regs.r[instruction.C] = regs.r[instruction.A];
+			break;
+		case INSTRUCTION_TYPE::seti:
+			regs.r[instruction.C] = instruction.A;
+			break;
+		case INSTRUCTION_TYPE::gtir:
+			regs.r[instruction.C] = instruction.A > regs.r[instruction.B] ? 1 : 0;
+			break;
+		case INSTRUCTION_TYPE::gtri:
+			regs.r[instruction.C] = regs.r[instruction.A] > instruction.B ? 1 : 0;
+			break;
+		case INSTRUCTION_TYPE::gtrr:
+			regs.r[instruction.C] = regs.r[instruction.A] > regs.r[instruction.B] ? 1 : 0;
+			break;
+		case INSTRUCTION_TYPE::eqir:
+			regs.r[instruction.C] = instruction.A == regs.r[instruction.B] ? 1 : 0;
+			break;
+		case INSTRUCTION_TYPE::eqri:
+			regs.r[instruction.C] = regs.r[instruction.A] == instruction.B ? 1 : 0;
+			break;
+		case INSTRUCTION_TYPE::eqrr:
+			regs.r[instruction.C] = regs.r[instruction.A] == regs.r[instruction.B] ? 1 : 0;
+			break;
+	}
+}
+
 std::vector<instruction_t> FindApplicableInstructions(const snippet_str snippet) {
 	std::vector<instruction_t> result;
 	result.clear();
@@ -189,56 +244,8 @@ std::vector<instruction_t> FindApplicableInstructions(const snippet_str snippet)
 	for (uint32_t i = 0; i < instruction_types.size(); ++i) {
 		registers_str regs = snippet.before;
 
-		switch (instruction_types[i]) {
-			case INSTRUCTION_TYPE::addr:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] + regs.r[snippet.instruction.B];
-				break;
-			case INSTRUCTION_TYPE::addi:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] + snippet.instruction.B;
-				break;
-			case INSTRUCTION_TYPE::mulr:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] * regs.r[snippet.instruction.B];
-				break;
-			case INSTRUCTION_TYPE::muli:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] * snippet.instruction.B;
-				break;
-			case INSTRUCTION_TYPE::banr:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] & regs.r[snippet.instruction.B];
-				break;
-			case INSTRUCTION_TYPE::bani:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] & snippet.instruction.B;
-				break;
-			case INSTRUCTION_TYPE::borr:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] | regs.r[snippet.instruction.B];
-				break;
-			case INSTRUCTION_TYPE::bori:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] | snippet.instruction.B;
-				break;
-			case INSTRUCTION_TYPE::setr:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A];
-				break;
-			case INSTRUCTION_TYPE::seti:
-				regs.r[snippet.instruction.C] = snippet.instruction.A;
-				break;
-			case INSTRUCTION_TYPE::gtir:
-				regs.r[snippet.instruction.C] = snippet.instruction.A > regs.r[snippet.instruction.B] ? 1 : 0;
-				break;
-			case INSTRUCTION_TYPE::gtri:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] > snippet.instruction.B ? 1 : 0;
-				break;
-			case INSTRUCTION_TYPE::gtrr:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] > regs.r[snippet.instruction.B] ? 1 : 0;
-				break;
-			case INSTRUCTION_TYPE::eqir:
-				regs.r[snippet.instruction.C] = snippet.instruction.A == regs.r[snippet.instruction.B] ? 1 : 0;
-				break;
-			case INSTRUCTION_TYPE::eqri:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] == snippet.instruction.B ? 1 : 0;
-				break;
-			case INSTRUCTION_TYPE::eqrr:
-				regs.r[snippet.instruction.C] = regs.r[snippet.instruction.A] == regs.r[snippet.instruction.B] ? 1 : 0;
-				break;
-		}
+		DoInstruction(instruction_types[i], snippet.instruction, regs);
+
 		if ((regs.r[0] == snippet.after.r[0]) && (regs.r[1] == snippet.after.r[1]) && (regs.r[2] == snippet.after.r[2]) && (regs.r[3] == snippet.after.r[3])) {
 			result.push_back(instruction_types[i]);
 		}
@@ -247,13 +254,11 @@ std::vector<instruction_t> FindApplicableInstructions(const snippet_str snippet)
 	return result;
 }
 
-int32_t Part1(const std::vector<snippet_str> debug_lines) {
+int32_t Part1(const std::vector<snippet_str> debug_lines, std::map<int32_t, std::vector<std::vector<instruction_t>>>& stats) {
 	int32_t result = 0;
-	std::vector<instruction_t> applicable, z, c;
-	std::map<int32_t, std::vector<instruction_t>> x;
-	std::map<int32_t, instruction_t> m;
+	std::vector<instruction_t> applicable;
 
-	x.clear();
+	stats.clear();
 
 	for (uint32_t i = 0; i < debug_lines.size(); ++i) {
 		applicable = FindApplicableInstructions(debug_lines[i]);
@@ -262,36 +267,100 @@ int32_t Part1(const std::vector<snippet_str> debug_lines) {
 			result++;
 		}
 
-		if (!x.count(debug_lines[i].instruction.opcode)) {
-			x[debug_lines[i].instruction.opcode] = applicable;
-		} else {
-			z = x[debug_lines[i].instruction.opcode];
-			c.clear();
-
-			for (uint32_t j = 0; j < z.size(); ++j) {
-				if (std::find(applicable.begin(), applicable.end(), z[j]) != applicable.end()) {
-					c.push_back(z[j]);
-				}
-			}
-			x[debug_lines[i].instruction.opcode] = c;
-		}
-	}
-
-	for (uint32_t i = 0; i < x.size(); ++i) {
-		std::cout << "[" << i << "]:" << std::endl;
-		for (uint32_t j = 0; j < x[i].size(); ++j) {
-			std::cout << x[i][j] << " ";
-		}
-		std::cout << std::endl << std::endl;
+		stats[debug_lines[i].instruction.opcode].push_back(applicable);
 	}
 
 	return result;
+}
+
+bool AnalyzeStats(const std::map<int32_t, std::vector<std::vector<instruction_t>>>& stats, std::map<int32_t, instruction_t>& opcode_map) {
+	std::map<int32_t, std::vector<instruction_t>> stats_filtered;
+	std::vector<instruction_t> inst_filtered;
+	bool common, found;
+	int32_t opcode;
+	instruction_t inst;
+
+	stats_filtered.clear();
+
+	for (auto it = stats.begin(); it != stats.end(); it++) {
+		if (!it->second.size()) {
+			return false;
+		}
+
+		if (it->second.size() == 1) {
+			stats_filtered[it->first] = it->second[0];
+		} else {
+			inst_filtered.clear();
+
+			for (uint32_t i = 0; i < it->second[0].size(); ++i) {
+				common = true;
+				for (uint32_t j = 1; j < it->second.size(); ++j) {
+					if (std::find(it->second[j].begin(), it->second[j].end(), it->second[0][i]) == it->second[j].end()) {
+						common = false;
+						break;
+					}
+				}
+				if (common) {
+					inst_filtered.push_back(it->second[0][i]);
+				}
+			}
+			stats_filtered[it->first] = inst_filtered;
+		}
+	}
+
+	opcode_map.clear();
+
+	while (stats_filtered.size()) {
+		found = false;
+		for (auto it = stats_filtered.begin(); it != stats_filtered.end(); it++) {
+			if (it->second.size() == 1) {
+				opcode = it->first;
+				inst = it->second[0];
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			return false;
+		}
+
+		opcode_map[opcode] = inst;
+
+		stats_filtered.erase(opcode);
+
+		for (auto it = stats_filtered.begin(); it != stats_filtered.end(); it++) {
+			inst_filtered = it->second;
+			auto it2 = std::find(inst_filtered.begin(), inst_filtered.end(), inst);
+			if (it2 != inst_filtered.end()) {
+				inst_filtered.erase(it2);
+			}
+			it->second = inst_filtered;
+		}
+	}
+
+	return true;
+}
+
+int32_t Part2(const std::vector<instr_str> instructions, std::map<int32_t, instruction_t>& opcode_map) {
+	registers_str regs = {};
+	instruction_t inst;
+	int32_t opcode;
+
+	for (uint32_t i = 0; i < instructions.size(); ++i) {
+		opcode = instructions[i].opcode;
+		inst = opcode_map[opcode];
+		DoInstruction(inst, instructions[i], regs);
+	}
+
+	return regs.r[0];
 }
 
 int main(void) {
 	uint64_t result1 = 0, result2 = 0;
 	std::vector<snippet_str> debug_lines;
 	std::vector<instr_str> instructions;
+	std::map<int32_t, std::vector<std::vector<instruction_t>>> stats;
+	std::map<int32_t, instruction_t> opcode_map;
 
 #if TEST
 	if (!init({"Before: [3, 2, 1, 1]", "9 2 1 2", "After:  [3, 2, 2, 1]"}, debug_lines, instructions)) {
@@ -309,12 +378,14 @@ int main(void) {
 	std::cout << "=== Advent of Code 2018 - day 16 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-	result1 = Part1(debug_lines);
+	result1 = Part1(debug_lines, stats);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
 
-	result2 = 2;
+	if (AnalyzeStats(stats, opcode_map)) {
+		result2 = Part2(instructions, opcode_map);
+	}
 
 	std::cout << "Result is " << result2 << std::endl;
 }

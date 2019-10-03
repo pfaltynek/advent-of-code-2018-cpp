@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-			"name": "macOS",
+            "name": "macOS",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
@@ -37,30 +37,25 @@
         {
             "name": "Win32",
             "includePath": [
-                "c:/Tools/MinGW64/mingw64/include/",
-                "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/",
-                "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/",
-                "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/tr1/",
-                "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/",
                 "${workspaceRoot}"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE"
             ],
-            "intelliSenseMode": "msvc-x64",
+            "intelliSenseMode": "gcc-x64",
             "browse": {
                 "path": [
-					"c:/Tools/MinGW64/mingw64/include/",
-					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/",
-					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/",
-					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/tr1/",
-					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/",
-					"${workspaceRoot}"
-					],
+                    "c:/Tools/MinGW64/mingw64/include",
+                    "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include",
+                    "${workspaceRoot}"
+                ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
-            }
+            },
+            "compilerPath": "C:/Tools/MinGW64/mingw64/bin/g++.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         }
     ],
     "version": 4
