@@ -1,38 +1,58 @@
 #include "main.hpp"
 
-const std::regex regex_bef("^Before: \\[(\\d), (\\d), (\\d), (\\d)\\]$");
-const std::regex regex_ins("^(\\d+) (\\d) (\\d) (\\d)$");
-const std::regex regex_aft("^After:  \\[(\\d), (\\d), (\\d), (\\d)\\]$");
-/*
-bool init(const std::vector<std::string> input, std::vector<snippet_str>& debug_lines, std::vector<instr_str>& instructions) {
+const std::regex regex_x("^x=(\\d+), y=(\\d+)..(\\d+)$");
+const std::regex regex_y("^y=(\\d+), x=(\\d+)..(\\d+)$");
+
+bool parse_line(const std::string line, std::map<coord_str, char>& scan) {
+	std::smatch sm;
+	uint32_t x1, x2, y1, y2;
+
+	if (std::regex_match(line, sm, regex_x)) {
+		x1 = stoi(sm.str(1));
+		y1 = stoi(sm.str(2));
+		y2 = stoi(sm.str(3));
+
+		for (uint32_t i = y1; i <= y2; ++i) {
+			scan[coord_str(x1, i)] = '#';
+		}
+
+	} else if (std::regex_match(line, sm, regex_y)) {
+		y1 = stoi(sm.str(1));
+		x1 = stoi(sm.str(2));
+		x2 = stoi(sm.str(3));
+
+		for (uint32_t i = x1; i <= x2; ++i) {
+			scan[coord_str(i, y1)] = '#';
+		}
+
+	} else {
+		std::cout << "Invalid scan line '" << line << "'." << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool init(const std::vector<std::string> input, std::map<coord_str, char>& scan) {
 	int cnt = 0;
 	std::vector<std::string> snippets, insts;
 	bool inst_part = false;
 
 	if (!input.size()) {
 		std::cout << "Empty input." << std::endl;
+		return false;
 	}
 
 	for (uint32_t i = 0; i < input.size(); ++i) {
-		if (input[i].empty()) {
-			cnt++;
-			if (cnt > 1) {
-				inst_part = true;
-			}
-		} else {
-			cnt = 0;
-			if (inst_part) {
-				insts.push_back(input[i]);
-			} else {
-				snippets.push_back(input[i]);
-			}
+		if (!parse_line(input[i], scan)) {
+			return false;
 		}
 	}
 
-	return parse_instructions(insts, instructions) && parse_snippets(snippets, debug_lines);
+	return true;
 }
 
-bool init(std::vector<snippet_str>& debug_lines, std::vector<instr_str>& instructions) {
+bool init(std::map<coord_str, char>& scan) {
 	std::ifstream input;
 	std::string line;
 	std::vector<std::string> lines;
@@ -54,21 +74,25 @@ bool init(std::vector<snippet_str>& debug_lines, std::vector<instr_str>& instruc
 		input.close();
 	}
 
-	return init(lines, debug_lines, instructions);
+	return init(lines, scan);
 }
-*/
 
 int main(void) {
 	uint64_t result1 = 0, result2 = 0;
+	std::map<coord_str, char> main_scan;
 
 #if TEST
-
-#endif
-/*
-	if (!init(debug_lines, instructions)) {
+	if (!init({"x=495, y=2..7", "y=7, x=495..501", "x=501, y=3..7", "x=498, y=2..4", "x=506, y=1..2", "x=498, y=10..13", "x=504, y=10..13", "y=13, x=498..504"},
+			  main_scan)) {
 		return -1;
 	}
-*/
+
+#endif
+
+	if (!init(main_scan)) {
+		return -1;
+	}
+	
 	std::cout << "=== Advent of Code 2018 - day 17 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
