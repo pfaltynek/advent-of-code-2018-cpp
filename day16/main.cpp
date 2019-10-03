@@ -138,6 +138,7 @@ bool init(const std::vector<std::string> input, std::vector<snippet_str>& debug_
 
 	if (!input.size()) {
 		std::cout << "Empty input." << std::endl;
+		return false;
 	}
 
 	for (uint32_t i = 0; i < input.size(); ++i) {
