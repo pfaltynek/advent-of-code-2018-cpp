@@ -7,7 +7,8 @@
 #include <map>
 #include <regex>
 #include "coord.hpp"
+#include <algorithm>
 
-#define TEST 1
+#define TEST 0
 
 #endif // MAIN_HPP
