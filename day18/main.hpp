@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #define TEST 1
 
