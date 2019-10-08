@@ -49,10 +49,6 @@ bool parse_line(const std::string line, std::map<coord_str, char>& scan, coord_s
 }
 
 bool init(const std::vector<std::string> input, const coord_str spring, std::map<coord_str, char>& scan, coord_str& min, coord_str& max) {
-	int cnt = 0;
-	std::vector<std::string> snippets, insts;
-	bool inst_part = false;
-
 	if (!input.size()) {
 		std::cout << "Empty input." << std::endl;
 		return false;
