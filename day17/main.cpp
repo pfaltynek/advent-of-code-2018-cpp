@@ -60,10 +60,8 @@ bool init(const std::vector<std::string> input, const coord_str spring, std::map
 
 	scan.clear();
 
-	min.x = spring.x;
-	min.y = spring.y;
-	max.x = spring.x;
-	max.y = spring.y;
+	min.x = min.y = INT32_MAX;
+	max.x = max.y = INT32_MIN;
 
 	scan[spring] = '+';
 
@@ -104,6 +102,14 @@ bool init(const coord_str spring, std::map<coord_str, char>& scan, coord_str& mi
 	return init(lines, spring, scan, min, max);
 }
 
+char get_scan_symbol(const coord_str pos, std::map<coord_str, char>& scan) {
+	if (!scan.count(pos)) {
+		return '.';
+	} else {
+		return scan[pos];
+	}
+}
+
 void print(std::map<coord_str, char>& main_scan, const coord_str min, const coord_str max) {
 	for (uint32_t i = min.y; i <= max.y; ++i) {
 		for (uint32_t j = min.x; j <= max.x; ++j) {
@@ -120,6 +126,109 @@ void print(std::map<coord_str, char>& main_scan, const coord_str min, const coor
 	std::cout << std::endl;
 }
 
+coord_str find_flood_end(const coord_str from, std::map<coord_str, char>& scan, const bool left_side, char& symbol) {
+	coord_str result = from, tmp;
+
+	for (;;) {
+		result.x += left_side ? -1 : 1;
+		symbol = get_scan_symbol(result, scan);
+		switch (symbol) {
+			case '.':
+				tmp = result;
+				tmp.y++;
+				if (get_scan_symbol(tmp, scan) == '.') {
+					return result;
+				}
+				break;
+			case '#':
+				return result;
+				break;
+			case '|':
+				tmp = result;
+				tmp.y++;
+				if (get_scan_symbol(tmp, scan) == '|') {
+					return result;
+				}
+				break;
+			default:
+				tmp = result;
+				break;
+		}
+	}
+}
+
+void simulate_water_fall(const coord_str spring, std::map<coord_str, char>& scan, coord_str& min, coord_str& max) {
+	coord_str curr = spring, left, right;
+	std::queue<coord_str> fall;
+	char lbound, rbound, sym;
+
+	scan[curr] = '+';
+	curr.y++;
+	fall.push(curr);
+
+	while (!fall.empty()) {
+		curr = fall.front();
+		fall.pop();
+
+		if (curr.y > max.y) {
+			continue;
+		}
+
+		sym = get_scan_symbol(curr, scan);
+
+		if (sym == '.') {
+			scan[curr] = '|';
+			curr.y++;
+			fall.push(curr);
+		} else {
+			switch (sym) {
+				case '~':
+				case '#':
+					curr.y--;
+					left = find_flood_end(curr, scan, true, lbound);
+					right = find_flood_end(curr, scan, false, rbound);
+
+					if ((lbound == '#') && (rbound == '#')) {
+						for (uint32_t i = left.x + 1; i < right.x; ++i) {
+							scan[coord_str(i, left.y)] = '~';
+						}
+						fall.push(curr);
+					} else {
+						if ((lbound != '#') && (lbound != '|')) {
+							fall.push(left);
+						}
+						if ((rbound != '#') && (rbound != '|')) {
+							fall.push(right);
+						}
+						for (uint32_t i = left.x + 1; i < right.x; ++i) {
+							scan[coord_str(i, left.y)] = '|';
+						}
+					}
+					break;
+				case '|':
+					scan[curr] = '|';
+					break;
+			}
+		}
+		// print(scan, min, max);
+	}
+}
+
+void get_water_counts(std::map<coord_str, char>& scan, coord_str& min, coord_str& max, uint64_t& result1, uint64_t& result2) {
+	result1 = result2 = 0;
+
+	for (auto it = scan.begin(); it != scan.end(); it++) {
+		if ((it->first.y >= min.y) && (it->first.y <= max.y)) {
+			if ((it->second == '~') || (it->second == '|') || (it->second == '+')) {
+				result1++;
+				if (it->second == '~') {
+					result2++;
+				}
+			}
+		}
+	}
+}
+
 int main(void) {
 	uint64_t result1 = 0, result2 = 0;
 	std::map<coord_str, char> main_scan;
@@ -133,23 +242,29 @@ int main(void) {
 
 	print(main_scan, min, max);
 
+	simulate_water_fall(spring, main_scan, min, max);
+
+	result1 = part1(main_scan, min, max);
+
 #endif
 
 	if (!init(spring, main_scan, min, max)) {
 		return -1;
 	}
 
-	print(main_scan, min, max);
+	// print(main_scan, min, max);
 
 	std::cout << "=== Advent of Code 2018 - day 17 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-	result1 = 1;
+	simulate_water_fall(spring, main_scan, min, max);
+
+	get_water_counts(main_scan, min, max, result1, result2);
+
+	// print(main_scan, min, max);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
-
-	result2 = 2;
 
 	std::cout << "Result is " << result2 << std::endl;
 }

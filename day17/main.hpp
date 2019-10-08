@@ -8,6 +8,7 @@
 #include <regex>
 #include "coord.hpp"
 #include <algorithm>
+#include <queue>
 
 #define TEST 0
 
