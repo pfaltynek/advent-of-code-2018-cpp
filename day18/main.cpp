@@ -135,8 +135,18 @@ std::string simulate(const std::string initial, uint32_t minutes) {
 	std::string s1(initial), s2(initial);
 	char c;
 	adj_stats_str ass;
+	std::vector<std::size_t> hashes;
+	std::vector<uint32_t> rounds;
+	std::hash<std::string> hash_fn;
+	std::size_t hash;
+	int x = 0;
 
-	print("Initial state:", s1);
+	hashes.clear();
+	rounds.clear();
+
+	hashes.push_back(hash_fn(s1));
+
+	// print("Initial state:", s1);
 
 	for (uint32_t t = 0; t < minutes; ++t) {
 		for (uint32_t i = 0; i < input_size; ++i) {
@@ -163,7 +173,39 @@ std::string simulate(const std::string initial, uint32_t minutes) {
 			}
 		}
 		s1 = s2;
-		print("After " + std::to_string(t + 1) + (t ? " minutes:" : " minute:"), s1);
+		hash = hash_fn(s1);
+		for (uint32_t h = x; h < hashes.size(); ++h) {
+			if (hashes[h] == hash) {
+				rounds.push_back(x);
+				rounds.push_back(h);
+				rounds.push_back(t);
+				x = h + 2;
+				if (rounds.size() == 3 * 10) {
+					int32_t diff = rounds[2] - rounds[1];
+					bool ok = true;
+					for (uint32_t r = 1; r < (rounds.size() / 3); ++r) {
+						if ((rounds[(r * 3) + 2] - rounds[(r * 3) + 1]) != diff) {
+							ok = false;
+							break;
+						}
+					}
+					if (ok) {
+						while (t < minutes) {
+							t += diff;
+						}
+						t -= diff;
+						x = t;
+					} else {
+						rounds.clear();
+					}
+				}
+				break;
+			}
+		}
+
+		hashes.push_back(hash);
+
+		// print("After " + std::to_string(t + 1) + (t ? " minutes:" : " minute:"), s1);
 	}
 
 	return s1;
@@ -208,7 +250,9 @@ int main(void) {
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
 
-	result2 = 2;
+	final = simulate(data, 1000000000);
+
+	result2 = get_part1_value(final);
 
 	std::cout << "Result is " << result2 << std::endl;
 }
