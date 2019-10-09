@@ -1,13 +1,5 @@
 #include "main.hpp"
 
-/*
-#include <string>
-#include <unordered_map>
-
-std::size_t h1 = std::hash<std::string>{}("MyString");
-std::size_t h2 = std::hash<double>{}(3.14159);
-*/
-
 int32_t input_size = 10;
 
 typedef struct ADJ_STATS {
@@ -131,20 +123,28 @@ adj_stats_str get_adjacents_stats(const std::string data, const uint8_t x, const
 	return result;
 }
 
-std::string simulate(const std::string initial, uint32_t minutes) {
+uint32_t get_total_resource_value(const std::string data) {
+	uint32_t t, l;
+
+	t = std::count(data.begin(), data.end(), '|');
+	l = std::count(data.begin(), data.end(), '#');
+
+	return t * l;
+}
+
+uint32_t simulate(const std::string initial, uint32_t minutes) {
 	std::string s1(initial), s2(initial);
 	char c;
 	adj_stats_str ass;
-	std::vector<std::size_t> hashes;
+	std::vector<uint32_t> hashes;
 	std::vector<uint32_t> rounds;
-	std::hash<std::string> hash_fn;
-	std::size_t hash;
+	uint32_t hash, offset = 0, repeated = 0, cnt = 0;
 	int x = 0;
 
 	hashes.clear();
 	rounds.clear();
 
-	hashes.push_back(hash_fn(s1));
+	hashes.push_back(get_total_resource_value(s1));
 
 	// print("Initial state:", s1);
 
@@ -173,18 +173,19 @@ std::string simulate(const std::string initial, uint32_t minutes) {
 			}
 		}
 		s1 = s2;
-		hash = hash_fn(s1);
+		hash = get_total_resource_value(s1);
 		for (uint32_t h = x; h < hashes.size(); ++h) {
 			if (hashes[h] == hash) {
+				rounds.push_back(hash);
 				rounds.push_back(x);
 				rounds.push_back(h);
-				rounds.push_back(t);
-				x = h + 2;
-				if (rounds.size() == 3 * 10) {
-					int32_t diff = rounds[2] - rounds[1];
+				rounds.push_back(t + 1);
+				x = h + 1;
+				if (rounds.size() == 4 * 3) {
+					int32_t diff = rounds[3] - rounds[2];
 					bool ok = true;
-					for (uint32_t r = 1; r < (rounds.size() / 3); ++r) {
-						if ((rounds[(r * 3) + 2] - rounds[(r * 3) + 1]) != diff) {
+					for (uint32_t r = 1; r < (rounds.size() / 4); ++r) {
+						if ((rounds[(r * 4) + 3] - rounds[(r * 4) + 2]) != diff) {
 							ok = false;
 							break;
 						}
@@ -202,27 +203,17 @@ std::string simulate(const std::string initial, uint32_t minutes) {
 				break;
 			}
 		}
-
 		hashes.push_back(hash);
 
 		// print("After " + std::to_string(t + 1) + (t ? " minutes:" : " minute:"), s1);
 	}
 
-	return s1;
-}
-
-uint32_t get_part1_value(const std::string data) {
-	uint32_t t, l;
-
-	t = std::count(data.begin(), data.end(), '|');
-	l = std::count(data.begin(), data.end(), '#');
-
-	return t * l;
+	return hash;
 }
 
 int main(void) {
 	uint64_t result1 = 0, result2 = 0;
-	std::string data, final;
+	std::string data;
 
 #if TEST
 	if (!init({".#.#...|#.", ".....#|##|", ".|..|...#.", "..|#.....#", "#.#|||#|#|", "...#.||...", ".|....|...", "||...#|.#|", "|.||||..|.", "...#.|..|."},
@@ -243,16 +234,12 @@ int main(void) {
 	std::cout << "=== Advent of Code 2018 - day 18 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-	final = simulate(data, 10);
-
-	result1 = get_part1_value(final);
+	result1 = simulate(data, 10);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
 
-	final = simulate(data, 1000000000);
-
-	result2 = get_part1_value(final);
+	result2 = simulate(data, 1000000000);
 
 	std::cout << "Result is " << result2 << std::endl;
 }
