@@ -6,9 +6,8 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
-#include <algorithm>
-#include <unordered_set>
+#include <regex>
 
-#define TEST 0
+#define TEST 1
 
 #endif // MAIN_HPP
