@@ -15,11 +15,11 @@ bool init(const std::vector<std::string> input, std::string& data) {
 
 	for (uint32_t i = 0; i < input.size(); ++i) {
 		if (input[i].size() != input_size) {
-			std::cout << "Invalid input size al line " << i + 1 << std::endl;
+			std::cout << "Invalid input size at line " << i + 1 << std::endl;
 			return false;
 		}
 		if (input[i].find_first_not_of(".#|") != std::string::npos) {
-			std::cout << "Invalid input content al line " << i + 1 << std::endl;
+			std::cout << "Invalid input content at line " << i + 1 << std::endl;
 			return false;
 		}
 
