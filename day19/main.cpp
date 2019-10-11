@@ -107,9 +107,11 @@ bool init(std::vector<instruction_str>& data, int32_t& ip_reg_idx) {
 	return init(lines, data, ip_reg_idx);
 }
 
-int32_t simulate(const std::vector<instruction_str> program, const int32_t ip_reg_idx) {
+int32_t simulate(const std::vector<instruction_str> program, const int32_t ip_reg_idx, const int32_t reg0_init) {
 	int32_t regs[6] = {0, 0, 0, 0, 0, 0};
 	int32_t ip = 0;
+
+	regs[0] = reg0_init;
 
 	while ((ip >= 0) && (ip < program.size())) {
 		regs[ip_reg_idx] = ip;
@@ -117,51 +119,83 @@ int32_t simulate(const std::vector<instruction_str> program, const int32_t ip_re
 		switch (program[ip].opcode) {
 			case INSTRUCTION_TYPE::addr:
 				regs[program[ip].C] = regs[program[ip].A] + regs[program[ip].B];
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = R" << program[ip].A << " + R" << program[ip].B << std::endl;
 				break;
 			case INSTRUCTION_TYPE::addi:
 				regs[program[ip].C] = regs[program[ip].A] + program[ip].B;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = R" << program[ip].A << " + " << program[ip].B << std::endl;
 				break;
 			case INSTRUCTION_TYPE::mulr:
 				regs[program[ip].C] = regs[program[ip].A] * regs[program[ip].B];
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = R" << program[ip].A << " * R" << program[ip].B << std::endl;
 				break;
 			case INSTRUCTION_TYPE::muli:
 				regs[program[ip].C] = regs[program[ip].A] * program[ip].B;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = R" << program[ip].A << " * " << program[ip].B << std::endl;
 				break;
 			case INSTRUCTION_TYPE::banr:
 				regs[program[ip].C] = regs[program[ip].A] & regs[program[ip].B];
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = R" << program[ip].A << " & R" << program[ip].B << std::endl;
 				break;
 			case INSTRUCTION_TYPE::bani:
 				regs[program[ip].C] = regs[program[ip].A] & program[ip].B;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = R" << program[ip].A << " & " << program[ip].B << std::endl;
 				break;
 			case INSTRUCTION_TYPE::borr:
 				regs[program[ip].C] = regs[program[ip].A] | regs[program[ip].B];
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = R" << program[ip].A << " | R" << program[ip].B << std::endl;
 				break;
 			case INSTRUCTION_TYPE::bori:
 				regs[program[ip].C] = regs[program[ip].A] | program[ip].B;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = R" << program[ip].A << " | R" << program[ip].B << std::endl;
 				break;
 			case INSTRUCTION_TYPE::setr:
 				regs[program[ip].C] = regs[program[ip].A];
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = R" << program[ip].A << std::endl;
 				break;
 			case INSTRUCTION_TYPE::seti:
 				regs[program[ip].C] = program[ip].A;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = " << program[ip].A << std::endl;
 				break;
 			case INSTRUCTION_TYPE::gtir:
 				regs[program[ip].C] = program[ip].A > regs[program[ip].B] ? 1 : 0;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = (" << program[ip].A << " > R" << program[ip].B << ")" << std::endl;
 				break;
 			case INSTRUCTION_TYPE::gtri:
 				regs[program[ip].C] = regs[program[ip].A] > program[ip].B ? 1 : 0;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = (R" << program[ip].A << " > " << program[ip].B << ")" << std::endl;
 				break;
 			case INSTRUCTION_TYPE::gtrr:
 				regs[program[ip].C] = regs[program[ip].A] > regs[program[ip].B] ? 1 : 0;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = (R" << program[ip].A << " > R" << program[ip].B << ")" << std::endl;
 				break;
 			case INSTRUCTION_TYPE::eqir:
 				regs[program[ip].C] = program[ip].A == regs[program[ip].B] ? 1 : 0;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = (" << program[ip].A << " == R" << program[ip].B << ")" << std::endl;
 				break;
 			case INSTRUCTION_TYPE::eqri:
 				regs[program[ip].C] = regs[program[ip].A] == program[ip].B ? 1 : 0;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = (R" << program[ip].A << " == " << program[ip].B << ")" << std::endl;
 				break;
 			case INSTRUCTION_TYPE::eqrr:
 				regs[program[ip].C] = regs[program[ip].A] == regs[program[ip].B] ? 1 : 0;
+				std::cout << ip << ": "
+						  << "R" << program[ip].C << " = (R" << program[ip].A << " == R" << program[ip].B << ")" << std::endl;
 				break;
 		}
 
@@ -170,6 +204,27 @@ int32_t simulate(const std::vector<instruction_str> program, const int32_t ip_re
 	}
 
 	return regs[0];
+}
+
+// following function is result of reverse engineering of given input
+// function searches sum of all common divisors for numbers 961 and 10551361
+int32_t simulation_after_reversing(const std::vector<instruction_str> program, const int32_t ip_reg_idx, const int32_t reg0_init) {
+	int32_t r0, r4, r5, r6;
+
+	r4 = 961;
+	r0 = 0;
+
+	if (reg0_init) {
+		r4 += 10550400;
+	}
+
+	for (uint32_t r1 = 1; r1 <= r4; r1++) {
+		if (!(r4 % r1)) {
+			r0 += r1;
+		}
+	}
+
+	return r0;
 }
 
 int main(void) {
@@ -182,7 +237,7 @@ int main(void) {
 		return -1;
 	}
 
-	result1 = simulate(data, ip);
+	result1 = simulation_after_reversing(data, ip, 0);
 
 #endif
 
@@ -193,12 +248,14 @@ int main(void) {
 	std::cout << "=== Advent of Code 2018 - day 19 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-	result1 = simulate(data, ip);
+	// result1 = simulate(data, ip, 0);
+	result1 = simulation_after_reversing(data, ip, 0);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
 
-	result2 = 2;
+	// result2 = simulate(data, ip, 1);
+	result2 = simulation_after_reversing(data, ip, 1);
 
 	std::cout << "Result is " << result2 << std::endl;
 }
