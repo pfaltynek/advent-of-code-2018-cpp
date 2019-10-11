@@ -150,6 +150,14 @@ int main(void) {
 
 	print(map, min, max);
 
+	regex = "^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$";
+
+	if (!decode_map(regex, map, min, max)) {
+		return -1;
+	}
+
+	print(map, min, max);
+
 	result1 = 1;
 
 #endif
