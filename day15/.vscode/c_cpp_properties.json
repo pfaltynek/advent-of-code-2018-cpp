@@ -41,7 +41,8 @@
                 "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/",
                 "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/",
                 "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/tr1/",
-                "c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/",
+				"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/",
+				"c:/Tools/MinGW64/mingw64/x86_64-w64-mingw32/include",
                 "${workspaceRoot}"
             ],
             "defines": [
@@ -56,6 +57,7 @@
 					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/",
 					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/tr1/",
 					"c:/Tools/MinGW64/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/",
+					"c:/Tools/MinGW64/mingw64/x86_64-w64-mingw32/include",
 					"${workspaceRoot}"
 					],
                 "limitSymbolsToIncludedHeaders": true,
