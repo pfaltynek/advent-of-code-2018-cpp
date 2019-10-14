@@ -7,6 +7,7 @@
 #include "coord.hpp"
 #include <map>
 #include <stack>
+#include <queue>
 
 #define TEST 1
 

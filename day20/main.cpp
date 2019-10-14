@@ -1,6 +1,26 @@
 #include "main.hpp"
 
-bool init(std::string& regex) {
+typedef struct STEP_INFO{
+	coord_str coords;
+	int32_t steps;
+	int32_t doors;
+} step_info_str;
+
+class RoomsMap {
+	public:
+	  bool init(std::string& regex);
+	  void print();
+	  void get_furthest_room_passing_doors_count();
+	  bool decode_map(const std::string regex);
+	  char get_map_symbol(const coord_str coord);
+
+	private:
+	  std::map<coord_str, char> map_;
+	  coord_str min_;
+	  coord_str max_;
+};
+
+bool RoomsMap::init(std::string& regex) {
 	std::ifstream input;
 	std::string line;
 
@@ -24,7 +44,7 @@ bool init(std::string& regex) {
 	return true;
 }
 
-bool decode_map(const std::string regex, std::map<coord_str, char>& map, coord_str& min, coord_str& max) {
+bool RoomsMap::decode_map(const std::string regex) {
 	coord_str coord, new_coord;
 	std::stack<coord_str> stack;
 
@@ -37,47 +57,47 @@ bool decode_map(const std::string regex, std::map<coord_str, char>& map, coord_s
 		return false;
 	}
 
-	map.clear();
+	map_.clear();
 	coord = {};
 	while (!stack.empty()) {
 		stack.pop();
 	}
 
-	min = max = coord;
-	map[coord] = 'X';
+	min_ = max_ = coord;
+	map_[coord] = 'X';
 
 	for (uint32_t i = 1; i < regex.size() - 1; ++i) {
 		switch (regex[i]) {
 			case 'N':
 				new_coord = coord;
 				new_coord.y++;
-				map[new_coord] = '-';
+				map_[new_coord] = '-';
 				new_coord.y++;
-				map[new_coord] = '.';
+				map_[new_coord] = '.';
 				coord = new_coord;
 				break;
 			case 'W':
 				new_coord = coord;
 				new_coord.x--;
-				map[new_coord] = '|';
+				map_[new_coord] = '|';
 				new_coord.x--;
-				map[new_coord] = '.';
+				map_[new_coord] = '.';
 				coord = new_coord;
 				break;
 			case 'S':
 				new_coord = coord;
 				new_coord.y--;
-				map[new_coord] = '-';
+				map_[new_coord] = '-';
 				new_coord.y--;
-				map[new_coord] = '.';
+				map_[new_coord] = '.';
 				coord = new_coord;
 				break;
 			case 'E':
 				new_coord = coord;
 				new_coord.x++;
-				map[new_coord] = '|';
+				map_[new_coord] = '|';
 				new_coord.x++;
-				map[new_coord] = '.';
+				map_[new_coord] = '.';
 				coord = new_coord;
 				break;
 			case '(':
@@ -102,31 +122,39 @@ bool decode_map(const std::string regex, std::map<coord_str, char>& map, coord_s
 				std::cout << "Invalid char '" << regex[i] << "' in regex" << std::endl;
 				break;
 		}
-		if (new_coord.x < min.x) {
-			min.x = new_coord.x;
+		if (new_coord.x < min_.x) {
+			min_.x = new_coord.x;
 		}
-		if (new_coord.y < min.y) {
-			min.y = new_coord.y;
+		if (new_coord.y < min_.y) {
+			min_.y = new_coord.y;
 		}
-		if (new_coord.x > max.x) {
-			max.x = new_coord.x;
+		if (new_coord.x > max_.x) {
+			max_.x = new_coord.x;
 		}
-		if (new_coord.y > max.y) {
-			max.y = new_coord.y;
+		if (new_coord.y > max_.y) {
+			max_.y = new_coord.y;
 		}
 	}
 
 	return true;
 }
 
-void print(std::map<coord_str, char>& map, const coord_str min, const coord_str max) {
-	for (int32_t i = max.y + 1; i >= min.y - 1; --i) {
-		for (int32_t j = min.x - 1; j <= max.x + 1; ++j) {
+char RoomsMap::get_map_symbol(const coord_str coord){
+	if (map_.count(coord)) {
+		return map_[coord];
+	} else {
+		return '#';
+	}
+}
+
+void RoomsMap::print() {
+	for (int32_t i = max_.y + 1; i >= min_.y - 1; --i) {
+		for (int32_t j = min_.x - 1; j <= max_.x + 1; ++j) {
 			coord_str coord = {j, i};
-			if (!map.count(coord)) {
+			if (!map_.count(coord)) {
 				std::cout << '#';
 			} else {
-				std::cout << map[coord];
+				std::cout << map_[coord];
 			}
 		}
 		std::cout << std::endl;
@@ -134,43 +162,72 @@ void print(std::map<coord_str, char>& map, const coord_str min, const coord_str 
 	std::cout << std::endl;
 }
 
+
+void RoomsMap::get_furthest_room_passing_doors_count(){
+	coord_str pt = {};
+	step_info_str curr, tmp;
+	std::queue<step_info_str> queue;
+	std::map<coord_str, bool> history;
+	char c;
+
+	history.clear();
+	while (!queue.empty()){
+		queue.pop();
+	}
+
+	curr.coords = pt;
+	curr.doors = 0;
+	curr.steps = 0;
+	queue.emplace(curr);
+	history[pt] = true;
+
+	while (!queue.empty()){
+		curr = queue.front();
+		queue.pop();
+
+		if (!map_.count(curr.coords)) {
+			continue;
+		}
+		c = map_[curr.coords];
+
+	}
+}
+
 int main(void) {
 	uint64_t result1 = 0, result2 = 0;
 	std::string regex;
-	std::map<coord_str, char> map;
-	coord_str min, max;
-
+	RoomsMap map;
 #if TEST
 
 	regex = "^ENWWW(NEEE|SSE(EE|N))$";
 
-	if (!decode_map(regex, map, min, max)) {
+	if (!map.decode_map(regex)) {
 		return -1;
 	}
 
-	print(map, min, max);
+	map.print();
 
 	regex = "^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$";
 
-	if (!decode_map(regex, map, min, max)) {
+	if (!map.decode_map(regex)) {
 		return -1;
 	}
 
-	print(map, min, max);
+	map.print();
 
 	result1 = 1;
 
 #endif
 
-	if (!init(regex)) {
+	if (!map.init(regex)) {
 		return -1;
 	}
 
-	if (!decode_map(regex, map, min, max)) {
+	if (!map.decode_map(regex)) {
 		return -1;
 	}
 
-	print(map, min, max);
+	map.print();
 
 	std::cout << "=== Advent of Code 2018 - day 20 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
