@@ -4,11 +4,10 @@
 #include <iostream>
 #include <fstream>
 #include <stdint.h>
-#include "coord.hpp"
-#include <map>
-#include <stack>
-#include <queue>
+#include <vector>
+#include <string>
+#include <regex>
 
-#define TEST 1
+#define TEST 0
 
 #endif // MAIN_HPP
