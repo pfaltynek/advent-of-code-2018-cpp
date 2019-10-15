@@ -264,13 +264,10 @@ int main(void) {
 		return -1;
 	}
 
-	std::cout << "=== Advent of Code 2018 - day 19 ====" << std::endl;
+	std::cout << "=== Advent of Code 2018 - day 21 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
 	result1 = simulate(data, ip, 0 , result2);
-
-	std::cout << "=== Advent of Code 2018 - day 21 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
