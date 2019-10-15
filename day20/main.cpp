@@ -10,7 +10,7 @@ class RoomsMap {
   public:
 	bool init(std::string& regex);
 	void print();
-	int32_t get_furthest_room_passing_doors_count();
+	int32_t get_furthest_room_passing_doors_count(int32_t& count1000);
 	bool decode_map(const std::string regex);
 	char get_map_symbol(const coord_str coord);
 	char get_map_symbol(int32_t x, int32_t y);
@@ -167,7 +167,7 @@ void RoomsMap::print() {
 	std::cout << std::endl;
 }
 
-int32_t RoomsMap::get_furthest_room_passing_doors_count() {
+int32_t RoomsMap::get_furthest_room_passing_doors_count(int32_t& count1000) {
 	coord_str pt = {}, room;
 	step_info_str curr, tmp;
 	std::queue<step_info_str> queue;
@@ -178,6 +178,7 @@ int32_t RoomsMap::get_furthest_room_passing_doors_count() {
 	char c;
 	int32_t result = 0;
 
+	count1000 = 0;
 	rooms = {};
 	results.clear();
 
@@ -244,13 +245,16 @@ int32_t RoomsMap::get_furthest_room_passing_doors_count() {
 		if (doors > result) {
 			result = doors;
 		}
+		if (doors >=1000){
+			count1000++;
+		}
 	}
 
 	return result;
 }
 
 int main(void) {
-	uint64_t result1 = 0, result2 = 0;
+	int32_t result1 = 0, result2 = 0;
 	std::string regex;
 	RoomsMap map;
 #if TEST
@@ -263,7 +267,7 @@ int main(void) {
 
 	map.print();
 
-	result1 = map.get_furthest_room_passing_doors_count();
+	result1 = map.get_furthest_room_passing_doors_count(result2);
 
 	regex = "^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$";
 
@@ -273,7 +277,7 @@ int main(void) {
 
 	map.print();
 
-	result1 = map.get_furthest_room_passing_doors_count();
+	result1 = map.get_furthest_room_passing_doors_count(result2);
 
 	regex = "^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$";
 
@@ -283,7 +287,7 @@ int main(void) {
 
 	map.print();
 
-	result1 = map.get_furthest_room_passing_doors_count();
+	result1 = map.get_furthest_room_passing_doors_count(result2);
 
 	// Furthest room requires passing 23 doors
 	/*
@@ -310,7 +314,7 @@ int main(void) {
 
 	map.print();
 
-	result1 = map.get_furthest_room_passing_doors_count();
+	result1 = map.get_furthest_room_passing_doors_count(result2);
 
 	// Furthest room requires passing 31 doors
 	/*
@@ -346,12 +350,10 @@ int main(void) {
 	std::cout << "=== Advent of Code 2018 - day 20 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-	result1 = map.get_furthest_room_passing_doors_count();
+	result1 = map.get_furthest_room_passing_doors_count(result2);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
-
-	result2 = 2;
 
 	std::cout << "Result is " << result2 << std::endl;
 }
