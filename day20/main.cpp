@@ -232,11 +232,11 @@ int32_t RoomsMap::get_furthest_room_passing_doors_count() {
 			}
 		}
 	}
-	for (auto it = results.begin(); it != results.end(); it++){
+	for (auto it = results.begin(); it != results.end(); it++) {
 		int32_t steps = INT32_MAX, doors = 0;
 
-		for (uint32_t i = 0; i < it->second.size();++i){
-			if (it ->second[i].steps < steps) {
+		for (uint32_t i = 0; i < it->second.size(); ++i) {
+			if (it->second[i].steps < steps) {
 				steps = it->second[i].steps;
 				doors = it->second[i].doors;
 			}
@@ -246,7 +246,7 @@ int32_t RoomsMap::get_furthest_room_passing_doors_count() {
 		}
 	}
 
-		return result;
+	return result;
 }
 
 int main(void) {
@@ -275,6 +275,62 @@ int main(void) {
 
 	result1 = map.get_furthest_room_passing_doors_count();
 
+	regex = "^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$";
+
+	if (!map.decode_map(regex)) {
+		return -1;
+	}
+
+	map.print();
+
+	result1 = map.get_furthest_room_passing_doors_count();
+
+	// Furthest room requires passing 23 doors
+	/*
+	#############
+	#.|.|.|.|.|.#
+	#-#####-###-#
+	#.#.|.#.#.#.#
+	#-#-###-#-#-#
+	#.#.#.|.#.|.#
+	#-#-#-#####-#
+	#.#.#.#X|.#.#
+	#-#-#-###-#-#
+	#.|.#.|.#.#.#
+	###-#-###-#-#
+	#.|.#.|.|.#.#
+	#############
+	*/
+
+	regex = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
+
+	if (!map.decode_map(regex)) {
+		return -1;
+	}
+
+	map.print();
+
+	result1 = map.get_furthest_room_passing_doors_count();
+
+	// Furthest room requires passing 31 doors
+	/*
+	###############
+	#.|.|.|.#.|.|.#
+	#-###-###-#-#-#
+	#.|.#.|.|.#.#.#
+	#-#########-#-#
+	#.#.|.|.|.|.#.#
+	#-#-#########-#
+	#.#.#.|X#.|.#.#
+	###-#-###-#-#-#
+	#.|.#.#.|.#.|.#
+	#-###-#####-###
+	#.|.#.|.|.#.#.#
+	#-#-#####-#-#-#
+	#.#.|.|.|.#.|.#
+	###############
+	*/
+
 #endif
 
 	if (!map.init(regex)) {
@@ -285,12 +341,12 @@ int main(void) {
 		return -1;
 	}
 
-	map.print();
+	//map.print();
 
 	std::cout << "=== Advent of Code 2018 - day 20 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-	result1 = 1;
+	result1 = map.get_furthest_room_passing_doors_count();
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
