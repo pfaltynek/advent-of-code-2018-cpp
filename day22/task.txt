@@ -1,28 +1,53 @@
---- day 22: Chronal Conversion ---
-You should have been watching where you were going, because as you wander the new North Pole base, you trip and fall into a very deep hole!
+--- Day 22: Mode Maze ---
+This is it, your final stop: the year -483. It's snowing and dark outside; the only light you can see is coming from a small cottage in the distance. You make your way there and knock on the door.
 
-Just kidding. You're falling through time again.
+A portly man with a large, white beard answers the door and invites you inside. For someone living near the North Pole in -483, he must not get many visitors, but he doesn't act surprised to see you. Instead, he offers you some milk and cookies.
 
-If you keep up your current pace, you should have resolved all of the temporal anomalies by the next time the device activates. Since you have very little interest in browsing history in 500-year increments for the rest of your life, you need to find a way to get back to your present time.
+After talking for a while, he asks a favor of you. His friend hasn't come back in a few hours, and he's not sure where he is. Scanning the region briefly, you discover one life signal in a cave system nearby; his friend must have taken shelter there. The man asks if you can go there to retrieve his friend.
 
-After a little research, you discover two important facts about the behavior of the device:
+The cave is divided into square regions which are either dominantly rocky, narrow, or wet (called its type). Each region occupies exactly one coordinate in X,Y format where X and Y are integers and zero or greater. (Adjacent regions can be the same type.)
 
-First, you discover that the device is hard-wired to always send you back in time in 500-year increments. Changing this is probably not feasible.
+The scan (your puzzle input) is not very detailed: it only reveals the depth of the cave system and the coordinates of the target. However, it does not reveal the type of each region. The mouth of the cave is at 0,0.
 
-Second, you discover the activation system (your puzzle input) for the time travel module. Currently, it appears to run forever without halting.
+The man explains that due to the unusual geology in the area, there is a method to determine any region's type based on its erosion level. The erosion level of a region can be determined from its geologic index. The geologic index can be determined using the first rule that applies from the list below:
 
-If you can cause the activation system to halt at a specific moment, maybe you can make the device send you so far back in time that you cause an integer underflow in time itself and wrap around back to your current time!
+The region at 0,0 (the mouth of the cave) has a geologic index of 0.
+The region at the coordinates of the target has a geologic index of 0.
+If the region's Y coordinate is 0, the geologic index is its X coordinate times 16807.
+If the region's X coordinate is 0, the geologic index is its Y coordinate times 48271.
+Otherwise, the region's geologic index is the result of multiplying the erosion levels of the regions at X-1,Y and X,Y-1.
+A region's erosion level is its geologic index plus the cave system's depth, all modulo 20183. Then:
 
-The device executes the program as specified in manual section one and manual section two.
+If the erosion level modulo 3 is 0, the region's type is rocky.
+If the erosion level modulo 3 is 1, the region's type is wet.
+If the erosion level modulo 3 is 2, the region's type is narrow.
+For example, suppose the cave system's depth is 510 and the target's coordinates are 10,10. Using % to represent the modulo operator, the cavern would look as follows:
 
-Your goal is to figure out how the program works and cause it to halt. You can only control register 0; every other register begins at 0 as usual.
+At 0,0, the geologic index is 0. The erosion level is (0 + 510) % 20183 = 510. The type is 510 % 3 = 0, rocky.
+At 1,0, because the Y coordinate is 0, the geologic index is 1 * 16807 = 16807. The erosion level is (16807 + 510) % 20183 = 17317. The type is 17317 % 3 = 1, wet.
+At 0,1, because the X coordinate is 0, the geologic index is 1 * 48271 = 48271. The erosion level is (48271 + 510) % 20183 = 8415. The type is 8415 % 3 = 0, rocky.
+At 1,1, neither coordinate is 0 and it is not the coordinate of the target, so the geologic index is the erosion level of 0,1 (8415) times the erosion level of 1,0 (17317), 8415 * 17317 = 145722555. The erosion level is (145722555 + 510) % 20183 = 1805. The type is 1805 % 3 = 2, narrow.
+At 10,10, because they are the target's coordinates, the geologic index is 0. The erosion level is (0 + 510) % 20183 = 510. The type is 510 % 3 = 0, rocky.
+Drawing this same cave system with rocky as ., wet as =, narrow as |, the mouth as M, the target as T, with 0,0 in the top-left corner, X increasing to the right, and Y increasing downward, the top-left corner of the map looks like this:
 
-Because time travel is a dangerous activity, the activation system begins with a few instructions which verify that bitwise AND (via bani) does a numeric operation and not an operation as if the inputs were interpreted as strings. If the test fails, it enters an infinite loop re-running the test instead of allowing the program to execute normally. If the test passes, the program continues, and assumes that all other bitwise operations (banr, bori, and borr) also interpret their inputs as numbers. (Clearly, the Elves who wrote this system were worried that someone might introduce a bug while trying to emulate this system with a scripting language.)
+M=.|=.|.|=.|=|=.
+.|=|=|||..|.=...
+.==|....||=..|==
+=.|....|.==.|==.
+=|..==...=.|==..
+=||.=.=||=|=..|=
+|.=.===|||..=..|
+|..==||=.|==|===
+.=..===..=|.|||.
+.======|||=|=.|=
+.===|=|===T===||
+=|||...|==..|=.|
+=.=|=.=..=.||==|
+||=|=...|==.=|==
+|=.=||===.|||===
+||.|==.|.|.||=||
+Before you go in, you should determine the risk level of the area. For the rectangle that has a top-left corner of region 0,0 and a bottom-right corner of the region containing the target, add up the risk level of each individual region: 0 for rocky regions, 1 for wet regions, and 2 for narrow regions.
 
-What is the lowest non-negative integer value for register 0 that causes the program to halt after executing the fewest instructions? (Executing the same instruction multiple times counts as multiple instructions executed.)
+In the cave system above, because the mouth is at 0,0 and the target is at 10,10, adding up the risk level of all regions with an X coordinate from 0 to 10 and a Y coordinate from 0 to 10, this total is 114.
 
---- Part Two ---
-
-In order to determine the timing window for your underflow exploit, you also need an upper bound:
-
-What is the lowest non-negative integer value for register 0 that causes the program to halt after executing the most instructions? (The program must actually halt; running forever does not count as halting.)
+What is the total risk level for the smallest rectangle that includes 0,0 and the target's coordinates?

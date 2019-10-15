@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <regex>
+#include "coord.hpp"
 
 #define TEST 0
 
