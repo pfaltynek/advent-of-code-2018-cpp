@@ -10,6 +10,7 @@
 #include "coord.hpp"
 #include <map>
 #include <algorithm>
+#include <queue>
 
 #define TEST 1
 

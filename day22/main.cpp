@@ -4,17 +4,26 @@ const std::regex depth_regex("^depth: (\\d+)$");
 const std::regex target_regex("^target: (\\d+),(\\d+)$");
 
 typedef enum AREA_TYPE { rocky = 0, wet = 1, narrow = 2 } area_type_t;
+typedef enum TOOL_TYPE { torch = 1, climbing_gear = 1, neither = 0 } tool_type_t;
+
+typedef struct PATH_INFO{
+	coord_str coord;
+	int32_t time;
+	tool_type_t tool;
+} path_info_str;
 
 class Cave {
   public:
 	bool init(const std::vector<std::string> input);
 	bool init();
 	int32_t get_risk_level();
+	int32_t find_path();
 
   private:
 	int32_t depth_;
 	coord_str target_;
 	std::map<coord_str, int64_t> cache_;
+	std::map<coord_str, area_type_t> map_;
 
 	int64_t get_geologic_index(int32_t x, int32_t y);
 	int64_t get_geologic_index(coord_str coord);
@@ -104,7 +113,6 @@ area_type_t Cave::get_area_type(int32_t erosion_lvl) {
 int32_t Cave::get_risk_level() {
 	int32_t result = 0, size, el;
 	std::map<coord_str, int64_t> cache;
-	std::map<coord_str, area_type_t> map;
 	coord_str pt;
 	int64_t gi;
 	area_type_t at;
@@ -116,6 +124,7 @@ int32_t Cave::get_risk_level() {
 	result += get_area_type(get_erosion_level(get_geologic_index(0, 0)));
 
 	size = target_.x + target_.y;
+	size *= 2;
 
 	for (int32_t i = 1; i <= size; ++i) {
 		for (int32_t j = 0; j <= i; j++) {
@@ -124,7 +133,7 @@ int32_t Cave::get_risk_level() {
 			el = get_erosion_level(gi);
 			cache[pt] = el;
 			at = get_area_type(el);
-			map[pt] = at;
+			map_[pt] = at;
 			if ((pt.x <= target_.x) && (pt.y <= target_.y)) {
 				result += at;
 			}
@@ -136,6 +145,11 @@ int32_t Cave::get_risk_level() {
 	cache_.clear();
 
 	return result;
+}
+
+int32_t Cave::find_path(){
+	std::map<coord_str, int32_t> history;
+	std::queue<path_info_str> q;
 }
 
 int main(void) {
