@@ -4,9 +4,9 @@ const std::regex depth_regex("^depth: (\\d+)$");
 const std::regex target_regex("^target: (\\d+),(\\d+)$");
 
 typedef enum AREA_TYPE { rocky = 0, wet = 1, narrow = 2 } area_type_t;
-typedef enum TOOL_TYPE { torch = 1, climbing_gear = 1, neither = 0 } tool_type_t;
+typedef enum TOOL_TYPE { torch = 1, climbing_gear = 2, neither = 0 } tool_type_t;
 
-typedef struct PATH_INFO{
+typedef struct PATH_INFO {
 	coord_str coord;
 	int32_t time;
 	tool_type_t tool;
@@ -29,6 +29,7 @@ class Cave {
 	int64_t get_geologic_index(coord_str coord);
 	int32_t get_erosion_level(int64_t geo_idx);
 	area_type_t get_area_type(int32_t erosion_lvl);
+	std::vector<path_info_str> get_next_steps(path_info_str from);
 };
 
 bool Cave::init(const std::vector<std::string> input) {
@@ -146,10 +147,182 @@ int32_t Cave::get_risk_level() {
 
 	return result;
 }
+std::vector<path_info_str> Cave::get_next_steps(const path_info_str from) {
+	std::vector<path_info_str> result = {};
+	path_info_str next;
+	std::vector<coord_str> adjacents = {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
+	std::string direction = "DRLU";
+	area_type_t areat;
 
-int32_t Cave::find_path(){
-	std::map<coord_str, int32_t> history;
-	std::queue<path_info_str> q;
+	areat = map_[from.coord];
+
+	for (uint32_t i = 0; i < adjacents.size(); i++) {
+		next = from;
+		next.coord = next.coord + adjacents[i];
+
+		if ((next.coord.x < 0) || (next.coord.y < 0)) {
+			continue;
+		}
+
+		next.time++;
+
+		switch (map_[next.coord]) {
+			case rocky:
+				switch (next.tool) {
+					case torch:
+					case climbing_gear:
+						result.push_back(next);
+						break;
+					case neither:
+						break;
+					default:
+						int z = -1;
+				}
+				break;
+			case wet:
+				switch (next.tool) {
+					case neither:
+					case climbing_gear:
+						result.push_back(next);
+						break;
+					case torch:
+						break;
+					default:
+						int z = -1;
+				}
+				break;
+			case narrow:
+				switch (next.tool) {
+					case torch:
+					case neither:
+						result.push_back(next);
+						break;
+					case climbing_gear:
+						break;
+					default:
+						int z = -1;
+				}
+				break;
+			default:
+				int z = -1;
+				break;
+		}
+	}
+
+	next = from;
+	next.time += 7;
+
+	switch (map_[from.coord]) {
+		case rocky:
+			switch (from.tool) {
+				case torch:
+					next.tool = climbing_gear;
+					result.push_back(next);
+					break;
+				case climbing_gear:
+					next.tool = torch;
+					result.push_back(next);
+					break;
+				default:
+					int z = -1;
+					break;
+			}
+			break;
+		case wet:
+			switch (from.tool) {
+				case neither:
+					next.tool = climbing_gear;
+					result.push_back(next);
+					break;
+				case climbing_gear:
+					next.tool = neither;
+					result.push_back(next);
+					break;
+				default:
+					int z = -1;
+					break;
+			}
+			break;
+		case narrow:
+			switch (from.tool) {
+				case torch:
+					next.tool = neither;
+					result.push_back(next);
+					break;
+				case neither:
+					next.tool = torch;
+					result.push_back(next);
+					break;
+				default:
+					int z = -1;
+					break;
+			}
+			break;
+		default:
+			int z = -1;
+			break;
+	}
+
+	return result;
+}
+
+int32_t Cave::find_path() {
+	std::map<coord_str, std::map<tool_type_t, int32_t>> history = {};
+	std::queue<path_info_str> q = {};
+	path_info_str pi, npi;
+	coord_str pt = {};
+	int32_t result = INT32_MAX;
+	std::vector<path_info_str> next;
+	std::vector<std::string> paths = {};
+
+	history[pt][torch] = 0;
+	history[pt][neither] = 0;
+	history[pt][climbing_gear] = 0;
+	pi.coord = pt;
+	pi.time = 0;
+	pi.tool = torch;
+
+	q.emplace(pi);
+
+	while (!q.empty()) {
+		pi = q.front();
+		q.pop();
+
+		next = get_next_steps(pi);
+
+		for (uint32_t i = 0; i < next.size(); i++) {
+			if ((next[i].coord == target_) && (next[i].tool == torch)) {
+				if (result > next[i].time) {
+					result = next[i].time;
+				}
+				continue;
+			}
+			if (next[i].time > result) {
+				continue;
+			}
+
+			if (!map_.count(next[i].coord)) {
+				continue;
+			}
+
+			if (history.count(next[i].coord)) {
+				if (history[next[i].coord].count(next[i].tool)) {
+					if (next[i].time < history[next[i].coord][next[i].tool]) {
+						history[next[i].coord][next[i].tool] = next[i].time;
+						q.emplace(next[i]);
+					}
+				} else {
+					history[next[i].coord][next[i].tool] = next[i].time;
+					q.emplace(next[i]);
+				}
+			} else {
+				history[next[i].coord][next[i].tool] = next[i].time;
+				q.emplace(next[i]);
+			}
+		}
+	}
+
+	return result;
 }
 
 int main(void) {
@@ -162,6 +335,8 @@ int main(void) {
 	}
 
 	result1 = cave.get_risk_level();
+
+	result2 = cave.find_path();
 
 #endif
 
@@ -177,7 +352,7 @@ int main(void) {
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
 
-	result2 = 2;
+	result2 = cave.find_path();
 
 	std::cout << "Result is " << result2 << std::endl;
 }

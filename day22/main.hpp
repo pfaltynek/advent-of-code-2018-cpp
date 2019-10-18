@@ -12,6 +12,6 @@
 #include <algorithm>
 #include <queue>
 
-#define TEST 1
+#define TEST 0
 
 #endif // MAIN_HPP
