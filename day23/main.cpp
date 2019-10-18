@@ -20,7 +20,8 @@ class ExperimentalEmergencyTransportation {
 	nanobot_info_str get_strongest_nanobot();
 	int32_t get_nanobots_in_range_count();
 	int32_t get_nanobots_in_range_count(const nanobot_info_str coords, const int32_t range);
-	nanobot_info_str get_coord_most_in_range();
+	int32_t get_nanobots_in_range_count(const nanobot_info_str coords);
+	int32_t get_coord_most_in_range();
 
   private:
 	std::vector<nanobot_info_str> data_;
@@ -81,20 +82,6 @@ static int get_stronger_nanobot(nanobot_info_str first, nanobot_info_str second)
 }
 
 nanobot_info_str ExperimentalEmergencyTransportation::get_strongest_nanobot() {
-	/*int32_t strongest = 0, idx = -1;
-
-	for (uint32_t i = 0; i < data_.size(); i++) {
-		if (strongest < data_[i].r) {
-			strongest = data_[i].r;
-			idx = i;
-		}
-	}
-	if (idx >= 0) {
-		return data_[idx];
-	} else {
-		return nanobot_info_str();
-	}*/
-
 	if (data_.size()) {
 		std::sort(data_.begin(), data_.end(), get_stronger_nanobot);
 		return data_[0];
@@ -103,10 +90,9 @@ nanobot_info_str ExperimentalEmergencyTransportation::get_strongest_nanobot() {
 	}
 }
 
-nanobot_info_str ExperimentalEmergencyTransportation::get_coord_most_in_range() {
-	int32_t minx, maxx, miny, maxy, minz, maxz, min, max;
-
-	nanobot_info_str result;
+int32_t ExperimentalEmergencyTransportation::get_coord_most_in_range() {
+	int32_t minx, maxx, miny, maxy, minz, maxz, min, max, range, tmp;
+	nanobot_info_str result, coord;
 
 	minx = miny = minz = INT32_MIN;
 	maxx = maxy = maxz = INT32_MAX;
@@ -142,16 +128,27 @@ nanobot_info_str ExperimentalEmergencyTransportation::get_coord_most_in_range() 
 		}
 	}
 
+	range = 0;
+
 	for (int32_t x = minx; x <= maxx; x++) {
 		for (int32_t y = miny; y <= maxy; y++) {
 			for (int32_t z = minz; z <= maxz; z++) {
-				//result = nanobot_info_str(x, y, z, 0);
+				coord.x = x;
+				coord.y = y;
+				coord.z = z;
+				coord.r = 0;
+
+				tmp = get_nanobots_in_range_count(coord);
+
+				if (tmp > range){
+					range = tmp;
+					result = coord;
+				}
 			}
 		}
 	}
 
-	//return result.get_range(nanobot_info_str(0, 0, 0, 0));
-	return result;
+	return result.get_range(nanobot_info_str());
 }
 
 int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(const nanobot_info_str coords, const int32_t range) {
@@ -163,7 +160,17 @@ int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(const n
 		}
 	}
 	return result;
+}
 
+int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(const nanobot_info_str coords) {
+	int32_t result = 0;
+
+	for (uint32_t i = 0; i < data_.size(); i++) {
+		if (data_[i].get_range(coords) <= data_[i].r) {
+			result++;
+		}
+	}
+	return result;
 }
 
 int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count() {
@@ -186,6 +193,13 @@ int main(void) {
 
 	result1 = eet.get_nanobots_in_range_count();
 
+	if (!eet.init(
+			{"pos=<10,12,12>, r=2", "pos=<12,14,12>, r=2", "pos=<16,12,12>, r=4", "pos=<14,14,14>, r=6", "pos=<50,50,50>, r=200", "pos=<10,10,10>, r=5"})) {
+		return -1;
+	}
+
+	result2 = eet.get_coord_most_in_range();
+
 #endif
 
 	if (!eet.init()) {
@@ -200,7 +214,7 @@ int main(void) {
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
 
-	result2 = 2;
+	result2 = eet.get_coord_most_in_range();
 
 	std::cout << "Result is " << result2 << std::endl;
 }
