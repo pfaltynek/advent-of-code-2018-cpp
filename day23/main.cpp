@@ -19,11 +19,12 @@ class ExperimentalEmergencyTransportation {
 	bool init();
 	nanobot_info_str get_strongest_nanobot();
 	int32_t get_nanobots_in_range_count();
+	int32_t get_nanobots_in_range_count(const nanobot_info_str coords, const int32_t range);
+	nanobot_info_str get_coord_most_in_range();
 
   private:
 	std::vector<nanobot_info_str> data_;
 };
-
 
 bool ExperimentalEmergencyTransportation::init(const std::vector<std::string> input) {
 	std::smatch sm;
@@ -72,34 +73,105 @@ bool ExperimentalEmergencyTransportation::init() {
 	return init(lines);
 }
 
-nanobot_info_str ExperimentalEmergencyTransportation::get_strongest_nanobot(){
-	int32_t strongest = 0, idx = -1;
+static int get_stronger_nanobot(nanobot_info_str first, nanobot_info_str second) {
+	if (first.r > second.r) {
+		return 1;
+	}
+	return 0;
+}
 
-	for (uint32_t i = 0; i < data_.size(); i++)
-	{
-		if (strongest < data_[i].r){
+nanobot_info_str ExperimentalEmergencyTransportation::get_strongest_nanobot() {
+	/*int32_t strongest = 0, idx = -1;
+
+	for (uint32_t i = 0; i < data_.size(); i++) {
+		if (strongest < data_[i].r) {
 			strongest = data_[i].r;
 			idx = i;
 		}
 	}
-	if (idx >=0) {
+	if (idx >= 0) {
 		return data_[idx];
 	} else {
-		return nanobot_info_str();	
+		return nanobot_info_str();
+	}*/
+
+	if (data_.size()) {
+		std::sort(data_.begin(), data_.end(), get_stronger_nanobot);
+		return data_[0];
+	} else {
+		return nanobot_info_str();
 	}
 }
 
-int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(){
+nanobot_info_str ExperimentalEmergencyTransportation::get_coord_most_in_range() {
+	int32_t minx, maxx, miny, maxy, minz, maxz, min, max;
+
+	nanobot_info_str result;
+
+	minx = miny = minz = INT32_MIN;
+	maxx = maxy = maxz = INT32_MAX;
+	for (uint32_t i = 0; i < data_.size(); i++) {
+		min = max = data_[i].x;
+		min -= data_[i].r;
+		max += data_[i].r;
+		if (min > minx) {
+			minx = min;
+		}
+		if (max < maxx) {
+			maxx = max;
+		}
+
+		min = max = data_[i].y;
+		min -= data_[i].r;
+		max += data_[i].r;
+		if (min > miny) {
+			miny = min;
+		}
+		if (max < maxy) {
+			maxy = max;
+		}
+
+		min = max = data_[i].z;
+		min -= data_[i].r;
+		max += data_[i].r;
+		if (min > minz) {
+			minz = min;
+		}
+		if (max < maxz) {
+			maxz = max;
+		}
+	}
+
+	for (int32_t x = minx; x <= maxx; x++) {
+		for (int32_t y = miny; y <= maxy; y++) {
+			for (int32_t z = minz; z <= maxz; z++) {
+				//result = nanobot_info_str(x, y, z, 0);
+			}
+		}
+	}
+
+	//return result.get_range(nanobot_info_str(0, 0, 0, 0));
+	return result;
+}
+
+int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(const nanobot_info_str coords, const int32_t range) {
 	int32_t result = 0;
 
-	nanobot_info_str strongest = get_strongest_nanobot();
-	for (uint32_t i = 0; i < data_.size(); i++)
-	{
-		if (data_[i].get_range(strongest) <= strongest.r){
+	for (uint32_t i = 0; i < data_.size(); i++) {
+		if (data_[i].get_range(coords) <= range) {
 			result++;
 		}
 	}
 	return result;
+
+}
+
+int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count() {
+	int32_t result = 0;
+
+	nanobot_info_str strongest = get_strongest_nanobot();
+
+	return get_nanobots_in_range_count(strongest, strongest.r);
 }
 
 int main(void) {
@@ -108,7 +180,7 @@ int main(void) {
 
 #if TEST
 	if (!eet.init({"pos=<0,0,0>, r=4", "pos=<1,0,0>, r=1", "pos=<4,0,0>, r=3", "pos=<0,2,0>, r=1", "pos=<0,5,0>, r=3", "pos=<0,0,3>, r=1", "pos=<1,1,1>, r=1",
-					"pos=<1,1,2>, r=1", "pos=<1,3,1>, r=1"})) {
+				   "pos=<1,1,2>, r=1", "pos=<1,3,1>, r=1"})) {
 		return -1;
 	}
 
