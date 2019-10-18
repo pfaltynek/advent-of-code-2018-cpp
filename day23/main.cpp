@@ -7,12 +7,18 @@ typedef enum TOOL_TYPE { torch = 1, climbing_gear = 2, neither = 0 } tool_type_t
 
 typedef struct NANOBOT_INFO {
 	int32_t x, y, z, r;
+
+	int32_t get_range(NANOBOT_INFO other) {
+		return abs(other.x - x) + abs(other.y - y) + abs(other.z - z);
+	}
 } nanobot_info_str;
 
 class ExperimentalEmergencyTransportation {
   public:
 	bool init(const std::vector<std::string> input);
 	bool init();
+	nanobot_info_str get_strongest_nanobot();
+	int32_t get_nanobots_in_range_count();
 
   private:
 	std::vector<nanobot_info_str> data_;
@@ -66,6 +72,36 @@ bool ExperimentalEmergencyTransportation::init() {
 	return init(lines);
 }
 
+nanobot_info_str ExperimentalEmergencyTransportation::get_strongest_nanobot(){
+	int32_t strongest = 0, idx = -1;
+
+	for (uint32_t i = 0; i < data_.size(); i++)
+	{
+		if (strongest < data_[i].r){
+			strongest = data_[i].r;
+			idx = i;
+		}
+	}
+	if (idx >=0) {
+		return data_[idx];
+	} else {
+		return nanobot_info_str();	
+	}
+}
+
+int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(){
+	int32_t result = 0;
+
+	nanobot_info_str strongest = get_strongest_nanobot();
+	for (uint32_t i = 0; i < data_.size(); i++)
+	{
+		if (data_[i].get_range(strongest) <= strongest.r){
+			result++;
+		}
+	}
+	return result;
+}
+
 int main(void) {
 	int32_t result1 = 0, result2 = 0;
 	ExperimentalEmergencyTransportation eet;
@@ -76,7 +112,7 @@ int main(void) {
 		return -1;
 	}
 
-	result1 = 1;
+	result1 = eet.get_nanobots_in_range_count();
 
 #endif
 
@@ -87,7 +123,7 @@ int main(void) {
 	std::cout << "=== Advent of Code 2018 - day 23 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-	result1 = 1;
+	result1 = eet.get_nanobots_in_range_count();
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
