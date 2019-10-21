@@ -2,8 +2,12 @@
 
 const std::regex immune_header_regex("^Immune System:$");
 const std::regex infection_header_regex("^Infection:$");
-const std::regex group_regex("^(\\d+) units each with (\\d+) hit points \\((.*)\\) with an attack that does (\\d+) (.*) damage at initiative (\\d+)$");
-// const std::regex nanobot_regex("^pos=<(-?\\d+),(-?\\d+),(-?\\d+)>, r=(\\d+)$");
+const std::regex group_regex("^(\\d+) units each with (\\d+) hit points (\\(.*\\))? with an attack that does (\\d+) (.*) damage at initiative (\\d+)$");
+const std::regex attack_type_regex("^bludgeoning|cold|radiation|slashing|fire$");
+const std::regex immune_regex("^\\(immune to (.*)\\)$");
+const std::regex immune_weak_regex("^\\((immune to (.*); weak to (.*))\\)$");
+const std::regex weak_regex("^\\(weak to (.*)\\)$");
+const std::regex list_regex("^([a-z]+)(, ([a-z]+))*$");
 
 typedef enum AREA_TYPE { bludgeoning = 0, cold = 1, fire = 2, slashing = 3, radiation = 4 } attack_type_t;
 
@@ -25,14 +29,99 @@ class ImmuneSystemSimulator {
   private:
 	bool init_attack_type(const std::string input, attack_type_t& attack_type);
 	bool init_weaknees_immunity(const std::string input, std::vector<attack_type_t>& weakness, std::vector<attack_type_t>& immunity);
+	bool init_attack_type_list(const std::string input, std::vector<attack_type_t>& list);
 	std::vector<group_str> immune_, infection_;
 };
 
 bool ImmuneSystemSimulator::init_attack_type(const std::string input, attack_type_t& attack_type) {
-	return false;
+	std::smatch sm;
+
+	if (std::regex_match(input, sm, attack_type_regex)) {
+		switch (sm.str(1)[0]) {
+			case 'b':
+				attack_type = bludgeoning;
+				break;
+			case 'c':
+				attack_type = cold;
+				break;
+			case 'r':
+				attack_type = radiation;
+				break;
+			case 's':
+				attack_type = slashing;
+				break;
+			case 'f':
+				attack_type = fire;
+				break;
+		}
+		return true;
+	} else {
+		return false;
+	}
 }
+
+bool ImmuneSystemSimulator::init_attack_type_list(const std::string input, std::vector<attack_type_t>& list) {
+	std::smatch sm;
+	attack_type_t type;
+
+	if (std::regex_match(input, sm, list_regex)) {
+		list.clear();
+		/*
+				for (uint32_t i = 0; i < sm.size(); i++) {
+					std::cout << i << " '" << sm.str(i)<< "' " << sm[i].matched << std::endl;
+				}
+				std::cout << sm.size() << " '" << sm.str(sm.size()) << "' " << std::endl;
+		*/
+		if (init_attack_type(sm.str(1), type)) {
+			list.push_back(type);
+		} else {
+			return false;
+		}
+
+		for (uint32_t i = 3; i < sm.size(); i += 2) {
+			if (sm[i].matched) {
+				if (init_attack_type(sm.str(i), type)) {
+					list.push_back(type);
+				} else {
+					return false;
+				}
+			}
+		}
+	} else {
+		return false;
+	}
+
+	return true;
+}
+
 bool ImmuneSystemSimulator::init_weaknees_immunity(const std::string input, std::vector<attack_type_t>& weakness, std::vector<attack_type_t>& immunity) {
-	return false;
+	std::smatch sm;
+	std::string immune, weak;
+
+	if (std::regex_match(input, sm, immune_weak_regex)) {
+		immune = sm.str(1);
+		if (!init_attack_type_list(immune, immunity)) {
+			return false;
+		}
+		weak = sm.str(2);
+		if (!init_attack_type_list(weak, weakness)) {
+			return false;
+		}
+	} else if (std::regex_match(input, sm, immune_regex)) {
+		immune = sm.str(1);
+		if (!init_attack_type_list(immune, immunity)) {
+			return false;
+		}
+	} else if (std::regex_match(input, sm, weak_regex)) {
+		weak = sm.str(1);
+		if (!init_attack_type_list(weak, weakness)) {
+			return false;
+		}
+	} else {
+		return false;
+	}
+
+	return true;
 }
 
 bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
@@ -49,8 +138,10 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 
 		if (std::regex_match(input[i], sm, immune_header_regex)) {
 			immune_section = true;
+			in_section = true;
 		} else if (std::regex_match(input[i], sm, infection_header_regex)) {
 			immune_section = false;
+			in_section = true;
 		} else if (std::regex_match(input[i], sm, group_regex)) {
 			if (!in_section) {
 				std::cout << "Unknown section at input start" << std::endl;
@@ -62,10 +153,12 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 			group.attack_damage = stoi(sm.str(4));
 			group.initiative = stoi(sm.str(6));
 
-			if (!init_attack_type(sm.str(3), group.attack_type)) {
+			if (!init_attack_type(sm.str(5), group.attack_type)) {
+				std::cout << "Unknown attack type at line " << i + 1 << std::endl;
 				return false;
 			}
-			if (!init_weaknees_immunity(sm.str(5), group.weaknesses, group.immunities)) {
+			if (!init_weaknees_immunity(sm.str(3), group.weaknesses, group.immunities)) {
+				std::cout << "Unknown weakness/immunity at line " << i + 1 << std::endl;
 				return false;
 			}
 		} else {
