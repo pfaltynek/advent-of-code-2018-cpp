@@ -130,9 +130,9 @@ int32_t ExperimentalEmergencyTransportation::get_coord_most_in_range() {
 
 	range = 0;
 
-	for (int32_t x = minx; x <= maxx; x++) {
-		for (int32_t y = miny; y <= maxy; y++) {
-			for (int32_t z = minz; z <= maxz; z++) {
+	for (int32_t x = std::min(minx, maxx); x <= std::max(maxx, minx); x++) {
+		for (int32_t y = std::min(miny, maxy); y <= std::max(maxy, miny); y++) {
+			for (int32_t z = std::min(minz, maxz); z <= std::max(maxz, minz); z++) {
 				coord.x = x;
 				coord.y = y;
 				coord.z = z;
@@ -140,7 +140,7 @@ int32_t ExperimentalEmergencyTransportation::get_coord_most_in_range() {
 
 				tmp = get_nanobots_in_range_count(coord);
 
-				if (tmp > range){
+				if (tmp > range) {
 					range = tmp;
 					result = coord;
 				}
