@@ -8,6 +8,6 @@
 #include <string>
 #include <regex>
 
-#define TEST 0
+#define TEST 1
 
 #endif // MAIN_HPP

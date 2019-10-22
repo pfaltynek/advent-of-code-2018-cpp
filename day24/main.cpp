@@ -2,12 +2,12 @@
 
 const std::regex immune_header_regex("^Immune System:$");
 const std::regex infection_header_regex("^Infection:$");
-const std::regex group_regex("^(\\d+) units each with (\\d+) hit points (\\(.*\\))? with an attack that does (\\d+) (.*) damage at initiative (\\d+)$");
-const std::regex attack_type_regex("^bludgeoning|cold|radiation|slashing|fire$");
-const std::regex immune_regex("^\\(immune to (.*)\\)$");
-const std::regex immune_weak_regex("^\\((immune to (.*); weak to (.*))\\)$");
-const std::regex weak_regex("^\\(weak to (.*)\\)$");
-const std::regex list_regex("^([a-z]+)(, ([a-z]+))*$");
+const std::regex group_regex("^(\\d+) units each with (\\d+) hit points (\\(.*\\) )?with an attack that does (\\d+) (.*) damage at initiative (\\d+)$");
+const std::regex attack_type_regex("^(bludgeoning|cold|radiation|slashing|fire)$");
+const std::regex immune_regex("^\\(immune to (.*)\\) $");
+const std::regex immune_weak_regex("^\\(immune to (.*); weak to (.*)\\) $");
+const std::regex weak_immune_regex("^\\(weak to (.*); immune to (.*)\\) $");
+const std::regex weak_regex("^\\(weak to (.*)\\) $");
 
 typedef enum AREA_TYPE { bludgeoning = 0, cold = 1, fire = 2, slashing = 3, radiation = 4 } attack_type_t;
 
@@ -53,6 +53,9 @@ bool ImmuneSystemSimulator::init_attack_type(const std::string input, attack_typ
 			case 'f':
 				attack_type = fire;
 				break;
+			default:
+				return false;
+				break;
 		}
 		return true;
 	} else {
@@ -63,30 +66,25 @@ bool ImmuneSystemSimulator::init_attack_type(const std::string input, attack_typ
 bool ImmuneSystemSimulator::init_attack_type_list(const std::string input, std::vector<attack_type_t>& list) {
 	std::smatch sm;
 	attack_type_t type;
+	std::string in = input;
 
-	if (std::regex_match(input, sm, list_regex)) {
-		list.clear();
-		/*
-				for (uint32_t i = 0; i < sm.size(); i++) {
-					std::cout << i << " '" << sm.str(i)<< "' " << sm[i].matched << std::endl;
-				}
-				std::cout << sm.size() << " '" << sm.str(sm.size()) << "' " << std::endl;
-		*/
-		if (init_attack_type(sm.str(1), type)) {
+	std::string delimiter = ", ";
+
+	size_t pos = 0;
+	std::string token;
+	while ((pos = in.find(delimiter)) != std::string::npos) {
+		token = in.substr(0, pos);
+		in.erase(0, pos + delimiter.length());
+
+		if (init_attack_type(token, type)) {
 			list.push_back(type);
 		} else {
 			return false;
 		}
+	}
 
-		for (uint32_t i = 3; i < sm.size(); i += 2) {
-			if (sm[i].matched) {
-				if (init_attack_type(sm.str(i), type)) {
-					list.push_back(type);
-				} else {
-					return false;
-				}
-			}
-		}
+	if (init_attack_type(in, type)) {
+		list.push_back(type);
 	} else {
 		return false;
 	}
@@ -98,7 +96,16 @@ bool ImmuneSystemSimulator::init_weaknees_immunity(const std::string input, std:
 	std::smatch sm;
 	std::string immune, weak;
 
-	if (std::regex_match(input, sm, immune_weak_regex)) {
+	if (std::regex_match(input, sm, weak_immune_regex)) {
+		weak = sm.str(1);
+		if (!init_attack_type_list(weak, weakness)) {
+			return false;
+		}
+		immune = sm.str(2);
+		if (!init_attack_type_list(immune, immunity)) {
+			return false;
+		}
+	} else if (std::regex_match(input, sm, immune_weak_regex)) {
 		immune = sm.str(1);
 		if (!init_attack_type_list(immune, immunity)) {
 			return false;
@@ -112,11 +119,13 @@ bool ImmuneSystemSimulator::init_weaknees_immunity(const std::string input, std:
 		if (!init_attack_type_list(immune, immunity)) {
 			return false;
 		}
+		weakness.clear();
 	} else if (std::regex_match(input, sm, weak_regex)) {
 		weak = sm.str(1);
 		if (!init_attack_type_list(weak, weakness)) {
 			return false;
 		}
+		immunity.clear();
 	} else {
 		return false;
 	}
@@ -136,12 +145,18 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 	for (uint32_t i = 0; i < input.size(); i++) {
 		group = {};
 
+		if (input[i].empty()) {
+			continue;
+		}
+
 		if (std::regex_match(input[i], sm, immune_header_regex)) {
 			immune_section = true;
 			in_section = true;
+			continue;
 		} else if (std::regex_match(input[i], sm, infection_header_regex)) {
 			immune_section = false;
 			in_section = true;
+			continue;
 		} else if (std::regex_match(input[i], sm, group_regex)) {
 			if (!in_section) {
 				std::cout << "Unknown section at input start" << std::endl;
@@ -157,9 +172,11 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 				std::cout << "Unknown attack type at line " << i + 1 << std::endl;
 				return false;
 			}
-			if (!init_weaknees_immunity(sm.str(3), group.weaknesses, group.immunities)) {
-				std::cout << "Unknown weakness/immunity at line " << i + 1 << std::endl;
-				return false;
+			if (!sm.str(3).empty()) {
+				if (!init_weaknees_immunity(sm.str(3), group.weaknesses, group.immunities)) {
+					std::cout << "Unknown weakness/immunity at line " << i + 1 << std::endl;
+					return false;
+				}
 			}
 		} else {
 			std::cout << "Invalid input at line " << i + 1 << std::endl;
@@ -167,8 +184,10 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 		}
 
 		if (immune_section) {
+			group.number = immune_.size() + 1;
 			immune_.push_back(group);
 		} else {
+			group.number = infection_.size() + 1;
 			infection_.push_back(group);
 		}
 	}
@@ -196,9 +215,7 @@ bool ImmuneSystemSimulator::init() {
 	lines.clear();
 
 	while (std::getline(input, line)) {
-		if (!line.empty()) {
-			lines.push_back(line);
-		}
+		lines.push_back(line);
 	}
 
 	if (input.is_open()) {
@@ -213,20 +230,23 @@ int main(void) {
 	ImmuneSystemSimulator iss;
 
 #if TEST
-	if (!iss.init({"pos=<0,0,0>, r=4", "pos=<1,0,0>, r=1", "pos=<4,0,0>, r=3", "pos=<0,2,0>, r=1", "pos=<0,5,0>, r=3", "pos=<0,0,3>, r=1", "pos=<1,1,1>, r=1",
-				   "pos=<1,1,2>, r=1", "pos=<1,3,1>, r=1"})) {
+	if (!iss.init(
+			{"Immune System:", "17 units each with 5390 hit points (weak to radiation, bludgeoning) with an attack that does 4507 fire damage at initiative 2",
+			 "989 units each with 1274 hit points (immune to fire; weak to bludgeoning, slashing) with an attack that does 25 slashing damage at initiative 3",
+			 "", "Infection:", "801 units each with 4706 hit points (weak to radiation) with an attack that does 116 bludgeoning damage at initiative 1",
+			 "4485 units each with 2961 hit points (immune to radiation; weak to fire, cold) with an attack that does 12 slashing damage at initiative 4"})) {
 		return -1;
 	}
 
 	result1 = 1;
-
+/*
 	if (!iss.init(
 			{"pos=<10,12,12>, r=2", "pos=<12,14,12>, r=2", "pos=<16,12,12>, r=4", "pos=<14,14,14>, r=6", "pos=<50,50,50>, r=200", "pos=<10,10,10>, r=5"})) {
 		return -1;
 	}
 
 	result2 = 2;
-
+*/
 #endif
 
 	if (!iss.init()) {
