@@ -24,6 +24,10 @@ typedef struct GROUP {
 	int32_t get_effective_power() {
 		return units * attack_damage;
 	}
+
+	void print() {
+		std::cout << "Group " << number << " contains " << units << "units (ep " << get_effective_power() << ")" << std::endl;
+	}
 } group_str;
 
 class ImmuneSystemSimulator {
@@ -263,16 +267,15 @@ int32_t ImmuneSystemSimulator::simulate() {
 
 	std::cout << "Immune System:" << std::endl;
 	for (uint32_t i = 0; i < imm.size(); ++i) {
-		std::cout << "Group " << groups_[imm[i]].number << " contains " << groups_[imm[i]].units << "units (ep " << groups_[imm[i]].get_effective_power() << ")"
-				  << std::endl;
+		groups_[imm[i]].print();
 	}
 
 	std::cout << "Infection:" << std::endl;
 	for (uint32_t i = 0; i < inf.size(); ++i) {
-		std::cout << "Group " << groups_[inf[i]].number << " contains " << groups_[inf[i]].units << "units (ep " << groups_[inf[i]].get_effective_power() << ")"
-				  << std::endl;
+		groups_[inf[i]].print();
 	}
-
+	std::cout << std::endl;
+	
 	return 0;
 }
 
