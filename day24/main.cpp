@@ -19,18 +19,24 @@ typedef struct GROUP {
 	attack_type_t attack_type;
 	std::vector<attack_type_t> weaknesses, immunities;
 	int32_t number;
+	bool is_infection;
+
+	int32_t get_effective_power() {
+		return units * attack_damage;
+	}
 } group_str;
 
 class ImmuneSystemSimulator {
   public:
 	bool init(const std::vector<std::string> input);
 	bool init();
+	int32_t simulate();
 
   private:
 	bool init_attack_type(const std::string input, attack_type_t& attack_type);
 	bool init_weaknees_immunity(const std::string input, std::vector<attack_type_t>& weakness, std::vector<attack_type_t>& immunity);
 	bool init_attack_type_list(const std::string input, std::vector<attack_type_t>& list);
-	std::vector<group_str> immune_, infection_;
+	std::vector<group_str> groups_;
 };
 
 bool ImmuneSystemSimulator::init_attack_type(const std::string input, attack_type_t& attack_type) {
@@ -138,9 +144,9 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 	group_str group;
 	bool immune_section;
 	bool in_section = false;
+	int32_t immunes = 0, infects = 0;
 
-	immune_.clear();
-	infection_.clear();
+	groups_.clear();
 
 	for (uint32_t i = 0; i < input.size(); i++) {
 		group = {};
@@ -167,6 +173,7 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 			group.hit_points = stoi(sm.str(2));
 			group.attack_damage = stoi(sm.str(4));
 			group.initiative = stoi(sm.str(6));
+			group.is_infection = !immune_section;
 
 			if (!init_attack_type(sm.str(5), group.attack_type)) {
 				std::cout << "Unknown attack type at line " << i + 1 << std::endl;
@@ -184,15 +191,16 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 		}
 
 		if (immune_section) {
-			group.number = immune_.size() + 1;
-			immune_.push_back(group);
+			immunes++;
+			group.number = immunes;
 		} else {
-			group.number = infection_.size() + 1;
-			infection_.push_back(group);
+			infects++;
+			group.number = infects;
 		}
+		groups_.push_back(group);
 	}
 
-	if (immune_.empty() || infection_.empty()) {
+	if (!immunes || !infects) {
 		std::cout << "Input incomplette (missing one section)" << std::endl;
 		return false;
 	}
@@ -225,6 +233,49 @@ bool ImmuneSystemSimulator::init() {
 	return init(lines);
 }
 
+static int sort_groups_by_effective_power(group_str first, group_str second) {
+	int32_t f, s;
+
+	f = first.get_effective_power();
+	s = second.get_effective_power();
+	if (f == s) {
+		return (first.initiative > second.initiative);
+	} else {
+		return (f > s);
+	}
+}
+
+int32_t ImmuneSystemSimulator::simulate() {
+	std::vector<uint32_t> imm, inf;
+
+	imm.clear();
+	inf.clear();
+
+	std::sort(groups_.begin(), groups_.end(), sort_groups_by_effective_power);
+
+	for (uint32_t i = 0; i < groups_.size(); ++i) {
+		if (groups_[i].is_infection) {
+			inf.push_back(i);
+		} else {
+			imm.push_back(i);
+		}
+	}
+
+	std::cout << "Immune System:" << std::endl;
+	for (uint32_t i = 0; i < imm.size(); ++i) {
+		std::cout << "Group " << groups_[imm[i]].number << " contains " << groups_[imm[i]].units << "units (ep " << groups_[imm[i]].get_effective_power() << ")"
+				  << std::endl;
+	}
+
+	std::cout << "Infection:" << std::endl;
+	for (uint32_t i = 0; i < inf.size(); ++i) {
+		std::cout << "Group " << groups_[inf[i]].number << " contains " << groups_[inf[i]].units << "units (ep " << groups_[inf[i]].get_effective_power() << ")"
+				  << std::endl;
+	}
+
+	return 0;
+}
+
 int main(void) {
 	int32_t result1 = 0, result2 = 0;
 	ImmuneSystemSimulator iss;
@@ -238,7 +289,7 @@ int main(void) {
 		return -1;
 	}
 
-	result1 = 1;
+	result1 = iss.simulate();
 /*
 	if (!iss.init(
 			{"pos=<10,12,12>, r=2", "pos=<12,14,12>, r=2", "pos=<16,12,12>, r=4", "pos=<14,14,14>, r=6", "pos=<50,50,50>, r=200", "pos=<10,10,10>, r=5"})) {
