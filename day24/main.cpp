@@ -9,7 +9,7 @@ const std::regex immune_weak_regex("^\\(immune to (.*); weak to (.*)\\) $");
 const std::regex weak_immune_regex("^\\(weak to (.*); immune to (.*)\\) $");
 const std::regex weak_regex("^\\(weak to (.*)\\) $");
 
-typedef enum AREA_TYPE { bludgeoning = 0, cold = 1, fire = 2, slashing = 3, radiation = 4 } attack_type_t;
+typedef enum ATTACK_TYPE { bludgeoning = 0, cold = 1, fire = 2, slashing = 3, radiation = 4 } attack_type_t;
 
 typedef struct GROUP {
 	uint32_t index;
@@ -46,6 +46,50 @@ typedef struct GROUP {
 			std::cout << "Immune System";
 		}
 		std::cout << " group " << number << " attacks defending group " << target.number << ", killing " << killed << " units" << std::endl;
+	}
+
+	std::string attack_type_to_string(attack_type_t attack_type) {
+		switch (attack_type) {
+			case bludgeoning:
+				return "bludgeoning";
+			case cold:
+				return "cold";
+			case slashing:
+				return "slashing";
+			case radiation:
+				return "radiation";
+			case fire:
+				return "fire";
+		}
+		return "";
+	}
+
+	void print_description() {
+		std::cout << units << " units each with " << hit_points << " hit points ";
+		if (immunities.size() || weaknesses.size()) {
+			std::cout << "(";
+			if (immunities.size()) {
+				std::cout << "immune to ";
+				std::cout << attack_type_to_string(immunities[0]);
+				for (uint32_t i = 1; i < immunities.size(); i++) {
+					std::cout << ", " << attack_type_to_string(immunities[i]);
+				}
+			}
+			if (weaknesses.size()) {
+				if (immunities.size()) {
+					std::cout << "; ";
+				}
+				std::cout << "weak to ";
+				std::cout << attack_type_to_string(weaknesses[0]);
+				for (uint32_t i = 1; i < weaknesses.size(); i++) {
+					std::cout << ", " << attack_type_to_string(weaknesses[i]);
+				}
+			}
+			std::cout << ") ";
+		}
+
+		std::cout << "with an attack that does " << attack_damage << " " << attack_type_to_string(attack_type);
+		std::cout << " damage at initiative " << initiative << std::endl;
 	}
 
 	bool is_immune_to(attack_type_t attack_type) {
@@ -344,6 +388,16 @@ int32_t ImmuneSystemSimulator::simulate() {
 	uint32_t idx;
 	bool finished = false;
 
+	/*
+	std::cout << std::endl;
+
+	for (uint32_t i = 0; i < groups_.size(); i++) {
+		groups_[i].print_description();
+	}
+
+	std::cout << std::endl;
+	*/
+
 	while (true) {
 		groups = groups_;
 		idx = 0;
@@ -498,14 +552,6 @@ int main(void) {
 	}
 
 	result1 = iss.simulate();
-/*
-	if (!iss.init(
-			{"pos=<10,12,12>, r=2", "pos=<12,14,12>, r=2", "pos=<16,12,12>, r=4", "pos=<14,14,14>, r=6", "pos=<50,50,50>, r=200", "pos=<10,10,10>, r=5"})) {
-		return -1;
-	}
-
-	result2 = 2;
-*/
 #endif
 
 	if (!iss.init()) {
