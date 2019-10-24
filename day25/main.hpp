@@ -9,6 +9,6 @@
 #include <regex>
 #include <map>
 
-#define TEST 0
+#define TEST 1
 
 #endif // MAIN_HPP
