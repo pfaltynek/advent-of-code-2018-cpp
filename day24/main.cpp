@@ -531,7 +531,7 @@ void ImmuneSystemSimulator::target_selection(const std::vector<uint32_t>& attack
 			damage = dmg;
 		}
 
-		if (target_found) {
+		if (target_found && damage > 0) {
 			attack_plan[attacker.index] = tmp_grp_idx;
 			defenders.erase(defenders.begin() + tmp_idx);
 		}
@@ -551,7 +551,7 @@ int main(void) {
 		return -1;
 	}
 
-	result1 = iss.simulate();
+	result1 = iss.simulate(); // 5216
 #endif
 
 	if (!iss.init()) {
