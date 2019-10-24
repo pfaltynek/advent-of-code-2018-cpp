@@ -159,15 +159,16 @@ class ImmuneSystemSimulator {
   public:
 	bool init(const std::vector<std::string> input);
 	bool init();
-	int32_t simulate();
+	int32_t simulate(const int32_t boost, const bool print, bool& immune_system_won);
+	int32_t simulate_part2();
 
   private:
 	bool init_attack_type(const std::string input, attack_type_t& attack_type);
 	bool init_weaknees_immunity(const std::string input, std::vector<attack_type_t>& weakness, std::vector<attack_type_t>& immunity);
 	bool init_attack_type_list(const std::string input, std::vector<attack_type_t>& list);
-	void target_selection(const std::vector<uint32_t>& attackers, std::vector<uint32_t> defenders, std::map<uint32_t, uint32_t>& attack_plan);
+	void target_selection(const std::vector<uint32_t>& attackers, std::vector<uint32_t> defenders, const bool print, std::map<uint32_t, uint32_t>& attack_plan);
 
-	std::vector<group_str> groups_;
+	std::vector<group_str> groups_, groups_init_;
 };
 
 bool ImmuneSystemSimulator::init_attack_type(const std::string input, attack_type_t& attack_type) {
@@ -337,6 +338,8 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 		return false;
 	}
 
+	groups_init_ = groups_;
+
 	return true;
 }
 
@@ -381,22 +384,28 @@ static int sort_groups_by_iniciative(group_str first, group_str second) {
 	return (first.initiative > second.initiative);
 }
 
-int32_t ImmuneSystemSimulator::simulate() {
+int32_t ImmuneSystemSimulator::simulate(const int32_t boost, const bool print, bool& immune_system_won) {
 	std::vector<uint32_t> imm, inf, all;
 	std::map<uint32_t, uint32_t> attack_plan;
 	std::vector<group_str> groups;
 	uint32_t idx;
 	bool finished = false;
+	int32_t no_kill_cnt = 0, fight_sum, fight_sum_prev = 0;
 
-	/*
+	/* check input parsing
 	std::cout << std::endl;
-
 	for (uint32_t i = 0; i < groups_.size(); i++) {
 		groups_[i].print_description();
 	}
-
 	std::cout << std::endl;
 	*/
+	groups_ = groups_init_;
+
+	for (uint32_t i = 0; i < groups_.size(); ++i) {
+		if (!groups_[i].is_infection) {
+			groups_[i].attack_damage += boost;
+		}
+	}
 
 	while (true) {
 		groups = groups_;
@@ -421,26 +430,42 @@ int32_t ImmuneSystemSimulator::simulate() {
 			}
 		}
 
-		std::cout << "Immune System:" << std::endl;
+		if (print) {
+			std::cout << "Immune System:" << std::endl;
+		}
 		if (imm.empty()) {
-			std::cout << "No groups remain." << std::endl;
+			if (print) {
+				std::cout << "No groups remain." << std::endl;
+			}
+			immune_system_won = false;
 			finished = true;
 		} else {
-			for (uint32_t i = 0; i < imm.size(); ++i) {
-				groups_[imm[i]].print();
+			if (print) {
+				for (uint32_t i = 0; i < imm.size(); ++i) {
+					groups_[imm[i]].print();
+				}
 			}
 		}
 
-		std::cout << "Infection:" << std::endl;
+		if (print) {
+			std::cout << "Infection:" << std::endl;
+		}
 		if (inf.empty()) {
-			std::cout << "No groups remain." << std::endl;
+			if (print) {
+				std::cout << "No groups remain." << std::endl;
+			}
+			immune_system_won = true;
 			finished = true;
 		} else {
-			for (uint32_t i = 0; i < inf.size(); ++i) {
-				groups_[inf[i]].print();
+			if (print) {
+				for (uint32_t i = 0; i < inf.size(); ++i) {
+					groups_[inf[i]].print();
+				}
 			}
 		}
-		std::cout << std::endl;
+		if (print) {
+			std::cout << std::endl;
+		}
 
 		if (finished) {
 			int32_t result = 0;
@@ -466,30 +491,50 @@ int32_t ImmuneSystemSimulator::simulate() {
 
 		attack_plan.clear();
 
-		target_selection(inf, imm, attack_plan);
-		target_selection(imm, inf, attack_plan);
+		target_selection(inf, imm, print, attack_plan);
+		target_selection(imm, inf, print, attack_plan);
 
 		std::sort(groups.begin(), groups.end(), sort_groups_by_iniciative);
 
-		std::cout << std::endl;
+		if (print) {
+			std::cout << std::endl;
+		}
+
+		fight_sum = 0;
 
 		for (uint32_t i = 0; i < groups.size(); ++i) {
 			uint32_t idx = groups[i].index;
+			fight_sum += groups[i].units;
 			if (groups_[idx].units) {
 				if (attack_plan.count(idx)) {
 					uint32_t idxt = attack_plan[idx];
 					int32_t damage = groups_[idx].get_damage(groups_[idxt]);
 					int32_t killed = groups_[idxt].got_damaged_by(damage);
-					groups_[idx].print_attack_info(groups_[idxt], killed);
+					if (print) {
+						groups_[idx].print_attack_info(groups_[idxt], killed);
+					}
 				}
 			}
 		}
 
-		std::cout << std::endl;
+		if (fight_sum == fight_sum_prev) {
+			no_kill_cnt++;
+			if (no_kill_cnt >= 3) {
+				immune_system_won = false;
+				return -1;
+			}
+		} else {
+			fight_sum_prev = fight_sum;
+			no_kill_cnt = 0;
+		}
+
+		if (print) {
+			std::cout << std::endl;
+		}
 	}
 }
 
-void ImmuneSystemSimulator::target_selection(const std::vector<uint32_t>& attackers, std::vector<uint32_t> defenders,
+void ImmuneSystemSimulator::target_selection(const std::vector<uint32_t>& attackers, std::vector<uint32_t> defenders, const bool print,
 											 std::map<uint32_t, uint32_t>& attack_plan) {
 	int32_t damage, dmg, tmp_idx, tmp_grp_idx;
 	group_str attacker, target, adept;
@@ -503,7 +548,9 @@ void ImmuneSystemSimulator::target_selection(const std::vector<uint32_t>& attack
 		for (uint32_t j = 0; j < defenders.size(); ++j) {
 			adept = groups_[defenders[j]];
 			dmg = attacker.get_damage(adept);
-			attacker.print_possible_attack_target(adept, dmg);
+			if (print) {
+				attacker.print_possible_attack_target(adept, dmg);
+			}
 
 			if (target_found) {
 				if (dmg < damage) {
@@ -538,9 +585,50 @@ void ImmuneSystemSimulator::target_selection(const std::vector<uint32_t>& attack
 	}
 }
 
+int32_t ImmuneSystemSimulator::simulate_part2() {
+	int32_t boost = 0;
+	int32_t min_won, max_loose, result = 0, tmp;
+	bool immune_system_won = false;
+	std::vector<int32_t> ties;
+
+	ties.clear();
+
+	while (!immune_system_won) {
+		max_loose = boost;
+		boost += 52;
+		tmp = simulate(boost, false, immune_system_won);
+		if (tmp < 0) {
+			ties.push_back(boost);
+		}
+	}
+
+	min_won = boost;
+
+	while (min_won - max_loose != 1) {
+		boost = max_loose + ((min_won - max_loose) / 2);
+		while (std::find(ties.begin(), ties.end(), boost) != ties.end()) {
+			boost++;
+		}
+		tmp = simulate(boost, false, immune_system_won);
+		if (tmp <0) {
+			ties.push_back(boost);
+		}
+
+		if (immune_system_won) {
+			result = tmp;
+			min_won = boost;
+		} else {
+			max_loose = boost;
+		}
+	}
+
+	return result;
+}
+
 int main(void) {
 	int32_t result1 = 0, result2 = 0;
 	ImmuneSystemSimulator iss;
+	bool immune_system_won;
 
 #if TEST
 	if (!iss.init(
@@ -551,7 +639,8 @@ int main(void) {
 		return -1;
 	}
 
-	result1 = iss.simulate(); // 5216
+	result1 = iss.simulate(0, true, immune_system_won);	// 5216
+	result2 = iss.simulate(1570, true, immune_system_won); // 51
 #endif
 
 	if (!iss.init()) {
@@ -561,12 +650,12 @@ int main(void) {
 	std::cout << "=== Advent of Code 2018 - day 24 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-	result1 = iss.simulate();
+	result1 = iss.simulate(0, false, immune_system_won);
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
 
-	result2 = 2;
+	result2 = iss.simulate_part2();
 
 	std::cout << "Result is " << result2 << std::endl;
 }
