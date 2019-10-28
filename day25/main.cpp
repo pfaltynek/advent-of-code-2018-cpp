@@ -4,6 +4,7 @@ const std::regex point_regex("^(-?\\d+),(-?\\d+),(-?\\d+),(-?\\d+)$");
 
 typedef struct POINT {
 	int32_t x, y, z, q;
+	bool processed;
 
 	int32_t get_distance() {
 		return abs(x) + abs(y) + abs(z) + abs(q);
@@ -18,6 +19,7 @@ class Adventure4D {
 	bool init(const std::vector<std::string> input);
 	bool init();
 	int32_t find_constellation();
+	void check(point_str from);
 
   private:
 	std::vector<point_str> points_;
@@ -31,6 +33,8 @@ bool Adventure4D::init(const std::vector<std::string> input) {
 
 	for (uint32_t i = 0; i < input.size(); i++) {
 		pt = {};
+
+		pt.processed = false;
 
 		if (input[i].empty()) {
 			continue;
@@ -78,43 +82,28 @@ bool Adventure4D::init() {
 }
 
 int32_t Adventure4D::find_constellation() {
-	std::vector<std::vector<point_str>> constellations;
-	std::vector<int32_t> idxs;
-
-	constellations.clear();
+	int32_t result = 0;
 
 	for (uint32_t i = 0; i < points_.size(); i++) {
-		idxs.clear();
-
-		for (uint32_t j = 0; j < constellations.size(); j++) {
-			for (uint32_t k = 0; k < constellations[j].size(); k++) {
-				if (constellations[j][k].get_distance(points_[i]) <= 3) {
-					idxs.push_back(j);
-					break;
-				}
-			}
-		}
-
-		if (idxs.size()) {
-			uint32_t main_idx = idxs[0];
-
-			constellations[main_idx].push_back(points_[i]);
-			idxs.erase(idxs.begin());
-			std::sort(idxs.begin(), idxs.end());
-			for (uint32_t j = 0; j < idxs.size(); j++) {
-				constellations[main_idx].insert(constellations[main_idx].end(), constellations[idxs[j]].begin(), constellations[idxs[j]].end());
-				constellations.erase(constellations.begin() + idxs[j]);
-			}
-		} else {
-			std::vector<point_str> tmp;
-
-			tmp.clear();
-			tmp.push_back(points_[i]);
-			constellations.push_back(tmp);
+		if (!points_[i].processed) {
+			points_[i].processed = true;
+			check(points_[i]);
+			result++;
 		}
 	}
 
-	return constellations.size();
+	return result;
+}
+
+void Adventure4D::check(point_str from) {
+	for (uint32_t i = 0; i < points_.size(); i++) {
+		if (!points_[i].processed) {
+			if (from.get_distance(points_[i]) <= 3) {
+				points_[i].processed = true;
+				check(points_[i]);
+			}
+		}
+	}
 }
 
 int main(void) {
@@ -162,7 +151,7 @@ int main(void) {
 	std::cout << "=== Advent of Code 2018 - day 25 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
 
-	result1 = a4d.find_constellation(); //319? too low
+	result1 = a4d.find_constellation(); // 319? too low
 
 	std::cout << "Result is " << result1 << std::endl;
 	std::cout << "--- part 2 ---" << std::endl;
