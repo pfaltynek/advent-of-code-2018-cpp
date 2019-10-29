@@ -17,8 +17,9 @@ class RoomsMap {
 
   private:
 	std::map<coord_str, char> map_;
-	coord_str min_;
-	coord_str max_;
+	std::map<coord_str, std::vector<coord_str>> doors_map_;
+	coord_str min_, doors_min_;
+	coord_str max_, doors_max_;
 };
 
 bool RoomsMap::init(std::string& regex) {
@@ -46,8 +47,8 @@ bool RoomsMap::init(std::string& regex) {
 }
 
 bool RoomsMap::decode_map(const std::string regex) {
-	coord_str coord, new_coord;
-	std::stack<coord_str> stack;
+	coord_str coord, new_coord, doors_coord, new_doors_coord;
+	std::stack<coord_str> stack, doors_stack;
 
 	if (regex.size() < 3) {
 		std::cout << "Invalid input" << std::endl;
@@ -59,12 +60,10 @@ bool RoomsMap::decode_map(const std::string regex) {
 	}
 
 	map_.clear();
-	coord = {};
-	while (!stack.empty()) {
-		stack.pop();
-	}
-
-	min_ = max_ = coord;
+	doors_map_.clear();
+	coord = doors_coord = {};
+	stack = doors_stack = {};
+	min_ = max_ = doors_max_ = doors_min_ = coord;
 	map_[coord] = 'X';
 
 	for (uint32_t i = 1; i < regex.size() - 1; ++i) {
@@ -76,6 +75,11 @@ bool RoomsMap::decode_map(const std::string regex) {
 				new_coord.y++;
 				map_[new_coord] = '.';
 				coord = new_coord;
+				new_doors_coord = doors_coord;
+				new_doors_coord.y++;
+				doors_map_[doors_coord].push_back(new_doors_coord);
+				doors_map_[new_doors_coord].push_back(doors_coord);
+				doors_coord = new_doors_coord;
 				break;
 			case 'W':
 				new_coord = coord;
@@ -84,6 +88,11 @@ bool RoomsMap::decode_map(const std::string regex) {
 				new_coord.x--;
 				map_[new_coord] = '.';
 				coord = new_coord;
+				new_doors_coord = doors_coord;
+				new_doors_coord.x--;
+				doors_map_[doors_coord].push_back(new_doors_coord);
+				doors_map_[new_doors_coord].push_back(doors_coord);
+				doors_coord = new_doors_coord;
 				break;
 			case 'S':
 				new_coord = coord;
@@ -92,6 +101,11 @@ bool RoomsMap::decode_map(const std::string regex) {
 				new_coord.y--;
 				map_[new_coord] = '.';
 				coord = new_coord;
+				new_doors_coord = doors_coord;
+				new_doors_coord.y--;
+				doors_map_[doors_coord].push_back(new_doors_coord);
+				doors_map_[new_doors_coord].push_back(doors_coord);
+				doors_coord = new_doors_coord;
 				break;
 			case 'E':
 				new_coord = coord;
@@ -100,9 +114,15 @@ bool RoomsMap::decode_map(const std::string regex) {
 				new_coord.x++;
 				map_[new_coord] = '.';
 				coord = new_coord;
+				new_doors_coord = doors_coord;
+				new_doors_coord.x++;
+				doors_map_[doors_coord].push_back(new_doors_coord);
+				doors_map_[new_doors_coord].push_back(doors_coord);
+				doors_coord = new_doors_coord;
 				break;
 			case '(':
 				stack.push(coord);
+				doors_stack.push(doors_coord);
 				break;
 			case ')':
 				if (stack.empty()) {
@@ -111,12 +131,23 @@ bool RoomsMap::decode_map(const std::string regex) {
 					coord = stack.top();
 					stack.pop();
 				}
+				if (doors_stack.empty()) {
+					std::cout << "Invalid branch in regex at " << i << "" << std::endl;
+				} else {
+					doors_coord = doors_stack.top();
+					doors_stack.pop();
+				}
 				break;
 			case '|':
 				if (stack.empty()) {
 					std::cout << "Invalid branch in regex at " << i << "" << std::endl;
 				} else {
 					coord = stack.top();
+				}
+				if (doors_stack.empty()) {
+					std::cout << "Invalid branch in regex at " << i << "" << std::endl;
+				} else {
+					doors_coord = doors_stack.top();
 				}
 				break;
 			default:
@@ -134,6 +165,19 @@ bool RoomsMap::decode_map(const std::string regex) {
 		}
 		if (new_coord.y > max_.y) {
 			max_.y = new_coord.y;
+		}
+
+		if (doors_coord.x < doors_min_.x) {
+			doors_min_.x = doors_coord.x;
+		}
+		if (doors_coord.y < doors_min_.y) {
+			doors_min_.y = doors_coord.y;
+		}
+		if (doors_coord.x > doors_max_.x) {
+			doors_max_.x = doors_coord.x;
+		}
+		if (doors_coord.y > doors_max_.y) {
+			doors_max_.y = doors_coord.y;
 		}
 	}
 
@@ -168,84 +212,41 @@ void RoomsMap::print() {
 }
 
 int32_t RoomsMap::get_furthest_room_passing_doors_count(int32_t& count1000) {
-	coord_str pt = {}, room;
 	step_info_str curr, tmp;
+	std::map<coord_str, int32_t> history;
 	std::queue<step_info_str> queue;
-	std::map<coord_str, bool> history;
-	std::queue<coord_str> rooms;
-	std::map<coord_str, std::vector<step_info_str>> results;
-	std::vector<coord_str> nexts = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
-	char c;
-	int32_t result = 0;
+	int32_t result;
 
-	count1000 = 0;
-	rooms = {};
-	results.clear();
+	tmp.coords = {};
+	tmp.doors = 0;
+	tmp.steps = 0;
 
-	for (int32_t i = min_.x; i <= max_.x; i++) {
-		for (int32_t j = min_.y; j <= max_.y; j++) {
-			coord_str coord(i, j);
+	queue = {};
+	queue.emplace(tmp);
 
-			if (get_map_symbol(coord) == '.') {
-				rooms.emplace(coord);
+	while (!queue.empty()) {
+
+		curr = queue.front();
+		queue.pop();
+
+		if (!history.count(curr.coords)) {
+			history[curr.coords] = curr.doors;
+
+			for (uint32_t i = 0; i < doors_map_[curr.coords].size(); i++) {
+				tmp = curr;
+				tmp.doors++;
+				tmp.coords = doors_map_[curr.coords][i];
+				queue.emplace(tmp);
 			}
 		}
 	}
 
-	while (!rooms.empty()) {
-		room = rooms.front();
-		rooms.pop();
-		history.clear();
-		queue = {};
-
-		curr.coords = pt;
-		curr.doors = 0;
-		curr.steps = 0;
-		queue.emplace(curr);
-		history[pt] = true;
-
-		while (!queue.empty()) {
-			curr = queue.front();
-			queue.pop();
-			history[curr.coords] = true;
-
-			if (curr.coords == room) {
-				results[room].push_back(curr);
-			} else {
-				for (uint32_t i = 0; i < nexts.size(); i++) {
-					tmp = curr;
-					tmp.coords.x += nexts[i].x;
-					tmp.coords.y += nexts[i].y;
-					c = get_map_symbol(tmp.coords);
-					if ((c == '-') || (c == '|')) {
-						tmp.coords.x += nexts[i].x;
-						tmp.coords.y += nexts[i].y;
-						if (!history.count(tmp.coords)) {
-							c = get_map_symbol(tmp.coords);
-							if (c == '.') {
-								tmp.doors++;
-								tmp.steps += 2;
-								queue.emplace(tmp);
-							}
-						}
-					}
-				}
-			}
+	result = count1000 = 0;
+	for (auto it = history.begin(); it != history.end(); it++) {
+		if (it->second > result) {
+			result = it->second;
 		}
-	}
-	for (auto it = results.begin(); it != results.end(); it++) {
-		int32_t steps = INT32_MAX, doors = 0;
-
-		for (uint32_t i = 0; i < it->second.size(); ++i) {
-			if (it->second[i].steps < steps) {
-				steps = it->second[i].steps;
-				doors = it->second[i].doors;
-			}
-		}
-		if (doors > result) {
-			result = doors;
-		}
-		if (doors >=1000){
+		if (it->second >= 1000) {
 			count1000++;
 		}
 	}
@@ -316,24 +317,24 @@ int main(void) {
 
 	result1 = map.get_furthest_room_passing_doors_count(result2);
 
-	// Furthest room requires passing 31 doors
-	/*
-	###############
-	#.|.|.|.#.|.|.#
-	#-###-###-#-#-#
-	#.|.#.|.|.#.#.#
-	#-#########-#-#
-	#.#.|.|.|.|.#.#
-	#-#-#########-#
-	#.#.#.|X#.|.#.#
-	###-#-###-#-#-#
-	#.|.#.#.|.#.|.#
-	#-###-#####-###
-	#.|.#.|.|.#.#.#
-	#-#-#####-#-#-#
-	#.#.|.|.|.#.|.#
-	###############
-	*/
+// Furthest room requires passing 31 doors
+/*
+###############
+#.|.|.|.#.|.|.#
+#-###-###-#-#-#
+#.|.#.|.|.#.#.#
+#-#########-#-#
+#.#.|.|.|.|.#.#
+#-#-#########-#
+#.#.#.|X#.|.#.#
+###-#-###-#-#-#
+#.|.#.#.|.#.|.#
+#-###-#####-###
+#.|.#.|.|.#.#.#
+#-#-#####-#-#-#
+#.#.|.|.|.#.|.#
+###############
+*/
 
 #endif
 
@@ -345,7 +346,7 @@ int main(void) {
 		return -1;
 	}
 
-	//map.print();
+	// map.print();
 
 	std::cout << "=== Advent of Code 2018 - day 20 ====" << std::endl;
 	std::cout << "--- part 1 ---" << std::endl;
