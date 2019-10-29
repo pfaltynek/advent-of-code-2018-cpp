@@ -14,10 +14,10 @@
 			},
 			"windows": {
 				"program": "${workspaceFolder}/aoc-2018-day04.exe",
-				"miDebuggerPath": "gdb32.exe"
+				"miDebuggerPath": "gdb.exe"
 			},
 			"args": [],
-			"stopAtEntry": false,
+			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": true,
