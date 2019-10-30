@@ -1,56 +1,80 @@
-#include <fstream>
-#include <iostream>
-#include <vector>
+#include "./../common/aoc.hpp"
 #include <unordered_set>
 
-int main(void) {
-	int result1 = 0, result2 = 0;
-	std::ifstream input;
-	std::string line;
-	std::string captcha;
-	std::vector<int32_t> freq_diffs;
+class AoC2018_day01 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	std::vector<int32_t> freq_diffs_;
+	std::unordered_set<int32_t> result_freq_;
+};
+
+bool AoC2018_day01::init(const std::vector<std::string> lines) {
+	freq_diffs_.clear();
+
+	for (uint32_t i = 0; i < lines.size(); i++) {
+		freq_diffs_.push_back(std::stol(lines[i], nullptr));
+	}
+
+	return true;
+}
+
+int32_t AoC2018_day01::get_aoc_day() {
+	return 1;
+}
+
+int32_t AoC2018_day01::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day01::tests() {
+}
+
+bool AoC2018_day01::part1() {
+	int32_t result = 0;
+
+	for (uint32_t i = 0; i < freq_diffs_.size(); ++i) {
+		result += freq_diffs_[i];
+	}
+
+	result1_ = std::to_string(result);
+
+	return true;
+}
+
+bool AoC2018_day01::part2() {
 	std::unordered_set<int32_t> result_freq;
 	bool result2_found = false;
-	unsigned int i;
+	uint32_t i = 0;
+	int32_t result = 0;
 
-	std::cout << "=== Advent of Code 2018 - day 1 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
-
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
-	}
-
-	freq_diffs.clear();
 	result_freq.clear();
 
-	while (std::getline(input, line)) {
-		freq_diffs.push_back(std::stol(line, nullptr));
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-
-	for (i = 0; i < freq_diffs.size(); ++i) {
-		result1 += freq_diffs[i];
-	}
-
-	i = 0;
 	while (!result2_found) {
-		result2 += freq_diffs[i];
-		if (result_freq.count(result2)) {
+		result += freq_diffs_[i];
+		if (result_freq.count(result)) {
 			result2_found = true;
 			break;
 		} else {
-			result_freq.insert(result2);
+			result_freq.insert(result);
 		}
-		i = (++i % freq_diffs.size());
+		i++;
+		i = (i % freq_diffs_.size());
 	}
 
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
-	std::cout << "Result is " << result2 << std::endl;
+	result2_ = std::to_string(result);
+
+	return true;
+}
+
+int main(void) {
+	AoC2018_day01 day01;
+
+	return day01.main_execution();
 }

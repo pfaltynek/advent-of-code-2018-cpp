@@ -8,7 +8,7 @@
 			"type": "shell",
 			"command": "g++",
 			"args": [
-				"-g", "main.cpp", "-o", "aoc-2018-day01"
+				"-g", "-Wall", "main.cpp", "-o", "aoc-2018-day01"
 			],
 			"group": {
 				"kind": "build",
@@ -16,7 +16,10 @@
 			},
 			"problemMatcher": {
 				"owner": "cpp",
-				"fileLocation": ["relative", "${workspaceFolder}"],
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
 				"pattern": {
 					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
 					"file": 1,
@@ -25,8 +28,16 @@
 					"severity": 4,
 					"message": 5
 				}
-			}
-
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"revealProblems": "onProblem",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": true
+			} 
 		}
 	]
 }
