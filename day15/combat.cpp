@@ -89,11 +89,11 @@ void Combat::restart(int32_t elf_attack_power) {
 	}
 }
 
-Combat::is_wall(int32_t x, int32_t y) {
+bool Combat::is_wall(int32_t x, int32_t y) {
 	return is_wall(coord_str(x, y));
 }
 
-Combat::is_wall(coord_str coord) {
+bool Combat::is_wall(coord_str coord) {
 	return (nodes_.count(coord) == 0);
 }
 

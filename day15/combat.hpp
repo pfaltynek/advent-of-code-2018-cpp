@@ -64,8 +64,8 @@ class Combat {
 	std::map<coord_str, uint32_t> distances;
 	std::vector<path_info_str> matches;
 
-	is_wall(int32_t x, int32_t y);
-	is_wall(coord_str coord);
+	bool is_wall(int32_t x, int32_t y);
+	bool is_wall(coord_str coord);
 	bool is_fighter(char node_type);
 	char get_opponent_type(char node_type);
 	bool decode_map_input(const std::vector<std::string> input);
