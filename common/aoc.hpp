@@ -56,6 +56,8 @@ class AoC {
 	int main_execution() {
 		int32_t time;
 
+		tests();
+
 		if (!init()) {
 			std::cout << "Input decoding failed" << std::endl;
 			return -1;
