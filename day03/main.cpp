@@ -1,16 +1,12 @@
-#include <fstream>
-#include <iostream>
+#include "./../common/aoc.hpp"
 #include <regex>
 #include <unordered_map>
-#include <vector>
 
-#define TEST1 0
-#define TEST2 0
-
-const uint32_t CLAIM_X = 0 - 1;
+const uint32_t CLAIM_X = UINT32_MAX;
 
 std::regex claim_template("^#(\\d+) @ (\\d+),(\\d+): (\\d+)x(\\d+)$");
 
+#define TEST 1
 typedef struct claim {
 	uint32_t id;
 	uint32_t left;
@@ -19,7 +15,87 @@ typedef struct claim {
 	uint32_t height;
 } claim_str;
 
-bool GetClaimData(const std::string claim_info, claim_str &claim) {
+class AoC2018_day03 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	bool parse_claim_data(const std::string claim_info, claim_str &claim);
+	void fill_claim(const claim_str claim);
+	bool check_claim(const claim_str claim);
+
+	std::vector<claim_str> claims_;
+	std::unordered_map<std::string, uint32_t> map_;
+};
+
+bool AoC2018_day03::init(const std::vector<std::string> lines) {
+	claim_str claim;
+
+	claims_.clear();
+	map_.clear();
+
+	for (uint32_t i = 0; i < lines.size(); i++) {
+		if (!parse_claim_data(lines[i], claim)) {
+			std::cout << "Ivalid claim info on line " << i + 1 << std::endl;
+			return false;
+		} else {
+			claims_.push_back(claim);
+			fill_claim(claim);
+		}
+	}
+
+	return true;
+}
+
+int32_t AoC2018_day03::get_aoc_day() {
+	return 3;
+}
+
+int32_t AoC2018_day03::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day03::tests() {
+#if TEST
+	init({"#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 2x2"});
+#endif
+}
+
+bool AoC2018_day03::part1() {
+	int32_t result = 0;
+
+	for (auto it = map_.begin(); it != map_.end(); ++it) {
+		if (it->second == UINT32_MAX) {
+			result++;
+		}
+	}
+
+	result1_ = std::to_string(result);
+
+	return true;
+}
+
+bool AoC2018_day03::part2() {
+	int32_t result = 0;
+
+	for (unsigned int i = 0; i < claims_.size(); ++i) {
+		if (check_claim(claims_[i])) {
+			result = claims_[i].id;
+			break;
+		}
+	}
+
+	result2_ = std::to_string(result);
+
+	return true;
+}
+
+bool AoC2018_day03::parse_claim_data(const std::string claim_info, claim_str &claim) {
 	std::smatch sm;
 
 	if (std::regex_match(claim_info, sm, claim_template)) {
@@ -34,26 +110,26 @@ bool GetClaimData(const std::string claim_info, claim_str &claim) {
 	return false;
 }
 
-void FillClaim(const claim_str claim, std::unordered_map<std::string, uint32_t> &map) {
+void AoC2018_day03::fill_claim(const claim_str claim) {
 	for (unsigned int i = 0; i < claim.width; ++i) {
 		for (unsigned int j = 0; j < claim.height; ++j) {
 			std::string key = std::to_string(claim.left + i) + "x" + std::to_string(claim.top + j);
 
-			if (map[key]) {
-				map[key] = CLAIM_X;
+			if (map_[key]) {
+				map_[key] = UINT32_MAX;
 			} else {
-				map[key] = claim.id;
+				map_[key] = claim.id;
 			}
 		}
 	}
 }
 
-bool CheckClaim(const claim_str claim, std::unordered_map<std::string, uint32_t> &map) {
+bool AoC2018_day03::check_claim(const claim_str claim) {
 	for (unsigned int i = 0; i < claim.width; ++i) {
 		for (unsigned int j = 0; j < claim.height; ++j) {
 			std::string key = std::to_string(claim.left + i) + "x" + std::to_string(claim.top + j);
 
-			if (map[key] != claim.id) {
+			if (map_[key] != claim.id) {
 				return false;
 			}
 		}
@@ -63,87 +139,7 @@ bool CheckClaim(const claim_str claim, std::unordered_map<std::string, uint32_t>
 }
 
 int main(void) {
-	int result1 = 0, result2 = 0, cnt = 0;
-	std::ifstream input;
-	std::string line;
-	std::vector<claim_str> claims;
-	std::unordered_map<std::string, uint32_t> map;
+	AoC2018_day03 day03;
 
-	std::cout << "=== Advent of Code 2018 - day 3 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
-
-	claims.clear();
-
-#if TEST1
-	claim_str claim;
-
-	if (!GetClaimData("#1 @ 1,3: 4x4", claim)) {
-		std::cout << "Ivalid claim info on line 1" << std::endl;
-		return -1;
-	} else {
-		claims.push_back(claim);
-	}
-	if (!GetClaimData("#2 @ 3,1: 4x4", claim)) {
-		std::cout << "Ivalid claim info on line 2" << std::endl;
-		return -1;
-	} else {
-		claims.push_back(claim);
-	}
-	if (!GetClaimData("#3 @ 5,5: 2x2", claim)) {
-		std::cout << "Ivalid claim info on line 3" << std::endl;
-		return -1;
-	} else {
-		claims.push_back(claim);
-	}
-
-#elif TEST2
-
-#else
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
-	}
-
-	while (std::getline(input, line)) {
-		claim_str claim;
-
-		cnt++;
-		if (!GetClaimData(line, claim)) {
-			input.close();
-			std::cout << "Ivalid claim info on line " << cnt << std::endl;
-			return -1;
-		} else {
-			claims.push_back(claim);
-		}
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-#endif
-
-	map.clear();
-
-	for (unsigned int i = 0; i < claims.size(); ++i) {
-		FillClaim(claims[i], map);
-	}
-
-	for (auto it = map.begin(); it != map.end(); ++it) {
-		if (it->second == CLAIM_X) {
-			result1++;
-		}
-	}
-
-	for (unsigned int i = 0; i < claims.size(); ++i) {
-		if (CheckClaim(claims[i], map)) {
-			result2 = claims[i].id;
-			break;
-		}
-	}
-
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
-	std::cout << "Result is " << result2 << std::endl;
+	return day03.main_execution();
 }
