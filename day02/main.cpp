@@ -24,7 +24,7 @@ bool AoC2018_day02::init(const std::vector<std::string> lines) {
 }
 
 int32_t AoC2018_day02::get_aoc_day() {
-	return 1;
+	return 2;
 }
 
 int32_t AoC2018_day02::get_aoc_year() {
