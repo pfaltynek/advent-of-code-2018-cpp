@@ -1,12 +1,80 @@
-#include <fstream>
-#include <iostream>
+#include "./../common/aoc.hpp"
 #include <unordered_map>
-#include <vector>
 
-#define TEST1 0
-#define TEST2 0
+#define TEST 1
+class AoC2018_day02 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
 
-void CheckID(const std::string &id, bool &two, bool &three) {
+  private:
+	bool CompareIDs(const std::string &id1, const std::string &id2, std::string &common);
+	void CheckID(const std::string &id, bool &two, bool &three);
+	std::vector<std::string> ids_;
+};
+
+bool AoC2018_day02::init(const std::vector<std::string> lines) {
+	ids_ = lines;
+
+	return true;
+}
+
+int32_t AoC2018_day02::get_aoc_day() {
+	return 1;
+}
+
+int32_t AoC2018_day02::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day02::tests() {
+#if TEST
+	init({"abcdef", "bababc", "abbcde", "abcccd", "aabcdd", "abcdee", "ababab"});
+	part1();
+
+	init({"abcde", "fghij", "klmno", "pqrst", "fguij", "axcye", "wvxyz"});
+	part2();
+#endif
+}
+
+bool AoC2018_day02::part1() {
+	uint32_t two = 0, three = 0;
+
+	for (uint32_t i = 0; i < ids_.size(); ++i) {
+		bool cnt2, cnt3;
+		CheckID(ids_[i], cnt2, cnt3);
+		if (cnt2) {
+			two++;
+		}
+		if (cnt3) {
+			three++;
+		}
+	}
+
+	result1_ = std::to_string(two * three);
+
+	return true;
+}
+
+bool AoC2018_day02::part2() {
+	bool result2_found = false;
+
+	for (uint32_t i = 0; i < ids_.size(); ++i) {
+		for (uint32_t j = i + 1; j < ids_.size(); j++) {
+			if (CompareIDs(ids_[i], ids_[j], result2_)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void AoC2018_day02::CheckID(const std::string &id, bool &two, bool &three) {
 	std::unordered_map<char, uint32_t> map;
 
 	map.clear();
@@ -27,7 +95,7 @@ void CheckID(const std::string &id, bool &two, bool &three) {
 	}
 }
 
-bool CompareIDs(const std::string &id1, const std::string &id2, std::string &common) {
+bool AoC2018_day02::CompareIDs(const std::string &id1, const std::string &id2, std::string &common) {
 	unsigned int i, idx, cnt;
 	common.clear();
 
@@ -57,75 +125,7 @@ bool CompareIDs(const std::string &id1, const std::string &id2, std::string &com
 }
 
 int main(void) {
-	int result1 = 0;
-	uint32_t two = 0, three = 0;
-	std::ifstream input;
-	std::string line, result2;
-	std::string captcha;
-	std::vector<std::string> ids;
-	unsigned int i, j;
-	bool result2_found = false;
+	AoC2018_day02 day02;
 
-	std::cout << "=== Advent of Code 2018 - day 2 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
-
-	ids.clear();
-
-#if TEST1
-	ids.push_back("abcdef");
-	ids.push_back("bababc");
-	ids.push_back("abbcde");
-	ids.push_back("abcccd");
-	ids.push_back("aabcdd");
-	ids.push_back("abcdee");
-	ids.push_back("ababab");
-#elif TEST2
-	ids.push_back("abcde");
-	ids.push_back("fghij");
-	ids.push_back("klmno");
-	ids.push_back("pqrst");
-	ids.push_back("fguij");
-	ids.push_back("axcye");
-	ids.push_back("wvxyz");
-#else
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
-	}
-
-	while (std::getline(input, line)) {
-		ids.push_back(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-#endif
-
-	for (i = 0; i < ids.size(); ++i) {
-		bool cnt2, cnt3;
-		CheckID(ids[i], cnt2, cnt3);
-		if (cnt2) {
-			two++;
-		}
-		if (cnt3) {
-			three++;
-		}
-
-		if (!result2_found) {
-			for (j = i + 1; j < ids.size(); j++) {
-				if (CompareIDs(ids[i], ids[j], result2)) {
-					result2_found = true;
-					break;
-				}
-			}
-		}
-	}
-	result1 = two * three;
-
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
-	std::cout << "Result is " << result2 << std::endl;
+	return day02.main_execution();
 }
