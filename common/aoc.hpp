@@ -58,6 +58,8 @@ class AoC {
 
 		tests();
 
+		start_time_measurement();
+
 		if (!init()) {
 			std::cout << "Input decoding failed" << std::endl;
 			return -1;
@@ -65,8 +67,6 @@ class AoC {
 
 		std::cout << "=== Advent of Code " << get_aoc_year() << " - day " << get_aoc_day() << " ====" << std::endl;
 		std::cout << "--- part 1 ---" << std::endl;
-
-		start_time_measurement();
 
 		if (!part1()) {
 			std::cout << "Part 1 failed" << std::endl;
