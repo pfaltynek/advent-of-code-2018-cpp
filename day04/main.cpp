@@ -1,13 +1,10 @@
 
+#include "./../common/aoc.hpp"
 #include <algorithm>
-#include <fstream>
-#include <iostream>
 #include <map>
 #include <regex>
-#include <vector>
 
-#define TEST1 0
-#define TEST2 0
+#define TEST 1
 
 typedef struct shift {
 	uint32_t guard_id;
@@ -22,7 +19,25 @@ const std::regex shift_template("^\\[\\d{4}\\-\\d{2}\\-\\d{2} \\d{2}:\\d{2}\\] G
 const std::regex asleep_template("^\\[(\\d{4})\\-(\\d{2})\\-(\\d{2}) (\\d{2}):(\\d{2})\\] falls asleep$");
 const std::regex wake_template("^\\[(\\d{4})\\-(\\d{2})\\-(\\d{2}) (\\d{2}):(\\d{2})\\] wakes up$");
 
-bool FillShift(const std::vector<std::string> plans, uint32_t guard_id, std::map<uint32_t, std::vector<shift_str>> &shifts) {
+class AoC2018_day04 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	bool fill_shift(const std::vector<std::string> plans, uint32_t guard_id);
+	uint32_t get_most_frequently_asleep_minute_and_guardid();
+	uint32_t get_most_asleep_minute_of_guardid(const uint32_t guard_id, uint32_t &max_freq);
+	uint32_t get_most_asleep_guardid();
+
+	std::map<uint32_t, std::vector<shift_str>> shifts_;
+};
+
+bool AoC2018_day04::fill_shift(const std::vector<std::string> plans, uint32_t guard_id) {
 	shift_str shift{};
 	std::smatch sm;
 	uint32_t start, end;
@@ -61,26 +76,28 @@ bool FillShift(const std::vector<std::string> plans, uint32_t guard_id, std::map
 		shift.sleep_times.push_back(std::pair<uint32_t, uint32_t>(start, end - start));
 		shift.time_sum += end - start;
 	}
-	shifts[guard_id].push_back(shift);
+	shifts_[guard_id].push_back(shift);
 	return true;
 }
 
-bool FillShifts(const std::vector<std::string> plans, std::map<uint32_t, std::vector<shift_str>> &shifts) {
+bool AoC2018_day04::init(std::vector<std::string> lines) {
 	uint32_t i;
 	std::smatch sm;
 	shift_str shift;
 	uint32_t id;
 	std::vector<std::string> shift_data;
 
+	std::sort(lines.begin(), lines.end());
+
 	i = 0;
-	shifts.clear();
+	shifts_.clear();
 	shift_data.clear();
 
-	while (i < plans.size()) {
-		if (std::regex_match(plans[i], sm, shift_template)) {
+	while (i < lines.size()) {
+		if (std::regex_match(lines[i], sm, shift_template)) {
 			if (shift_data.size()) {
 				// call to process shift
-				if (!FillShift(shift_data, id, shifts)) {
+				if (!fill_shift(shift_data, id)) {
 					return false;
 				}
 				shift_data.clear();
@@ -88,24 +105,24 @@ bool FillShifts(const std::vector<std::string> plans, std::map<uint32_t, std::ve
 
 			id = stoi(sm.str(1));
 		} else {
-			shift_data.push_back(plans[i]);
+			shift_data.push_back(lines[i]);
 		}
 
 		i++;
 	}
 
 	if (shift_data.size()) {
-		if (!FillShift(shift_data, id, shifts)) {
+		if (!fill_shift(shift_data, id)) {
 			return false;
 		}
 	}
 	return true;
 }
 
-uint32_t GetMostAsleepGuardID(const std::map<uint32_t, std::vector<shift_str>> &shifts) {
+uint32_t AoC2018_day04::get_most_asleep_guardid() {
 	uint32_t id = 0, max = 0;
 
-	for (auto it = shifts.begin(); it != shifts.end(); ++it) {
+	for (auto it = shifts_.begin(); it != shifts_.end(); ++it) {
 		uint32_t sum = 0;
 		for (unsigned int i = 0; i < it->second.size(); ++i) {
 			sum += it->second[i].time_sum;
@@ -119,15 +136,15 @@ uint32_t GetMostAsleepGuardID(const std::map<uint32_t, std::vector<shift_str>> &
 	return id;
 }
 
-uint32_t GetMostAsleepMinuteOfGuardID(const std::map<uint32_t, std::vector<shift_str>> &shifts, const uint32_t guard_id, uint32_t &max_freq) {
+uint32_t AoC2018_day04::get_most_asleep_minute_of_guardid(const uint32_t guard_id, uint32_t &max_freq) {
 	std::map<uint32_t, uint32_t> map;
 	uint32_t max = 0, minute = 0;
 
 	map.clear();
-	for (unsigned int i = 0; i < shifts.at(guard_id).size(); ++i) {
-		for (unsigned int j = 0; j < shifts.at(guard_id)[i].sleep_times.size(); ++j) {
-			for (unsigned int t = 0; t < shifts.at(guard_id)[i].sleep_times[j].second; ++t) {
-				map[shifts.at(guard_id)[i].sleep_times[j].first + t]++;
+	for (unsigned int i = 0; i < shifts_.at(guard_id).size(); ++i) {
+		for (unsigned int j = 0; j < shifts_.at(guard_id)[i].sleep_times.size(); ++j) {
+			for (unsigned int t = 0; t < shifts_.at(guard_id)[i].sleep_times[j].second; ++t) {
+				map[shifts_.at(guard_id)[i].sleep_times[j].first + t]++;
 			}
 		}
 	}
@@ -143,11 +160,12 @@ uint32_t GetMostAsleepMinuteOfGuardID(const std::map<uint32_t, std::vector<shift
 	return minute;
 }
 
-uint32_t GetMostFrequentlyAsleepMinuteAndGuardID(const std::map<uint32_t, std::vector<shift_str>> &shifts) {
-	uint32_t max_freq = 0, id = 0, minute = 0, tmp_min, tmp_max;
+uint32_t AoC2018_day04::get_most_frequently_asleep_minute_and_guardid() {
+	uint32_t max_freq = 0, id = 0, minute = 0, tmp_min, tmp_max, gid;
 
-	for (auto it = shifts.begin(); it != shifts.end(); ++it) {
-		tmp_min = GetMostAsleepMinuteOfGuardID(shifts, it->first, tmp_max);
+	for (auto it = shifts_.begin(); it != shifts_.end(); ++it) {
+		gid = it->first;
+		tmp_min = get_most_asleep_minute_of_guardid(gid, tmp_max);
 		if (tmp_max > max_freq) {
 			id = it->first;
 			minute = tmp_min;
@@ -158,73 +176,56 @@ uint32_t GetMostFrequentlyAsleepMinuteAndGuardID(const std::map<uint32_t, std::v
 	return id * minute;
 }
 
-int main(void) {
-	int result1 = 0, result2 = 0;
-	uint32_t id = 0, minute = 0, freq = 0;
-	std::ifstream input;
-	std::string line;
-	std::vector<std::string> plans;
-	std::map<uint32_t, std::vector<shift_str>> shifts;
+int32_t AoC2018_day04::get_aoc_day() {
+	return 4;
+}
 
-	std::cout << "=== Advent of Code 2018 - day 4 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+int32_t AoC2018_day04::get_aoc_year() {
+	return 2018;
+}
 
-	plans.clear();
+void AoC2018_day04::tests() {
+#if TEST
+	init({"[1518-11-01 00:05] falls asleep", "[1518-11-01 00:25] wakes up", "[1518-11-01 00:30] falls asleep", "[1518-11-01 00:55] wakes up",
+		  "[1518-11-01 23:58] Guard #99 begins shift", "[1518-11-02 00:40] falls asleep", "[1518-11-02 00:50] wakes up",
+		  "[1518-11-03 00:05] Guard #10 begins shift", "[1518-11-03 00:24] falls asleep", "[1518-11-03 00:29] wakes up",
+		  "[1518-11-04 00:02] Guard #99 begins shift", "[1518-11-04 00:46] wakes up", "[1518-11-05 00:03] Guard #99 begins shift",
+		  "[1518-11-05 00:45] falls asleep", "[1518-11-05 00:55] wakes up", "[1518-11-01 00:00] Guard #10 begins shift", "[1518-11-04 00:36] falls asleep"});
 
-#if TEST1
-	plans.push_back("[1518-11-01 00:05] falls asleep");
-	plans.push_back("[1518-11-01 00:25] wakes up");
-	plans.push_back("[1518-11-01 00:30] falls asleep");
-	plans.push_back("[1518-11-01 00:55] wakes up");
-	plans.push_back("[1518-11-01 23:58] Guard #99 begins shift");
-	plans.push_back("[1518-11-02 00:40] falls asleep");
-	plans.push_back("[1518-11-02 00:50] wakes up");
-	plans.push_back("[1518-11-03 00:05] Guard #10 begins shift");
-	plans.push_back("[1518-11-03 00:24] falls asleep");
-	plans.push_back("[1518-11-03 00:29] wakes up");
-	plans.push_back("[1518-11-04 00:02] Guard #99 begins shift");
-	plans.push_back("[1518-11-04 00:46] wakes up");
-	plans.push_back("[1518-11-05 00:03] Guard #99 begins shift");
-	plans.push_back("[1518-11-05 00:45] falls asleep");
-	plans.push_back("[1518-11-05 00:55] wakes up");
-	plans.push_back("[1518-11-01 00:00] Guard #10 begins shift");
-	plans.push_back("[1518-11-04 00:36] falls asleep");
+	part1();
 
-#elif TEST2
+	part2();
 
-#else
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
-	}
-
-	while (std::getline(input, line)) {
-		plans.push_back(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
 #endif
+}
 
-	std::sort(plans.begin(), plans.end());
+bool AoC2018_day04::part1() {
+	int32_t result = 0;
+	uint32_t id = 0, minute = 0, freq = 0;
 
-	if (!FillShifts(plans, shifts)) {
-		return -1;
-	}
+	id = get_most_asleep_guardid();
 
-	id = GetMostAsleepGuardID(shifts);
+	minute = get_most_asleep_minute_of_guardid(id, freq);
 
-	minute = GetMostAsleepMinuteOfGuardID(shifts, id, freq);
+	result = minute * id;
 
-	result1 = minute * id;
-	
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
+	result1_ = std::to_string(result);
 
-	result2 = GetMostFrequentlyAsleepMinuteAndGuardID(shifts);
+	return true;
+}
 
-	std::cout << "Result is " << result2 << std::endl;
+bool AoC2018_day04::part2() {
+	int32_t result = 0;
+
+	result = get_most_frequently_asleep_minute_and_guardid();
+
+	result2_ = std::to_string(result);
+
+	return true;
+}
+
+int main(void) {
+	AoC2018_day04 day04;
+
+	return day04.main_execution();
 }
