@@ -8,7 +8,7 @@
 			"type": "shell",
 			"command": "g++",
 			"args": [
-				"-g", "main.cpp", "-o", "aoc-2018-day03"
+				"-g", "-Wall", "main.cpp", "-o", "aoc-2018-day03"
 			],
 			"group": {
 				"kind": "build",
