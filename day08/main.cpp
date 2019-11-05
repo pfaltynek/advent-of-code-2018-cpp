@@ -1,12 +1,24 @@
-#include <fstream>
-#include <iostream>
+#include "./../common/aoc.hpp"
 #include <sstream>
 #include <vector>
 
-#define TEST1 0
-#define TEST2 0
+#define TEST 1
 
-void GetMetadataSum(std::stringstream &num, int32_t &result1, int32_t &result2) {
+class AoC2018_day08 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	void get_metadata_sum(std::stringstream &num, int32_t &result1, int32_t &result2);
+	std::string numbers_;
+};
+
+void AoC2018_day08::get_metadata_sum(std::stringstream &num, int32_t &result1, int32_t &result2) {
 	int32_t children, metadata_size, metadata;
 	int32_t value = 0, r = 0;
 
@@ -18,7 +30,7 @@ void GetMetadataSum(std::stringstream &num, int32_t &result1, int32_t &result2) 
 
 		for (int32_t i = 0; i < children; ++i) {
 			r = 0;
-			GetMetadataSum(num, result1, r);
+			get_metadata_sum(num, result1, r);
 			children_values[i] = r;
 		}
 		for (int32_t i = 0; i < metadata_size; ++i) {
@@ -41,45 +53,58 @@ void GetMetadataSum(std::stringstream &num, int32_t &result1, int32_t &result2) 
 	result1 += value;
 }
 
-int main(void) {
-	int result1 = 0, result2 = 0, cnt = 0;
-	std::ifstream input;
-	std::string line, numbers;
+bool AoC2018_day08::init(std::vector<std::string> lines) {
+
+	numbers_.clear();
+
+	for (uint32_t i = 0; i < lines.size(); i++) {
+		numbers_.append(lines[i]);
+	}
+
+
+	return true;
+}
+
+int32_t AoC2018_day08::get_aoc_day() {
+	return 8;
+}
+
+int32_t AoC2018_day08::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day08::tests() {
+#if TEST
+	init({"2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2"});
+
+	part1();
+
+	part2();
+
+#endif
+}
+
+bool AoC2018_day08::part1() {
+	int32_t result1 = 0, result2 = 0;
 	std::stringstream num;
 
-	std::cout << "=== Advent of Code 2018 - day 8 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+	num.str(numbers_);
 
-	numbers.clear();
+	get_metadata_sum(num, result1, result2);
 
-#if TEST1
-	numbers = "2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2";
-#elif TEST2
+	result1_ = std::to_string(result1);
+	result2_ = std::to_string(result2);
 
-#else
-	input.open("input.txt", std::ifstream::in);
+	return true;
+}
 
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
-	}
+bool AoC2018_day08::part2() {
 
-	while (std::getline(input, line)) {
-		cnt++;
-		numbers.append(line);
-	}
+	return true;
+}
 
-	if (input.is_open()) {
-		input.close();
-	}
-#endif
+int main(void) {
+	AoC2018_day08 day08;
 
-	num.str(numbers);
-
-	GetMetadataSum(num, result1, result2);
-
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
-
-	std::cout << "Result is " << result2 << std::endl;
+	return day08.main_execution();
 }
