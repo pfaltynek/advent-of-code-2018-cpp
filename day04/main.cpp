@@ -7,12 +7,12 @@
 #define TEST 1
 
 typedef struct shift {
-	uint32_t guard_id;
-	uint32_t year;
-	uint32_t month;
-	uint32_t day;
+	int32_t guard_id;
+	int32_t year;
+	int32_t month;
+	int32_t day;
 	std::vector<std::pair<uint32_t, uint32_t>> sleep_times;
-	uint32_t time_sum;
+	int32_t time_sum;
 } shift_str;
 
 const std::regex shift_template("^\\[\\d{4}\\-\\d{2}\\-\\d{2} \\d{2}:\\d{2}\\] Guard #(\\d+) begins shift$");
