@@ -21,6 +21,7 @@
 				"command": "g++",
 				"args": [
 					"-g",
+					"-Wall",
 					"main.cpp",
 					"-o",
 					"aoc-2018-day19"

@@ -24,6 +24,7 @@
 				"command": "g++",
 				"args": [
 					"-g",
+					"-Wall",
 					"main.cpp",
 					"combat.cpp",
 					"node.cpp",
