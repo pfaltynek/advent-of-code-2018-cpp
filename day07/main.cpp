@@ -1,24 +1,43 @@
-#include <fstream>
-#include <iostream>
+#include "./../common/aoc.hpp"
 #include <regex>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
-#define TEST1 0
-#define TEST2 0
+#define TEST 1
 
 const std::regex condition_template("^Step ([A-Z]) must be finished before step ([A-Z]) can begin.$");
 
-std::string GetStepsReadyInitially(const std::map<char, int32_t> counts, std::unordered_map<char, std::string> rules) {
+class AoC2018_day07 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	uint32_t get_max_workers();
+	int32_t get_step_base_time();
+	bool decode_instruction(const std::string line);
+	int32_t get_total_time(const uint32_t workers_max, const int32_t step_base_time);
+	std::string get_instructions_order();
+	std::string get_steps_ready_initially();
+
+	std::string ready_;
+	std::unordered_map<char, std::string> rules_;
+	std::map<char, int32_t> counts_;
+};
+
+std::string AoC2018_day07::get_steps_ready_initially() {
 	std::string result;
 	std::unordered_map<char, std::string>::iterator itr;
 
 	result.clear();
 
-	for (auto it = counts.begin(); it != counts.end(); ++it) {
-		itr = rules.find(it->first);
-		if (itr == rules.end()) {
+	for (auto it = counts_.begin(); it != counts_.end(); ++it) {
+		itr = rules_.find(it->first);
+		if (itr == rules_.end()) {
 			result += it->first;
 		}
 	}
@@ -26,12 +45,15 @@ std::string GetStepsReadyInitially(const std::map<char, int32_t> counts, std::un
 	return result;
 }
 
-std::string GetInstructionsOrder(std::string ready, std::unordered_map<char, std::string> rules) {
-	std::string result, done;
+std::string AoC2018_day07::get_instructions_order() {
+	std::string result, done, ready;
 	std::unordered_map<char, std::string>::iterator itr;
+	std::unordered_map<char, std::string> rules;
 
 	result.clear();
 	done.clear();
+	rules = rules_;
+	ready = ready_;
 
 	while (rules.size()) {
 		char next;
@@ -78,18 +100,20 @@ std::string GetInstructionsOrder(std::string ready, std::unordered_map<char, std
 	return result;
 }
 
-int32_t GetTotalTime(std::string ready, std::unordered_map<char, std::string> rules, int32_t workers_max, int32_t step_base_time) {
+int32_t AoC2018_day07::get_total_time(const uint32_t workers_max, const int32_t step_base_time) {
 	std::string step_order, done, workers_done;
 	std::map<char, uint32_t> workers;
 	int32_t total_time;
+	std::string ready;
 
 	workers.clear();
 	step_order.clear();
 	done.clear();
 	workers_done.clear();
 	total_time = 0;
+	ready = ready_;
 
-	while (rules.size() || workers.size() || ready.size()) {
+	while (rules_.size() || workers.size() || ready.size()) {
 		char next;
 
 		while ((workers.size() < workers_max) && (ready.size())) {
@@ -107,7 +131,7 @@ int32_t GetTotalTime(std::string ready, std::unordered_map<char, std::string> ru
 		for (uint32_t i = 0; i < workers_done.size(); ++i) {
 			next = workers_done[i];
 
-			for (auto it = rules.begin(); it != rules.end(); ++it) {
+			for (auto it = rules_.begin(); it != rules_.end(); ++it) {
 				std::size_t pos;
 
 				pos = it->second.find(next);
@@ -129,7 +153,7 @@ int32_t GetTotalTime(std::string ready, std::unordered_map<char, std::string> ru
 		workers_done.clear();
 
 		for (uint32_t i = 0; i < done.size(); ++i) {
-			rules.erase(done[i]);
+			rules_.erase(done[i]);
 		}
 
 		done.clear();
@@ -138,73 +162,93 @@ int32_t GetTotalTime(std::string ready, std::unordered_map<char, std::string> ru
 	return total_time;
 }
 
-bool DecodeInstruction(const std::string line, std::unordered_map<char, std::string> &rules, std::map<char, int32_t> &counts) {
+bool AoC2018_day07::decode_instruction(const std::string line) {
 	std::smatch sm;
 	char x, y;
 
 	if (std::regex_match(line, sm, condition_template)) {
 		x = sm.str(1)[0];
 		y = sm.str(2)[0];
-		counts[x]++;
-		counts[y]++;
-		rules[y] += x;
+		counts_[x]++;
+		counts_[y]++;
+		rules_[y] += x;
 		return true;
 	}
 	return false;
 }
 
-int main(void) {
-	int result2 = 0, cnt = 0, max_workers = 5, step_base_time = 60;
-	std::ifstream input;
-	std::string line, result1, ready;
-	std::unordered_map<char, std::string> rules;
-	std::map<char, int32_t> counts;
-
-	std::cout << "=== Advent of Code 2018 - day 7 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
-
-	result1.clear();
-	rules.clear();
-	counts.clear();
-
-#if TEST1
-	DecodeInstruction("Step C must be finished before step A can begin.", rules, counts);
-	DecodeInstruction("Step C must be finished before step F can begin.", rules, counts);
-	DecodeInstruction("Step A must be finished before step B can begin.", rules, counts);
-	DecodeInstruction("Step A must be finished before step D can begin.", rules, counts);
-	DecodeInstruction("Step B must be finished before step E can begin.", rules, counts);
-	DecodeInstruction("Step D must be finished before step E can begin.", rules, counts);
-	DecodeInstruction("Step F must be finished before step E can begin.", rules, counts);
-
-	max_workers = 2;
-	step_base_time = 0;
-#elif TEST2
-
-#else
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
+uint32_t AoC2018_day07::get_max_workers() {
+	if (in_testing) {
+		return 2;
+	} else {
+		return 5;
 	}
+}
 
-	while (std::getline(input, line)) {
-		cnt++;
-		if (!DecodeInstruction(line, rules, counts)) {
-			std::cout << "Invalid instruction at line " << cnt << std::endl;
+int32_t AoC2018_day07::get_step_base_time() {
+	if (in_testing) {
+		return 0;
+	} else {
+		return 60;
+	}
+}
+
+bool AoC2018_day07::init(std::vector<std::string> lines) {
+	counts_.clear();
+	rules_.clear();
+
+	for (uint32_t i = 0; i < lines.size(); i++) {
+		if (!decode_instruction(lines[i])) {
+			std::cout << "Invalid instruction at line " << i + 1 << std::endl;
 		}
 	}
 
-	if (input.is_open()) {
-		input.close();
-	}
+	return true;
+}
+
+int32_t AoC2018_day07::get_aoc_day() {
+	return 7;
+}
+
+int32_t AoC2018_day07::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day07::tests() {
+#if TEST
+	init({"Step C must be finished before step A can begin.", "Step C must be finished before step F can begin.",
+		  "Step A must be finished before step B can begin.", "Step A must be finished before step D can begin.",
+		  "Step B must be finished before step E can begin.", "Step D must be finished before step E can begin.",
+		  "Step F must be finished before step E can begin."});
+
+	part1();
+
+	part2();
+
 #endif
-	ready = GetStepsReadyInitially(counts, rules);
-	result1 = GetInstructionsOrder(ready, rules);
-	result2 = GetTotalTime(ready, rules, max_workers, step_base_time);
+}
 
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
+bool AoC2018_day07::part1() {
 
-	std::cout << "Result is " << result2 << std::endl;
+	ready_ = get_steps_ready_initially();
+
+	result1_ = get_instructions_order();
+
+	return true;
+}
+
+bool AoC2018_day07::part2() {
+	int32_t result = 0;
+
+	result = get_total_time(get_max_workers(), get_step_base_time());
+
+	result2_ = std::to_string(result);
+
+	return true;
+}
+
+int main(void) {
+	AoC2018_day07 day07;
+
+	return day07.main_execution();
 }
