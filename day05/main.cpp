@@ -51,7 +51,7 @@ uint32_t AoC2018_day05::get_reduced_polymer_size(const std::string polymer) {
 		i = 0;
 		j = 1;
 		while (j < p.size()) {
-			if (((p[i] - p[j]) == 0x20) || ((p[j] - p[i]) == 0x20)) {
+			if ((p[i] ^ p[j]) == 0x20) {
 				finished = false;
 				i = j + 1;
 				j = i + 1;
@@ -78,10 +78,8 @@ std::string AoC2018_day05::remove_unit_from_polymer(const std::string polymer, c
 
 	ss.str("");
 
-	if ((unit >= 'a') && (unit <= 'z')) {
-		unit2 = unit - 0x20;
-	} else if ((unit >= 'A') && (unit <= 'Z')) {
-		unit2 = unit + 0x20;
+	if (((unit >= 'a') && (unit <= 'z')) || ((unit >= 'A') && (unit <= 'Z'))) {
+		unit2 = unit ^ 0x20;
 	} else {
 		return polymer;
 	}
