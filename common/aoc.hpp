@@ -51,12 +51,17 @@ class AoC {
 	virtual int32_t get_aoc_year() = 0;
 
 	std::string result1_, result2_;
+	bool in_testing;
 
   public:
 	int main_execution() {
 		int32_t time;
 
+		in_testing = true;
+
 		tests();
+		
+		in_testing = false;
 
 		start_time_measurement();
 
