@@ -116,7 +116,7 @@ uint32_t AoC2018_day05::get_shortest_polymer_length(const std::string polymer) {
 }
 
 int32_t AoC2018_day05::get_aoc_day() {
-	return 4;
+	return 5;
 }
 
 int32_t AoC2018_day05::get_aoc_year() {
