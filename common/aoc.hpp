@@ -49,6 +49,7 @@ class AoC {
 	virtual void tests() = 0;
 	virtual int32_t get_aoc_day() = 0;
 	virtual int32_t get_aoc_year() = 0;
+	virtual void clean_up(){}
 
 	std::string result1_, result2_;
 	bool in_testing;
@@ -89,6 +90,8 @@ class AoC {
 		std::cout << "Result is " << result2_ << std::endl;
 
 		time = end_time_measurement();
+
+		clean_up();
 
 		if (time) {
 			std::cout << "Execution time " << time << " sec." << std::endl;
