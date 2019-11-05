@@ -1,12 +1,37 @@
 
-#include <fstream>
-#include <iostream>
+#include "./../common/aoc.hpp"
 #include <sstream>
 
-#define TEST1 0
-#define TEST2 0
+#define TEST 1
 
-uint32_t GetReducedPolymerSize(const std::string polymer) {
+class AoC2018_day05 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	uint32_t get_reduced_polymer_size(const std::string polymer);
+	std::string remove_unit_from_polymer(const std::string polymer, char unit);
+	uint32_t get_shortest_polymer_length(const std::string polymer);
+
+	std::string polymer_;
+};
+
+bool AoC2018_day05::init(std::vector<std::string> lines) {
+	polymer_.clear();
+
+	for (uint32_t i = 0; i < lines.size(); i++) {
+		polymer_.append(lines[i]);
+	}
+
+	return true;
+}
+
+uint32_t AoC2018_day05::get_reduced_polymer_size(const std::string polymer) {
 	bool finished;
 	std::stringstream r;
 	std::string p;
@@ -46,7 +71,7 @@ uint32_t GetReducedPolymerSize(const std::string polymer) {
 	return p.size();
 }
 
-std::string RemoveUnitFromPolymer(const std::string polymer, char unit) {
+std::string AoC2018_day05::remove_unit_from_polymer(const std::string polymer, char unit) {
 	std::stringstream ss;
 	char unit2;
 	uint32_t i;
@@ -72,16 +97,16 @@ std::string RemoveUnitFromPolymer(const std::string polymer, char unit) {
 	return ss.str();
 }
 
-uint32_t GetShortestPolymerLength(const std::string polymer) {
+uint32_t AoC2018_day05::get_shortest_polymer_length(const std::string polymer) {
 	std::string p;
 	uint32_t result, tmp;
 
 	result = polymer.size();
 
 	for (char c = 'a'; c <= 'z'; ++c) {
-		p = RemoveUnitFromPolymer(polymer, c);
+		p = remove_unit_from_polymer(polymer, c);
 
-		tmp = GetReducedPolymerSize(p);
+		tmp = get_reduced_polymer_size(p);
 		if (tmp < result) {
 			result = tmp;
 		}
@@ -90,44 +115,47 @@ uint32_t GetShortestPolymerLength(const std::string polymer) {
 	return result;
 }
 
-int main(void) {
-	int result1 = 0, result2 = 0;
-	uint32_t id = 0, minute = 0, freq = 0;
-	std::ifstream input;
-	std::string line, polymer;
+int32_t AoC2018_day05::get_aoc_day() {
+	return 4;
+}
 
-	std::cout << "=== Advent of Code 2018 - day 5 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+int32_t AoC2018_day05::get_aoc_year() {
+	return 2018;
+}
 
-	polymer.clear();
+void AoC2018_day05::tests() {
+#if TEST
+	init({"dabAcCaCBAcCcaDA"});
 
-#if TEST1
-	polymer = "dabAcCaCBAcCcaDA";
-#elif TEST2
+	part1();
 
-#else
-	input.open("input.txt", std::ifstream::in);
+	part2();
 
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
-	}
-
-	while (std::getline(input, line)) {
-		polymer.append(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
 #endif
+}
 
-	result1 = GetReducedPolymerSize(polymer);
+bool AoC2018_day05::part1() {
+	int32_t result = 0;
 
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
+	result = get_reduced_polymer_size(polymer_);
 
-	result2 = GetShortestPolymerLength(polymer);
+	result1_ = std::to_string(result);
 
-	std::cout << "Result is " << result2 << std::endl;
+	return true;
+}
+
+bool AoC2018_day05::part2() {
+	int32_t result = 0;
+
+	result = get_shortest_polymer_length(polymer_);
+
+	result2_ = std::to_string(result);
+
+	return true;
+}
+
+int main(void) {
+	AoC2018_day05 day05;
+
+	return day05.main_execution();
 }
