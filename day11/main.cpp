@@ -1,111 +1,156 @@
-#include <fstream>
-#include <iostream>
-#include <unordered_map>
+#include "./../common/aoc.hpp"
+#include "./../common/coord.hpp"
 
-#define TEST1 0
-#define TEST2 0
+#define TEST 0
 
-int32_t GetPowerLevel(uint32_t x, uint32_t y, uint32_t grid_sn) {
+class AoC2018_day11 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	int32_t get_power_level(const coord_str coord);
+	void get_largest_total_power(const int32_t grid_size, const int32_t area_size, coord_str &result1, coord_str &result2, int32_t &result_size);
+
+	int32_t grid_sn_;
+};
+
+bool AoC2018_day11::init(std::vector<std::string> lines) {
+
+	for (uint32_t i = 0; i < lines.size(); i++) {
+		grid_sn_ = stoi(lines[i]);
+	}
+
+	return true;
+}
+
+int32_t AoC2018_day11::get_power_level(const coord_str coord) {
 	int32_t rack_id, result;
 
-	rack_id = x + 10;
-	result = rack_id * y;
-	result += grid_sn;
+	rack_id = coord.x + 10;
+	result = rack_id * coord.y;
+	result += grid_sn_;
 	result *= rack_id;
 	result = ((result / 100) % 10) - 5;
 
 	return result;
 }
 
-void GetLargestTotalPower(const int32_t grid_sn, int32_t grid_size, int32_t area_size, uint32_t &result_x1, uint32_t &result_y1, uint32_t &result_x2,
-						  uint32_t &result_y2, uint32_t &result_z2) {
-	int32_t grid[grid_size][grid_size];
+void AoC2018_day11::get_largest_total_power(const int32_t grid_size, const int32_t area_size, coord_str &result1, coord_str &result2, int32_t &result_size) {
+	int32_t grid[grid_size][grid_size][3];
 	int32_t max1 = INT32_MIN, max2 = INT32_MIN, sum;
-	uint32_t i, j, i1, j1, s;
+	int32_t i, j, i1, j1, s, idx1, idx2;
 
-	result_x1 = 0;
-	result_y1 = 0;
-	result_x2 = 0;
-	result_y2 = 0;
-	result_z2 = 0;
+	result1 = result2 = {};
+	result_size = 0;
 
 	for (i = 0; i < grid_size; ++i) {
 		for (j = 0; j < grid_size; ++j) {
-			grid[i][j] = GetPowerLevel(i + 1, j + 1, grid_sn);
+			sum = get_power_level({i + 1, j + 1});
+			grid[i][j][0] = sum;
+			if (sum > max2) {
+				max2 = sum;
+				result2.x = i + 1;
+				result2.y = j + 1;
+				result_size = 1;
+			}
 		}
 	}
 
-	for (s = 1; s <= grid_size; ++s) {
+	idx1 = 0;
+	idx2 = 1;
+
+	for (s = 2; s <= grid_size; ++s) {
 		for (i = 0; i < (grid_size - s + 1); ++i) {
 			for (j = 0; j < (grid_size - s + 1); ++j) {
-				sum = 0;
-				for (i1 = 0; i1 < s; ++i1) {
-					for (j1 = 0; j1 < s; ++j1) {
-						sum += grid[i + i1][j + j1];
-					}
+				sum = grid[i][j][idx1];
+				for (i1 = 0; i1 < s - 1; ++i1) {
+					sum += grid[i + i1][j + s - 1][0];
 				}
+				for (j1 = 0; j1 < s - 1; ++j1) {
+					sum += grid[i + i1][j + j1][0];
+				}
+
+				sum += grid[i + s - 1][j + s - 1][0];
+				
+				grid[i][j][idx2] = sum;
 
 				if ((s == area_size) && (sum > max1)) {
 					max1 = sum;
-					result_x1 = i + 1;
-					result_y1 = j + 1;
+					result1.x = i + 1;
+					result1.y = j + 1;
 				}
 
 				if (sum > max2) {
 					max2 = sum;
-					result_x2 = i + 1;
-					result_y2 = j + 1;
-					result_z2 = s;
+					result2.x = i + 1;
+					result2.y = j + 1;
+					result_size = s;
 				}
 			}
+		}
+
+		if (s == 2) {
+			idx1 = 1;
+			idx2 = 2;
+		} else {
+			std::swap(idx1, idx2);
 		}
 	}
 }
 
-int main(void) {
-	int cnt = 0;
-	uint32_t result1x = 0, result1y = 0, result2x = 0, result2y = 0, result2z = 0, grid_sn;
-	std::ifstream input;
-	std::string line;
+int32_t AoC2018_day11::get_aoc_day() {
+	return 11;
+}
 
-	std::cout << "=== Advent of Code 2018 - day 11 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+int32_t AoC2018_day11::get_aoc_year() {
+	return 2018;
+}
 
-#if TEST1
-	int test;
+void AoC2018_day11::tests() {
+#if TEST
+	int32_t test;
+	coord_str result1, result2;
 
-	test = GetPowerLevel(3, 5, 8);		// 4
-	test = GetPowerLevel(122, 79, 57);  // -5
-	test = GetPowerLevel(217, 196, 39); // 0
-	test = GetPowerLevel(101, 153, 71); // 4
+	init({"8"});
+	test = get_power_level({3, 5}); // 4
+	init({"57"});
+	test = get_power_level({122, 79}); // -5
+	init({"39"});
+	test = get_power_level({217, 196}); // 0
+	init({"71"});
+	test = get_power_level({101, 153}); // 4
 
-	GetLargestTotalPower(18, 300, 3, result1x, result1y, result2x, result2y, result2z); // 33,45,90,269,16
-	GetLargestTotalPower(42, 300, 3, result1x, result1y, result2x, result2y, result2z); // 21,61,232,251,12
-
-#elif TEST2
-
-#else
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
-	}
-
-	while (std::getline(input, line)) {
-		cnt++;
-		grid_sn = stoi(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-
-	GetLargestTotalPower(grid_sn, 300, 3, result1x, result1y, result2x, result2y, result2z);
+	init({"18"});
+	get_largest_total_power(300, 3, result1, result2, test); // {33,45},{90,269},16
+	init({"42"});
+	get_largest_total_power(300, 3, result1, result2, test); // {21,61},{232,251},12
 #endif
+}
 
-	std::cout << "Result is " << result1x << "," << result1y << std::endl;
+bool AoC2018_day11::part1() {
+	int32_t size;
+	coord_str result1, result2;
 
-	std::cout << "--- part 2 ---" << std::endl;
-	std::cout << "Result is " << result2x << "," << result2y << "," << result2z << std::endl;
+	get_largest_total_power(300, 3, result1, result2, size);
+
+	result1_ = std::to_string(result1.x) + "," + std::to_string(result1.y);
+
+	result2_ = std::to_string(result2.x) + "," + std::to_string(result2.y) + "," + std::to_string(size);
+
+	return true;
+}
+
+bool AoC2018_day11::part2() {
+	return true;
+}
+
+int main(void) {
+	AoC2018_day11 day05;
+
+	return day05.main_execution();
 }
