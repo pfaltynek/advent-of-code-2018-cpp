@@ -14,7 +14,7 @@ class AoC2018_day05 : public AoC {
 	int32_t get_aoc_year();
 
   private:
-	uint32_t get_reduced_polymer_size(const std::string polymer);
+	std::string reduce_polymer_size(const std::string& polymer);
 	std::string remove_unit_from_polymer(const std::string polymer, char unit);
 	uint32_t get_shortest_polymer_length(const std::string polymer);
 
@@ -31,14 +31,14 @@ bool AoC2018_day05::init(std::vector<std::string> lines) {
 	return true;
 }
 
-uint32_t AoC2018_day05::get_reduced_polymer_size(const std::string polymer) {
+std::string AoC2018_day05::reduce_polymer_size(const std::string& polymer) {
 	bool finished;
 	std::stringstream r;
 	std::string p;
 	uint32_t i, j;
 
 	if (polymer.size() <= 2) {
-		return polymer.size();
+		return polymer;
 	}
 
 	p = polymer;
@@ -68,7 +68,7 @@ uint32_t AoC2018_day05::get_reduced_polymer_size(const std::string polymer) {
 		r.str("");
 	}
 
-	return p.size();
+	return p;
 }
 
 std::string AoC2018_day05::remove_unit_from_polymer(const std::string polymer, char unit) {
@@ -97,16 +97,16 @@ std::string AoC2018_day05::remove_unit_from_polymer(const std::string polymer, c
 
 uint32_t AoC2018_day05::get_shortest_polymer_length(const std::string polymer) {
 	std::string p;
-	uint32_t result, tmp;
+	uint32_t result;
 
 	result = polymer.size();
 
 	for (char c = 'a'; c <= 'z'; ++c) {
 		p = remove_unit_from_polymer(polymer, c);
 
-		tmp = get_reduced_polymer_size(p);
-		if (tmp < result) {
-			result = tmp;
+		p = reduce_polymer_size(p);
+		if (p.size() < result) {
+			result = p.size();
 		}
 	}
 
@@ -133,11 +133,9 @@ void AoC2018_day05::tests() {
 }
 
 bool AoC2018_day05::part1() {
-	int32_t result = 0;
+	polymer_ = reduce_polymer_size(polymer_);
 
-	result = get_reduced_polymer_size(polymer_);
-
-	result1_ = std::to_string(result);
+	result1_ = std::to_string(polymer_.size());
 
 	return true;
 }
