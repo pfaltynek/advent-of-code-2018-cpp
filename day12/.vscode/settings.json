@@ -33,6 +33,23 @@
 		"list": "cpp",
 		"xhash": "cpp",
 		"xiosbase": "cpp",
-		"xstring": "cpp"
+		"xstring": "cpp",
+		"atomic": "cpp",
+		"bitset": "cpp",
+		"cmath": "cpp",
+		"cstdarg": "cpp",
+		"cstddef": "cpp",
+		"cstring": "cpp",
+		"ctime": "cpp",
+		"deque": "cpp",
+		"algorithm": "cpp",
+		"iterator": "cpp",
+		"map": "cpp",
+		"memory": "cpp",
+		"memory_resource": "cpp",
+		"optional": "cpp",
+		"regex": "cpp",
+		"string": "cpp",
+		"string_view": "cpp"
 	}
 }

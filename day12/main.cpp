@@ -1,26 +1,40 @@
-#include <fstream>
-#include <iostream>
+#include "./../common/aoc.hpp"
 #include <regex>
 #include <unordered_map>
-#include <vector>
 
-#define TEST1 0
-#define TEST2 0
+#define TEST 1
 
 const std::regex init_state_template("^initial state: ([#.]+)$");
 const std::regex rule_template("^([#.]{5}) => ([#.])$");
 
-bool ParseInput(const std::vector<std::string> input, std::string &init_state, std::unordered_map<std::string, char> &rules) {
+class AoC2018_day12 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	void make_rules_comlete();
+	int64_t get_plant_numbers_sum(const uint64_t generations);
+	std::unordered_map<std::string, char> rules_;
+	std::string init_state_;
+};
+
+bool AoC2018_day12::init(std::vector<std::string> lines) {
 	std::smatch sm;
 	bool init_ok = false, rule_ok = false;
 
-	rules.clear();
+	rules_.clear();
+	init_state_.clear();
 
-	for (uint32_t i = 0; i < input.size(); ++i) {
+	for (uint32_t i = 0; i < lines.size(); i++) {
 		switch (i) {
 			case 0:
-				if (std::regex_match(input[i], sm, init_state_template)) {
-					init_state = sm.str(1);
+				if (std::regex_match(lines[i], sm, init_state_template)) {
+					init_state_ = sm.str(1);
 					init_ok = true;
 				} else {
 					std::cout << "invalid init state format" << std::endl;
@@ -32,8 +46,8 @@ bool ParseInput(const std::vector<std::string> input, std::string &init_state, s
 				break;
 			case 2:
 			default:
-				if (std::regex_match(input[i], sm, rule_template)) {
-					rules[sm.str(1)] = sm.str(2)[0];
+				if (std::regex_match(lines[i], sm, rule_template)) {
+					rules_[sm.str(1)] = sm.str(2)[0];
 					rule_ok = true;
 				} else {
 					std::cout << "invalid rule format on line " << i + 1 << std::endl;
@@ -43,10 +57,15 @@ bool ParseInput(const std::vector<std::string> input, std::string &init_state, s
 		}
 	}
 
-	return (init_ok && rule_ok);
+	if (init_ok && rule_ok) {
+		make_rules_comlete();
+		return true;
+	}
+
+	return false;
 }
 
-void MakeRulesComlete(std::unordered_map<std::string, char> &rules) {
+void AoC2018_day12::make_rules_comlete() {
 	uint32_t i[5], j;
 	std::string rule;
 
@@ -60,8 +79,8 @@ void MakeRulesComlete(std::unordered_map<std::string, char> &rules) {
 							rule += i[j] ? '.' : '#';
 						}
 
-						if (rules.find(rule) == rules.end()) {
-							rules[rule] = '.';
+						if (rules_.find(rule) == rules_.end()) {
+							rules_[rule] = '.';
 						}
 					}
 				}
@@ -70,9 +89,9 @@ void MakeRulesComlete(std::unordered_map<std::string, char> &rules) {
 	}
 }
 
-int64_t GetPlantNumbersSum(const std::string init_state, const std::unordered_map<std::string, char> rules, const uint64_t generations) {
+int64_t AoC2018_day12::get_plant_numbers_sum(const uint64_t generations) {
 	uint64_t zero_pot_idx = 0;
-	std::string pots = init_state, next;
+	std::string pots = init_state_, next;
 	int64_t result = 0, prev_result = 0, diff = 0, prev_diff = 0, diff_cnt = 0, tip = 0;
 
 	for (uint64_t i = 0; i < generations; ++i) {
@@ -92,7 +111,7 @@ int64_t GetPlantNumbersSum(const std::string init_state, const std::unordered_ma
 			char x;
 
 			part = pots.substr(j - 2, 5);
-			x = rules.at(part);
+			x = rules_.at(part);
 			next[j] = x;
 		}
 		pots = next;
@@ -118,81 +137,54 @@ int64_t GetPlantNumbersSum(const std::string init_state, const std::unordered_ma
 			diff_cnt = 0;
 		}
 
-		//std::cout << i << ": Sum: " << result << " Prev. sum: " << prev_result << " Diff: " << diff << " Tip: " << tip << std::endl;
+		// std::cout << i << ": Sum: " << result << " Prev. sum: " << prev_result << " Diff: " << diff << " Tip: " << tip << std::endl;
 	}
 
 	return result;
 }
 
-int main(void) {
-	int cnt = 0;
-	int64_t result1 = 0, result2 = 0;
-	std::ifstream input;
-	std::string line;
-	std::vector<std::string> puzzle_input;
-	std::string init_state;
-	std::unordered_map<std::string, char> rules;
+int32_t AoC2018_day12::get_aoc_day() {
+	return 12;
+}
 
-	puzzle_input.clear();
-	init_state.clear();
-	rules.clear();
+int32_t AoC2018_day12::get_aoc_year() {
+	return 2018;
+}
 
-	std::cout << "=== Advent of Code 2018 - day 12 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+void AoC2018_day12::tests() {
+#if TEST
+	init({"initial state: #..#.#..##......###...###", "", "...## => #", "..#.. => #", ".#... => #", ".#.#. => #", ".#.## => #", ".##.. => #", ".#### => #",
+		  "#.#.# => #", "#.### => #", "##.#. => #", "##.## => #", "###.. => #", "###.# => #", "####. => #"});
 
-#if TEST1
-	puzzle_input.push_back("initial state: #..#.#..##......###...###");
-	puzzle_input.push_back("");
-	puzzle_input.push_back("...## => #");
-	puzzle_input.push_back("..#.. => #");
-	puzzle_input.push_back(".#... => #");
-	puzzle_input.push_back(".#.#. => #");
-	puzzle_input.push_back(".#.## => #");
-	puzzle_input.push_back(".##.. => #");
-	puzzle_input.push_back(".#### => #");
-	puzzle_input.push_back("#.#.# => #");
-	puzzle_input.push_back("#.### => #");
-	puzzle_input.push_back("##.#. => #");
-	puzzle_input.push_back("##.## => #");
-	puzzle_input.push_back("###.. => #");
-	puzzle_input.push_back("###.# => #");
-	puzzle_input.push_back("####. => #");
+	part1();
 
-	if (ParseInput(puzzle_input, init_state, rules)) {
-		MakeRulesComlete(rules);
-	}
-
-#elif TEST2
-
-#else
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
-	}
-
-	while (std::getline(input, line)) {
-		cnt++;
-		puzzle_input.push_back(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-
-	if (ParseInput(puzzle_input, init_state, rules)) {
-		MakeRulesComlete(rules);
-	}
+	part2();
 
 #endif
+}
 
-	result1 = GetPlantNumbersSum(init_state, rules, 20);
+bool AoC2018_day12::part1() {
+	int64_t result;
 
-	std::cout << "Result is " << result1 << std::endl;
+	result = get_plant_numbers_sum(20);
 
-	result2 = GetPlantNumbersSum(init_state, rules, 50000000000);
+	result1_ = std::to_string(result);
 
-	std::cout << "--- part 2 ---" << std::endl;
-	std::cout << "Result is " << result2 << std::endl;
+	return true;
+}
+
+bool AoC2018_day12::part2() {
+	int64_t result;
+
+	result = get_plant_numbers_sum(50000000000);
+
+	result2_ = std::to_string(result);
+
+	return true;
+}
+
+int main(void) {
+	AoC2018_day12 day05;
+
+	return day05.main_execution();
 }
