@@ -1,63 +1,32 @@
 #include "combat.hpp"
-#include "main.hpp"
 
-bool Combat::init() {
-	int cnt;
-	std::ifstream input;
-	std::string line;
-	std::vector<std::string> map;
-
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return false;
-	}
-
-	cnt = 0;
-
-	while (std::getline(input, line)) {
-		map.push_back(line);
-		cnt++;
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-	return decode_map_input(map);
-}
-
-bool Combat::init(std::vector<std::string> test_data) {
-	return decode_map_input(test_data);
-}
-
-bool Combat::decode_map_input(std::vector<std::string> map) {
+bool AoC2018_day15::init(std::vector<std::string> lines) {
 	uint32_t i, j;
 	size_t pos;
 
 	nodes_.clear();
 	fighters_.clear();
 
-	height_ = map.size();
+	height_ = lines.size();
 
-	for (i = 0; i < map.size(); ++i) {
+	for (i = 0; i < lines.size(); ++i) {
 		if (i) {
-			if (map[i].size() != width_) {
+			if (lines[i].size() != width_) {
 				std::cout << "Invalid input map line " << i + 1 << std::endl;
 				return false;
 			}
 		} else {
-			width_ = map[i].size();
+			width_ = lines[i].size();
 		}
 
-		pos = map[i].find_first_not_of("EG#.");
+		pos = lines[i].find_first_not_of("EG#.");
 		if (pos != std::string::npos) {
 			std::cout << "Invalid input map content at line " << i + 1 << std::endl;
 			return false;
 		}
 
 		for (j = 0; j < width_; ++j) {
-			char type = map[i][j];
+			char type = lines[i][j];
 
 			if (type != '#') {
 				Node node;
@@ -78,7 +47,7 @@ bool Combat::decode_map_input(std::vector<std::string> map) {
 	return true;
 }
 
-void Combat::restart(int32_t elf_attack_power) {
+void AoC2018_day15::restart(int32_t elf_attack_power) {
 	nodes_ = nodes_backup_;
 	fighters_ = fighters_backup_;
 
@@ -89,27 +58,27 @@ void Combat::restart(int32_t elf_attack_power) {
 	}
 }
 
-bool Combat::is_wall(int32_t x, int32_t y) {
+bool AoC2018_day15::is_wall(int32_t x, int32_t y) {
 	return is_wall(coord_str(x, y));
 }
 
-bool Combat::is_wall(coord_str coord) {
+bool AoC2018_day15::is_wall(coord_str coord) {
 	return (nodes_.count(coord) == 0);
 }
 
-char Combat::get_opponent_type(char node_type) {
+char AoC2018_day15::get_opponent_type(char node_type) {
 	return (node_type == 'E' ? 'G' : 'E');
 }
 
-bool Combat::is_fighter(char node_type) {
+bool AoC2018_day15::is_fighter(char node_type) {
 	return (node_type == 'E') || (node_type == 'G');
 }
 
-bool Combat::sort_by_reading_order(const coord_str coord1, const coord_str coord2) {
+bool AoC2018_day15::sort_by_reading_order(const coord_str coord1, const coord_str coord2) {
 	return compare_by_reading_order(coord1, coord2);
 }
 
-bool Combat::compare_by_reading_order(const int32_t f1x, const int32_t f1y, const int32_t f2x, const int32_t f2y) {
+bool AoC2018_day15::compare_by_reading_order(const int32_t f1x, const int32_t f1y, const int32_t f2x, const int32_t f2y) {
 	if (f1y < f2y) {
 		return true;
 	} else if (f1y > f2y) {
@@ -119,15 +88,15 @@ bool Combat::compare_by_reading_order(const int32_t f1x, const int32_t f1y, cons
 	}
 }
 
-bool Combat::compare_by_reading_order(const coord_str coord1, const coord_str coord2) {
+bool AoC2018_day15::compare_by_reading_order(const coord_str coord1, const coord_str coord2) {
 	return compare_by_reading_order(coord1.x, coord1.y, coord2.x, coord2.y);
 }
 
-void Combat::sort_fighters() {
+void AoC2018_day15::sort_fighters() {
 	std::sort(fighters_.begin(), fighters_.end(), sort_by_reading_order);
 }
 
-bool Combat::have_opponents(char opp_type) {
+bool AoC2018_day15::have_opponents(char opp_type) {
 	for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
 		if (it->second.get_type() == opp_type) {
 			return true;
@@ -137,7 +106,7 @@ bool Combat::have_opponents(char opp_type) {
 	return false;
 }
 
-int32_t Combat::make_combat_part1() {
+int32_t AoC2018_day15::make_combat_part1() {
 	int32_t remaining_hitpoints_sum = 0, rounds = 0;
 	bool game_over = false;
 
@@ -158,7 +127,7 @@ int32_t Combat::make_combat_part1() {
 	return (rounds * remaining_hitpoints_sum);
 }
 
-int32_t Combat::make_combat_part2() {
+int32_t AoC2018_day15::make_combat_part2() {
 	int32_t remaining_hitpoints_sum = 0, rounds = 0, max_fail = 0, min_success = INT32_MAX, next = 10;
 	bool game_over = false, part2_failed, one_success = false, solved = false;
 
@@ -222,8 +191,8 @@ int32_t Combat::make_combat_part2() {
 	return (rounds * remaining_hitpoints_sum);
 }
 
-bool Combat::one_round_part1(int32_t& remaining_hitpoints_sum) {
-	uint32_t i, x, y;
+bool AoC2018_day15::one_round_part1(int32_t& remaining_hitpoints_sum) {
+	uint32_t i;
 	char op;
 	bool unused_flag;
 
@@ -268,8 +237,8 @@ bool Combat::one_round_part1(int32_t& remaining_hitpoints_sum) {
 	return false; // combat not finished yet
 }
 
-bool Combat::one_round_part2(int32_t& remaining_hitpoints_sum, bool& part2_failed) {
-	uint32_t i, x, y;
+bool AoC2018_day15::one_round_part2(int32_t& remaining_hitpoints_sum, bool& part2_failed) {
+	uint32_t i;
 	char op;
 
 	sort_fighters();
@@ -318,7 +287,7 @@ bool Combat::one_round_part2(int32_t& remaining_hitpoints_sum, bool& part2_faile
 	return false; // combat not finished yet
 }
 
-bool Combat::one_turn(coord_str node_coords, bool& elf_killed) {
+bool AoC2018_day15::one_turn(coord_str node_coords, bool& elf_killed) {
 	coord_str new_pos, victim;
 	bool elf_attacked;
 	elf_killed = false;
@@ -349,7 +318,7 @@ bool Combat::one_turn(coord_str node_coords, bool& elf_killed) {
 	return false;
 }
 
-bool Combat::get_shortest_path(Node from, coord_str& target) {
+bool AoC2018_day15::get_shortest_path(Node from, coord_str& target) {
 	coord_str coord, tmp;
 	char op;
 	path_info_str pi, pi_new;
@@ -423,10 +392,10 @@ bool Combat::get_shortest_path(Node from, coord_str& target) {
 	return true;
 }
 
-bool Combat::attack(Node attacker, coord_str& victim, bool& victim_was_elf) {
+bool AoC2018_day15::attack(Node attacker, coord_str& victim, bool& victim_was_elf) {
 	coord_str coord, nc;
 	bool found = false;
-	uint32_t hp = UINT32_MAX;
+	int32_t hp = INT32_MAX;
 	char op = get_opponent_type(attacker.get_type());
 	victim_was_elf = (op == 'E');
 
@@ -453,7 +422,7 @@ bool Combat::attack(Node attacker, coord_str& victim, bool& victim_was_elf) {
 	return false;
 }
 
-void Combat::print_map(std::string title) {
+void AoC2018_day15::print_map(std::string title) {
 #if DEBUG_PRINT
 	std::string lives;
 
@@ -483,4 +452,25 @@ void Combat::print_map(std::string title) {
 	}
 	std::cout << std::endl;
 #endif
+}
+
+
+int32_t AoC2018_day15::get_aoc_day() {
+	return 15;
+}
+
+int32_t AoC2018_day15::get_aoc_year() {
+	return 2018;
+}
+
+bool AoC2018_day15::part1() {
+	result1_ = std::to_string(make_combat_part1());
+
+	return true;
+}
+
+bool AoC2018_day15::part2() {
+	result2_ = std::to_string(make_combat_part2());
+
+	return true;
 }

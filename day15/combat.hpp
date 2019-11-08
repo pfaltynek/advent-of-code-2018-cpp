@@ -1,20 +1,13 @@
 #ifndef Combat_HPP
 #define Combat_HPP
 
-#include "coord.hpp"
-#include "helpers.h"
+#include "./../common/aoc.hpp"
+#include "./../common/coord.hpp"
 #include "node.hpp"
-#include <algorithm>
-#include <fstream>
-#include <iostream>
 #include <map>
 #include <queue>
 #include <set>
-#include <sstream>
-#include <stdint.h>
-#include <string>
-#include <utility>
-#include <vector>
+#include <algorithm>
 
 typedef struct PATH_INFO {
 	coord_str coord;
@@ -22,36 +15,23 @@ typedef struct PATH_INFO {
 	bool step1_initialized;
 } path_info_str;
 
-class Combat {
-  public:
-	Combat(){};
+#define TEST 0
+#define DEBUG_PRINT 0
 
-	bool init();
-	bool init(std::vector<std::string> test_data);
+class AoC2018_day15 : public AoC {
+  public:
+
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
 	int32_t make_combat_part1();
 	int32_t make_combat_part2();
-#if TEST1
-	void test_part1_01();
-	void test_part1_02();
-	void test_part1_03();
-	void test_part1_04();
-	void test_part1_05();
-	void test_part1_06();
-	void test_part1_07();
-	void test_part1_08();
-	void test_part1_09();
-#endif
-#if TEST2
-	void test_part2_01();
-	void test_part2_02();
-	void test_part2_03();
-	void test_part2_04();
-	void test_part2_05();
-#endif
-  protected:
-  private:
-  protected:
-  private:
 	void sort_fighters();
 	bool one_round_part1(int32_t& remaining_hitpoints_sum);
 	bool one_round_part2(int32_t& remaining_hitpoints_sum, bool& part2_failed);

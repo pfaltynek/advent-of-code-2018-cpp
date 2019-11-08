@@ -38,7 +38,7 @@ void Node::swap(Node& other) {
 	this->type_ = tmp.type_;
 }
 
-coord_str Node::get_edge(int32_t idx) {
+coord_str Node::get_edge(uint32_t idx) {
 	if ((idx >=0) && (idx < edges_.size())){
 		return edges_[idx];
 	} else {

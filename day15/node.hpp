@@ -2,9 +2,8 @@
 #define NODE_HPP
 
 #include <stdint.h>
-#include "helpers.h"
-#include "coord.hpp"
 #include <vector>
+#include "./../common/coord.hpp"
 
 class Node {
   public:
@@ -24,7 +23,7 @@ class Node {
 	int32_t get_hit_points() {
 		return hitpoints_;
 	}
-	int32_t get_edges_count() {
+	uint32_t get_edges_count() {
 		return edges_.size();
 	}
 	int32_t get_attack_power() {
@@ -33,7 +32,7 @@ class Node {
 	bool is_alive() {
 		return (hitpoints_ > 0);
 	}
-	coord_str get_edge(int32_t idx);
+	coord_str get_edge(uint32_t idx);
 	void got_attacked(int32_t by_attack_power);
 	void set_attack_power(int32_t new_value);
 	void swap(Node& other);

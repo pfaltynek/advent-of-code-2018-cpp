@@ -1,10 +1,11 @@
 #include "combat.hpp"
 
-int32_t x;
+void AoC2018_day15::tests() {
+#if TEST
+	int32_t x;
+	std::vector<std::string> test;
 
-#if TEST1
-void Combat::test_part1_01() {
-	std::vector<std::string> test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
+	test = {"#######", "#E..G.#", "#...#.#", "#.G.#G#", "#######"};
 
 	if (init(test)) {
 		print_map("Initially:");
@@ -19,10 +20,8 @@ void Combat::test_part1_01() {
 		*/
 		print_map("After round 1");
 	}
-}
 
-void Combat::test_part1_02() {
-	std::vector<std::string> test = {"#######", "#.E...#", "#.....#", "#...G.#", "#######"};
+	test = {"#######", "#.E...#", "#.....#", "#...G.#", "#######"};
 
 	if (init(test)) {
 		print_map("Initially:");
@@ -37,10 +36,8 @@ void Combat::test_part1_02() {
 		*/
 		print_map("After round 1");
 	}
-}
 
-void Combat::test_part1_03() {
-	std::vector<std::string> test = {"#########", "#G..G..G#", "#.......#", "#.......#", "#G..E..G#", "#.......#", "#.......#", "#G..G..G#", "#########"};
+	test = {"#########", "#G..G..G#", "#.......#", "#.......#", "#G..E..G#", "#.......#", "#.......#", "#G..G..G#", "#########"};
 
 	if (init(test)) {
 		print_map("Initially:");
@@ -99,10 +96,8 @@ void Combat::test_part1_03() {
 		*/
 		print_map("After round 3");
 	}
-}
 
-void Combat::test_part1_04() {
-	std::vector<std::string> test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"};
+	test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part1();
@@ -120,10 +115,8 @@ void Combat::test_part1_04() {
 		*/
 		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-void Combat::test_part1_05() {
-	std::vector<std::string> test = {"#######", "#G..#E#", "#E#E.E#", "#G.##.#", "#...#E#", "#...E.#", "#######"};
+	test = {"#######", "#G..#E#", "#E#E.E#", "#G.##.#", "#...#E#", "#...E.#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part1();
@@ -142,10 +135,8 @@ void Combat::test_part1_05() {
 		*/
 		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-void Combat::test_part1_06() {
-	std::vector<std::string> test = {"#######", "#E..EG#", "#.#G.E#", "#E.##E#", "#G..#.#", "#..E#.#", "#######"};
+	test = {"#######", "#E..EG#", "#.#G.E#", "#E.##E#", "#G..#.#", "#..E#.#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part1();
@@ -164,10 +155,8 @@ void Combat::test_part1_06() {
 		*/
 		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-void Combat::test_part1_07() {
-	std::vector<std::string> test = {"#######", "#E.G#.#", "#.#G..#", "#G.#.G#", "#G..#.#", "#...E.#", "#######"};
+	test = {"#######", "#E.G#.#", "#.#G..#", "#G.#.G#", "#G..#.#", "#...E.#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part1();
@@ -186,10 +175,8 @@ void Combat::test_part1_07() {
 		*/
 		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-void Combat::test_part1_08() {
-	std::vector<std::string> test = {"#######", "#.E...#", "#.#..G#", "#.###.#", "#E#G#G#", "#...#G#", "#######"};
+	test = {"#######", "#.E...#", "#.#..G#", "#.###.#", "#E#G#G#", "#...#G#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part1();
@@ -208,10 +195,8 @@ void Combat::test_part1_08() {
 		*/
 		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-void Combat::test_part1_09() {
-	std::vector<std::string> test = {"#########", "#G......#", "#.E.#...#", "#..##..G#", "#...##..#", "#...#...#", "#.G...G.#", "#.....G.#", "#########"};
+	test = {"#########", "#G......#", "#.E.#...#", "#..##..G#", "#...##..#", "#...#...#", "#.G...G.#", "#.....G.#", "#########"};
 
 	if (init(test)) {
 		x = make_combat_part1();
@@ -232,13 +217,8 @@ void Combat::test_part1_09() {
 		*/
 		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-#endif
-
-#if TEST2
-void Combat::test_part2_01() {
-	std::vector<std::string> test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"};
+	test = {"#######", "#.G...#", "#...EG#", "#.#.#G#", "#..G#E#", "#.....#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part2();
@@ -255,11 +235,10 @@ void Combat::test_part2_01() {
 		Elves win with 172 total hit points left
 		Outcome: 29 * 172 = 4988
 		*/
+		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-void Combat::test_part2_02() {
-	std::vector<std::string> test = {"#######", "#E..EG#", "#.#G.E#", "#E.##E#", "#G..#.#", "#..E#.#", "#######"};
+	test = {"#######", "#E..EG#", "#.#G.E#", "#E.##E#", "#G..#.#", "#..E#.#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part2();
@@ -275,11 +254,10 @@ void Combat::test_part2_02() {
 		Combat ends after 33 full rounds
 		Elves win with 948 total hit points left
 		Outcome: 33 * 948 = 31284*/
+		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-void Combat::test_part2_03() {
-	std::vector<std::string> test = {"#######", "#E.G#.#", "#.#G..#", "#G.#.G#", "#G..#.#", "#...E.#", "#######"};
+	test = {"#######", "#E.G#.#", "#.#G..#", "#G.#.G#", "#G..#.#", "#...E.#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part2();
@@ -295,11 +273,10 @@ void Combat::test_part2_03() {
 		Combat ends after 37 full rounds
 		Elves win with 94 total hit points left
 		Outcome: 37 * 94 = 3478*/
+		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-void Combat::test_part2_04() {
-	std::vector<std::string> test = {"#######", "#.E...#", "#.#..G#", "#.###.#", "#E#G#G#", "#...#G#", "#######"};
+	test = {"#######", "#.E...#", "#.#..G#", "#.###.#", "#E#G#G#", "#...#G#", "#######"};
 
 	if (init(test)) {
 		x = make_combat_part2();
@@ -315,11 +292,10 @@ void Combat::test_part2_04() {
 		Combat ends after 39 full rounds
 		Elves win with 166 total hit points left
 		Outcome: 39 * 166 = 6474*/
+		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
-void Combat::test_part2_05() {
-	std::vector<std::string> test = {"#########", "#G......#", "#.E.#...#", "#..##..G#", "#...##..#", "#...#...#", "#.G...G.#", "#.....G.#", "#########"};
+	test = {"#########", "#G......#", "#.E.#...#", "#..##..G#", "#...##..#", "#...#...#", "#.G...G.#", "#.....G.#", "#########"};
 
 	if (init(test)) {
 		x = make_combat_part2();
@@ -337,7 +313,8 @@ void Combat::test_part2_05() {
 		Combat ends after 30 full rounds
 		Elves win with 38 total hit points left
 		Outcome: 30 * 38 = 1140*/
+		std::cout << "Result is " << x << "." << std::endl;
 	}
-}
 
 #endif
+}
