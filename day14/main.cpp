@@ -1,17 +1,41 @@
-#include <fstream>
-#include <iostream>
-#include <vector>
+#include "./../common/aoc.hpp"
+#include "./../common/coord.hpp"
 
-#define TEST1 0
-#define TEST2 0
+#define TEST 1
 
-std::string SimulateRecipes(std::string rounds, uint64_t &result_rounds) {
+class AoC2018_day14 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	std::string simulate_recipes(uint64_t &result_rounds);
+
+	std::string rounds_;
+};
+
+bool AoC2018_day14::init(std::vector<std::string> lines) {
+
+	rounds_.clear();
+
+	for (uint32_t i = 0; i < lines.size(); ++i) {
+		rounds_.append(lines[i]);
+	}
+
+	return true;
+}
+
+std::string AoC2018_day14::simulate_recipes(uint64_t &result_rounds) {
 	std::string recipes, recipes_score;
-	uint64_t result = 0, elf1, elf2, new_val;
+	uint64_t elf1, elf2, new_val;
 	uint64_t required_rounds;
 	bool part1_done = false, part2_done = false;
 
-	required_rounds = std::stol(rounds);
+	required_rounds = std::stol(rounds_);
 	recipes.reserve(required_rounds + 11);
 
 	recipes.clear();
@@ -37,8 +61,8 @@ std::string SimulateRecipes(std::string rounds, uint64_t &result_rounds) {
 		}
 
 		if (!part2_done) {
-			if (recipes.size() >= (rounds.size() + 2)) {
-				size_t pos = recipes.find(rounds, recipes.size() - rounds.size() - 2);
+			if (recipes.size() >= (rounds_.size() + 2)) {
+				size_t pos = recipes.find(rounds_, recipes.size() - rounds_.size() - 2);
 				if (pos != std::string::npos) {
 					result_rounds = pos;
 					part2_done = true;
@@ -50,49 +74,59 @@ std::string SimulateRecipes(std::string rounds, uint64_t &result_rounds) {
 	return recipes_score;
 }
 
-int main(void) {
-	int cnt = 0;
-	std::string result1;
-	uint64_t result2 = 0;
-	std::ifstream input;
-	std::string line, input_number;
+int32_t AoC2018_day14::get_aoc_day() {
+	return 14;
+}
 
-	std::cout << "=== Advent of Code 2018 - day 14 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+int32_t AoC2018_day14::get_aoc_year() {
+	return 2018;
+}
 
-#if TEST1
-	result1 = SimulateRecipes("9", "51589");	// 5158916779
-	result1 = SimulateRecipes("5", "01245");	// 0124515891
-	result1 = SimulateRecipes("18", "92510");   // 9251071085
-	result1 = SimulateRecipes("2018", "59414"); // 5941429882
+void AoC2018_day14::tests() {
+#if TEST
+	init({"9"});
+	part1(); //5158916779
 
-#elif TEST2
+	init({"5"});
+	part1(); //0124515891
 
-#else
-	input.open("input.txt", std::ifstream::in);
+	init({"18"});
+	part1(); //9251071085
 
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return -1;
-	}
+	init({"2018"});
+	part1(); //5941429882
 
-	input_number.clear();
 
-	while (std::getline(input, line)) {
-		input_number.append(line);
-		cnt++;
-	}
 
-	if (input.is_open()) {
-		input.close();
-	}
+	init({"51589"});
+	part1(); //9
 
-	result1 = SimulateRecipes(input_number, result2);
+	init({"01245"});
+	part1(); //5
 
+	init({"92510"});
+	part1(); //18
+
+	init({"59414"});
+	part1(); //2018
 #endif
+}
 
-	std::cout << "Result is " << result1 << std::endl;
+bool AoC2018_day14::part1() {
+	uint64_t result2;
 
-	std::cout << "--- part 2 ---" << std::endl;
-	std::cout << "Result is " << result2 << std::endl;
+	result1_ = simulate_recipes(result2);
+	result2_ = std::to_string(result2);
+
+	return true;
+}
+
+bool AoC2018_day14::part2() {
+	return true;
+}
+
+int main(void) {
+	AoC2018_day14 day14;
+
+	return day14.main_execution();
 }
