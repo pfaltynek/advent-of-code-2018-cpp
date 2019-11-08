@@ -342,7 +342,7 @@ bool AoC2018_day13::part2() {
 }
 
 int main(void) {
-	AoC2018_day13 day05;
+	AoC2018_day13 day13;
 
-	return day05.main_execution();
+	return day13.main_execution();
 }
