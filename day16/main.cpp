@@ -1,4 +1,7 @@
-#include "main.hpp"
+#include "./../common/aoc.hpp"
+#include <regex>
+
+#define TEST 1
 
 typedef enum INSTRUCTION_TYPE {
 	// Addition:
@@ -50,7 +53,32 @@ const std::vector<instruction_t> instruction_types = {INSTRUCTION_TYPE::addr, IN
 													  INSTRUCTION_TYPE::setr, INSTRUCTION_TYPE::seti, INSTRUCTION_TYPE::gtir, INSTRUCTION_TYPE::gtri,
 													  INSTRUCTION_TYPE::gtrr, INSTRUCTION_TYPE::eqir, INSTRUCTION_TYPE::eqri, INSTRUCTION_TYPE::eqrr};
 
-bool parse_instruction(const std::string line, instr_str& instruction) {
+class AoC2018_day16 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
+	bool parse_snippets(const std::vector<std::string> lines);
+	bool parse_instruction(const std::string line, instr_str& instruction);
+	bool parse_registers(const std::string line, const bool before, registers_str& registers);
+	bool parse_instructions(const std::vector<std::string> lines);
+	bool analyze_stats(const std::map<int32_t, std::vector<std::vector<instruction_t>>>& stats, std::map<int32_t, instruction_t>& opcode_map);
+	std::vector<instruction_t> find_applicable_instructions(const snippet_str snippet);
+	void do_instruction(const instruction_t operation, const instr_str instruction, registers_str& regs);
+	int32_t part1(const std::vector<snippet_str> debug_lines, std::map<int32_t, std::vector<std::vector<instruction_t>>>& stats);
+	int32_t part2(const std::vector<instr_str> instructions, std::map<int32_t, instruction_t>& opcode_map);
+
+	std::vector<snippet_str> snippets_;
+	std::vector<instr_str> instructions_;
+	std::map<int32_t, std::vector<std::vector<instruction_t>>> stats_;
+};
+
+bool AoC2018_day16::parse_instruction(const std::string line, instr_str& instruction) {
 	std::smatch sm;
 
 	if (std::regex_match(line, sm, regex_ins)) {
@@ -74,7 +102,7 @@ bool parse_instruction(const std::string line, instr_str& instruction) {
 	return false;
 }
 
-bool parse_registers(const std::string line, const bool before, registers_str& registers) {
+bool AoC2018_day16::parse_registers(const std::string line, const bool before, registers_str& registers) {
 	std::smatch sm;
 
 	if (std::regex_match(line, sm, before ? regex_bef : regex_aft)) {
@@ -89,12 +117,12 @@ bool parse_registers(const std::string line, const bool before, registers_str& r
 	return false;
 }
 
-bool parse_snippets(const std::vector<std::string> lines, std::vector<snippet_str>& snippets) {
+bool AoC2018_day16::parse_snippets(const std::vector<std::string> lines) {
 	if (lines.size() % 3) {
 		return false;
 	}
 
-	snippets.clear();
+	snippets_.clear();
 
 	for (uint32_t i = 0; i < (lines.size() / 3); ++i) {
 		snippet_str snip;
@@ -108,20 +136,20 @@ bool parse_snippets(const std::vector<std::string> lines, std::vector<snippet_st
 		if (!parse_registers(lines[(3 * i) + 2], false, snip.after)) {
 			return false;
 		}
-		snippets.push_back(snip);
+		snippets_.push_back(snip);
 	}
 	return true;
 }
 
-bool parse_instructions(const std::vector<std::string> lines, std::vector<instr_str>& instructions) {
+bool AoC2018_day16::parse_instructions(const std::vector<std::string> lines) {
 
-	instructions.clear();
+	instructions_.clear();
 
 	for (uint32_t i = 0; i < lines.size(); ++i) {
 		instr_str instr;
 
 		if (parse_instruction(lines[i], instr)) {
-			instructions.push_back(instr);
+			instructions_.push_back(instr);
 		} else {
 			std::cout << "Instruction " << i + 1 << " invalid." << std::endl;
 			return false;
@@ -131,18 +159,18 @@ bool parse_instructions(const std::vector<std::string> lines, std::vector<instr_
 	return true;
 }
 
-bool init(const std::vector<std::string> input, std::vector<snippet_str>& debug_lines, std::vector<instr_str>& instructions) {
+bool AoC2018_day16::init(const std::vector<std::string> lines) {
 	int cnt = 0;
 	std::vector<std::string> snippets, insts;
 	bool inst_part = false;
 
-	if (!input.size()) {
+	if (!lines.size()) {
 		std::cout << "Empty input." << std::endl;
 		return false;
 	}
 
-	for (uint32_t i = 0; i < input.size(); ++i) {
-		if (input[i].empty()) {
+	for (uint32_t i = 0; i < lines.size(); ++i) {
+		if (lines[i].empty()) {
 			cnt++;
 			if (cnt > 1) {
 				inst_part = true;
@@ -150,42 +178,17 @@ bool init(const std::vector<std::string> input, std::vector<snippet_str>& debug_
 		} else {
 			cnt = 0;
 			if (inst_part) {
-				insts.push_back(input[i]);
+				insts.push_back(lines[i]);
 			} else {
-				snippets.push_back(input[i]);
+				snippets.push_back(lines[i]);
 			}
 		}
 	}
 
-	return parse_instructions(insts, instructions) && parse_snippets(snippets, debug_lines);
+	return parse_instructions(insts) && parse_snippets(snippets);
 }
 
-bool init(std::vector<snippet_str>& debug_lines, std::vector<instr_str>& instructions) {
-	std::ifstream input;
-	std::string line;
-	std::vector<std::string> lines;
-
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return false;
-	}
-
-	lines.clear();
-
-	while (std::getline(input, line)) {
-		lines.push_back(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-
-	return init(lines, debug_lines, instructions);
-}
-
-void DoInstruction(const instruction_t operation, const instr_str instruction, registers_str& regs) {
+void AoC2018_day16::do_instruction(const instruction_t operation, const instr_str instruction, registers_str& regs) {
 	switch (operation) {
 		case INSTRUCTION_TYPE::addr:
 			regs.r[instruction.C] = regs.r[instruction.A] + regs.r[instruction.B];
@@ -238,14 +241,14 @@ void DoInstruction(const instruction_t operation, const instr_str instruction, r
 	}
 }
 
-std::vector<instruction_t> FindApplicableInstructions(const snippet_str snippet) {
+std::vector<instruction_t> AoC2018_day16::find_applicable_instructions(const snippet_str snippet) {
 	std::vector<instruction_t> result;
 	result.clear();
 
 	for (uint32_t i = 0; i < instruction_types.size(); ++i) {
 		registers_str regs = snippet.before;
 
-		DoInstruction(instruction_types[i], snippet.instruction, regs);
+		do_instruction(instruction_types[i], snippet.instruction, regs);
 
 		if ((regs.r[0] == snippet.after.r[0]) && (regs.r[1] == snippet.after.r[1]) && (regs.r[2] == snippet.after.r[2]) && (regs.r[3] == snippet.after.r[3])) {
 			result.push_back(instruction_types[i]);
@@ -255,14 +258,14 @@ std::vector<instruction_t> FindApplicableInstructions(const snippet_str snippet)
 	return result;
 }
 
-int32_t Part1(const std::vector<snippet_str> debug_lines, std::map<int32_t, std::vector<std::vector<instruction_t>>>& stats) {
+int32_t AoC2018_day16::part1(const std::vector<snippet_str> debug_lines, std::map<int32_t, std::vector<std::vector<instruction_t>>>& stats) {
 	int32_t result = 0;
 	std::vector<instruction_t> applicable;
 
 	stats.clear();
 
 	for (uint32_t i = 0; i < debug_lines.size(); ++i) {
-		applicable = FindApplicableInstructions(debug_lines[i]);
+		applicable = find_applicable_instructions(debug_lines[i]);
 
 		if (applicable.size() >= 3) {
 			result++;
@@ -274,7 +277,7 @@ int32_t Part1(const std::vector<snippet_str> debug_lines, std::map<int32_t, std:
 	return result;
 }
 
-bool AnalyzeStats(const std::map<int32_t, std::vector<std::vector<instruction_t>>>& stats, std::map<int32_t, instruction_t>& opcode_map) {
+bool AoC2018_day16::analyze_stats(const std::map<int32_t, std::vector<std::vector<instruction_t>>>& stats, std::map<int32_t, instruction_t>& opcode_map) {
 	std::map<int32_t, std::vector<instruction_t>> stats_filtered;
 	std::vector<instruction_t> inst_filtered;
 	bool common, found;
@@ -342,7 +345,7 @@ bool AnalyzeStats(const std::map<int32_t, std::vector<std::vector<instruction_t>
 	return true;
 }
 
-int32_t Part2(const std::vector<instr_str> instructions, std::map<int32_t, instruction_t>& opcode_map) {
+int32_t AoC2018_day16::part2(const std::vector<instr_str> instructions, std::map<int32_t, instruction_t>& opcode_map) {
 	registers_str regs = {};
 	instruction_t inst;
 	int32_t opcode;
@@ -350,43 +353,52 @@ int32_t Part2(const std::vector<instr_str> instructions, std::map<int32_t, instr
 	for (uint32_t i = 0; i < instructions.size(); ++i) {
 		opcode = instructions[i].opcode;
 		inst = opcode_map[opcode];
-		DoInstruction(inst, instructions[i], regs);
+		do_instruction(inst, instructions[i], regs);
 	}
 
 	return regs.r[0];
 }
 
-int main(void) {
-	uint64_t result1 = 0, result2 = 0;
-	std::vector<snippet_str> debug_lines;
-	std::vector<instr_str> instructions;
-	std::map<int32_t, std::vector<std::vector<instruction_t>>> stats;
-	std::map<int32_t, instruction_t> opcode_map;
+int32_t AoC2018_day16::get_aoc_day() {
+	return 16;
+}
 
+int32_t AoC2018_day16::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day16::tests() {
 #if TEST
-	if (!init({"Before: [3, 2, 1, 1]", "9 2 1 2", "After:  [3, 2, 2, 1]"}, debug_lines, instructions)) {
-		return -1;
+	if (init({"Before: [3, 2, 1, 1]", "9 2 1 2", "After:  [3, 2, 2, 1]"})) {
+		std::vector<instruction_t> result = find_applicable_instructions(snippets_[0]);
 	}
-
-	std::vector<instruction_t> result = FindApplicableInstructions(debug_lines[0]);
 
 #endif
+}
 
-	if (!init(debug_lines, instructions)) {
-		return -1;
+bool AoC2018_day16::part1() {
+	int32_t result1 = part1(snippets_, stats_);
+
+	result1_ = std::to_string(result1);
+
+	return true;
+}
+
+bool AoC2018_day16::part2() {
+	int32_t result2;
+	std::map<int32_t, instruction_t> opcode_map;
+
+	if (analyze_stats(stats_, opcode_map)) {
+		result2 = part2(instructions_, opcode_map);
+		result2_ = std::to_string(result2);
+
+		return true;
 	}
+	return false;
+}
 
-	std::cout << "=== Advent of Code 2018 - day 16 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+int main(void) {
+	AoC2018_day16 day16;
 
-	result1 = Part1(debug_lines, stats);
-
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
-
-	if (AnalyzeStats(stats, opcode_map)) {
-		result2 = Part2(instructions, opcode_map);
-	}
-
-	std::cout << "Result is " << result2 << std::endl;
+	return day16.main_execution();
 }
