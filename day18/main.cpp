@@ -1,6 +1,7 @@
-#include "main.hpp"
+#include "./../common/aoc.hpp"
+#include <algorithm>
 
-int32_t input_size = 10;
+#define TEST 1
 
 typedef struct ADJ_STATS {
 	uint8_t trees;
@@ -8,82 +9,83 @@ typedef struct ADJ_STATS {
 	uint8_t lumberyard;
 } adj_stats_str;
 
-bool init(const std::vector<std::string> input, std::string& data) {
-	input_size = input.size();
+class AoC2018_day18 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
 
-	data.clear();
+  private:
+	uint32_t get_data_index(const uint32_t x, const uint32_t y);
+	void print(std::string title);
+	adj_stats_str get_adjacents_stats(const uint32_t x, const uint32_t y, char& acre_current_type);
+	uint32_t simulate(const uint32_t minutes);
+	uint32_t get_total_resource_value();
+	void reset();
 
-	for (uint32_t i = 0; i < input.size(); ++i) {
-		if (input[i].size() != input_size) {
+	std::string data_, data_backup_;
+	uint32_t input_size_ = 10;
+};
+
+void AoC2018_day18::reset() {
+	data_ = data_backup_;
+}
+
+bool AoC2018_day18::init(const std::vector<std::string> lines) {
+	input_size_ = lines.size();
+
+	data_.clear();
+
+	for (uint32_t i = 0; i < lines.size(); ++i) {
+		if (lines[i].size() != input_size_) {
 			std::cout << "Invalid input size at line " << i + 1 << std::endl;
 			return false;
 		}
-		if (input[i].find_first_not_of(".#|") != std::string::npos) {
+		if (lines[i].find_first_not_of(".#|") != std::string::npos) {
 			std::cout << "Invalid input content at line " << i + 1 << std::endl;
 			return false;
 		}
 
-		data.append(input[i]);
+		data_.append(lines[i]);
 	}
+	data_backup_ = data_;
 
 	return true;
 }
 
-bool init(std::string& data) {
-	std::ifstream input;
-	std::string line;
-	std::vector<std::string> lines;
-
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return false;
-	}
-
-	lines.clear();
-
-	while (std::getline(input, line)) {
-		lines.push_back(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-
-	return init(lines, data);
-}
-
-void print(std::string title, std::string data) {
+void AoC2018_day18::print(std::string title) {
 
 	if (!title.empty()) {
 		std::cout << title << std::endl;
 	}
 
-	for (uint32_t i = 0; i < input_size; ++i) {
-		for (uint32_t j = 0; j < input_size; ++j) {
-			std::cout << data[(i * input_size) + j];
+	for (uint32_t i = 0; i < input_size_; ++i) {
+		for (uint32_t j = 0; j < input_size_; ++j) {
+			std::cout << data_[(i * input_size_) + j];
 		}
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
 }
 
-uint32_t get_data_index(const uint32_t x, const uint32_t y) {
-	return (y * input_size) + x;
+uint32_t AoC2018_day18::get_data_index(const uint32_t x, const uint32_t y) {
+	return (y * input_size_) + x;
 }
 
-adj_stats_str get_adjacents_stats(const std::string data, const uint8_t x, const uint8_t y, char& acre_current_type) {
+adj_stats_str AoC2018_day18::get_adjacents_stats(const uint32_t x, const uint32_t y, char& acre_current_type) {
 	adj_stats_str result = {};
 
-	uint8_t x1, x2, y1, y2;
+	uint32_t x1, x2, y1, y2;
 
 	x1 = x2 = x;
 	y1 = y2 = y;
 
 	if (!x) {
 		x2++;
-	} else if ((x + 1) == input_size) {
+	} else if (x + 1 == input_size_) {
 		x1--;
 	} else {
 		x2++;
@@ -91,14 +93,14 @@ adj_stats_str get_adjacents_stats(const std::string data, const uint8_t x, const
 	}
 	if (!y) {
 		y2++;
-	} else if ((y + 1) == input_size) {
+	} else if (y + 1 == input_size_) {
 		y1--;
 	} else {
 		y2++;
 		y1--;
 	}
 
-	acre_current_type = data[get_data_index(x, y)];
+	acre_current_type = data_[get_data_index(x, y)];
 
 	for (uint32_t i = y1; i <= y2; ++i) {
 		for (uint32_t j = x1; j <= x2; ++j) {
@@ -106,7 +108,7 @@ adj_stats_str get_adjacents_stats(const std::string data, const uint8_t x, const
 				continue;
 			}
 
-			switch (data[get_data_index(j, i)]) {
+			switch (data_[get_data_index(j, i)]) {
 				case '.':
 					result.open_ground++;
 					break;
@@ -123,35 +125,35 @@ adj_stats_str get_adjacents_stats(const std::string data, const uint8_t x, const
 	return result;
 }
 
-uint32_t get_total_resource_value(const std::string data) {
+uint32_t AoC2018_day18::get_total_resource_value() {
 	uint32_t t, l;
 
-	t = std::count(data.begin(), data.end(), '|');
-	l = std::count(data.begin(), data.end(), '#');
+	t = std::count(data_.begin(), data_.end(), '|');
+	l = std::count(data_.begin(), data_.end(), '#');
 
 	return t * l;
 }
 
-uint32_t simulate(const std::string initial, uint32_t minutes) {
-	std::string s1(initial), s2(initial);
+uint32_t AoC2018_day18::simulate(const uint32_t minutes) {
+	std::string s2(data_);
 	char c;
 	adj_stats_str ass;
 	std::vector<uint32_t> hashes;
 	std::vector<uint32_t> rounds;
-	uint32_t hash, offset = 0, repeated = 0, cnt = 0;
+	uint32_t hash;
 	int x = 0;
 
 	hashes.clear();
 	rounds.clear();
 
-	hashes.push_back(get_total_resource_value(s1));
+	hashes.push_back(get_total_resource_value());
 
-	// print("Initial state:", s1);
+	// print("Initial state:");
 
 	for (uint32_t t = 0; t < minutes; ++t) {
-		for (uint32_t i = 0; i < input_size; ++i) {
-			for (uint32_t j = 0; j < input_size; ++j) {
-				ass = get_adjacents_stats(s1, j, i, c);
+		for (uint32_t i = 0; i < input_size_; ++i) {
+			for (uint32_t j = 0; j < input_size_; ++j) {
+				ass = get_adjacents_stats(j, i, c);
 
 				switch (c) {
 					case '.':
@@ -172,8 +174,8 @@ uint32_t simulate(const std::string initial, uint32_t minutes) {
 				}
 			}
 		}
-		s1 = s2;
-		hash = get_total_resource_value(s1);
+		data_ = s2;
+		hash = get_total_resource_value();
 		for (uint32_t h = x; h < hashes.size(); ++h) {
 			if (hashes[h] == hash) {
 				rounds.push_back(hash);
@@ -182,7 +184,7 @@ uint32_t simulate(const std::string initial, uint32_t minutes) {
 				rounds.push_back(t + 1);
 				x = h + 1;
 				if (rounds.size() == 4 * 3) {
-					int32_t diff = rounds[3] - rounds[2];
+					uint32_t diff = rounds[3] - rounds[2];
 					bool ok = true;
 					for (uint32_t r = 1; r < (rounds.size() / 4); ++r) {
 						if ((rounds[(r * 4) + 3] - rounds[(r * 4) + 2]) != diff) {
@@ -205,41 +207,52 @@ uint32_t simulate(const std::string initial, uint32_t minutes) {
 		}
 		hashes.push_back(hash);
 
-		// print("After " + std::to_string(t + 1) + (t ? " minutes:" : " minute:"), s1);
+		// print("After " + std::to_string(t + 1) + (t ? " minutes:" : " minute:"));
 	}
 
 	return hash;
 }
 
-int main(void) {
-	uint64_t result1 = 0, result2 = 0;
-	std::string data;
+int32_t AoC2018_day18::get_aoc_day() {
+	return 18;
+}
 
+int32_t AoC2018_day18::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day18::tests() {
 #if TEST
-	if (!init({".#.#...|#.", ".....#|##|", ".|..|...#.", "..|#.....#", "#.#|||#|#|", "...#.||...", ".|....|...", "||...#|.#|", "|.||||..|.", "...#.|..|."},
-			  data)) {
-		return -1;
+	uint64_t result1;
+
+	if (init({".#.#...|#.", ".....#|##|", ".|..|...#.", "..|#.....#", "#.#|||#|#|", "...#.||...", ".|....|...", "||...#|.#|", "|.||||..|.", "...#.|..|."})) {
+		result1 = simulate(10); // 1147
 	}
-
-	final = simulate(data, 10);
-
-	result1 = get_part1_value(final);
 
 #endif
+}
 
-	if (!init(data)) {
-		return -1;
-	}
+bool AoC2018_day18::part1() {
+	uint64_t result1;
 
-	std::cout << "=== Advent of Code 2018 - day 18 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+	result1 = simulate(10);
+	result1_ = std::to_string(result1);
 
-	result1 = simulate(data, 10);
+	return true;
+}
 
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
+bool AoC2018_day18::part2() {
+	uint64_t result2;
 
-	result2 = simulate(data, 1000000000);
+	reset();
+	result2 = simulate(1000000000);
+	result2_ = std::to_string(result2);
 
-	std::cout << "Result is " << result2 << std::endl;
+	return true;
+}
+
+int main(void) {
+	AoC2018_day18 day17;
+
+	return day17.main_execution();
 }
