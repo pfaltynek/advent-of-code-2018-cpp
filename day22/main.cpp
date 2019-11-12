@@ -291,7 +291,7 @@ int32_t AoC2018_day22::find_path() {
 }
 
 int32_t AoC2018_day22::get_aoc_day() {
-	return 21;
+	return 22;
 }
 
 int32_t AoC2018_day22::get_aoc_year() {
