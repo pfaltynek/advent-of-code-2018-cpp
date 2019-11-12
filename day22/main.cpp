@@ -1,4 +1,9 @@
-#include "main.hpp"
+#include "./../common/aoc.hpp"
+#include "./../common/coord.hpp"
+#include <queue>
+#include <regex>
+
+#define TEST 1
 
 const std::regex depth_regex("^depth: (\\d+)$");
 const std::regex target_regex("^target: (\\d+),(\\d+)$");
@@ -12,42 +17,47 @@ typedef struct PATH_INFO {
 	tool_type_t tool;
 } path_info_str;
 
-class Cave {
-  public:
-	bool init(const std::vector<std::string> input);
-	bool init();
-	int32_t get_risk_level();
-	int32_t find_path();
+class AoC2018_day22 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
 
   private:
-	int32_t depth_;
-	coord_str target_;
-	std::map<coord_str, int64_t> cache_;
-	std::map<coord_str, area_type_t> map_;
-
+	int32_t get_risk_level();
+	int32_t find_path();
 	int64_t get_geologic_index(int32_t x, int32_t y);
 	int64_t get_geologic_index(coord_str coord);
 	int32_t get_erosion_level(int64_t geo_idx);
 	area_type_t get_area_type(int32_t erosion_lvl);
 	std::vector<path_info_str> get_next_steps(path_info_str from);
+
+	int32_t depth_;
+	coord_str target_;
+	std::map<coord_str, int64_t> cache_;
+	std::map<coord_str, area_type_t> map_;
+	std::map<coord_str, std::vector<path_info_str>> step_cache_;
 };
 
-bool Cave::init(const std::vector<std::string> input) {
+bool AoC2018_day22::init(const std::vector<std::string> lines) {
 	std::smatch sm;
 
-	if (input.size() < 2) {
+	if (lines.size() < 2) {
 		std::cout << "Incomplete input data" << std::endl;
 		return false;
 	}
 
-	if (std::regex_match(input[0], sm, depth_regex)) {
+	if (std::regex_match(lines[0], sm, depth_regex)) {
 		depth_ = stoi(sm.str(1));
 	} else {
 		std::cout << "Invalid input - missing depth data" << std::endl;
 		return false;
 	}
 
-	if (std::regex_match(input[1], sm, target_regex)) {
+	if (std::regex_match(lines[1], sm, target_regex)) {
 		target_.x = stoi(sm.str(1));
 		target_.y = stoi(sm.str(2));
 	} else {
@@ -58,32 +68,7 @@ bool Cave::init(const std::vector<std::string> input) {
 	return true;
 }
 
-bool Cave::init() {
-	std::ifstream input;
-	std::string line;
-	std::vector<std::string> lines;
-
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return false;
-	}
-
-	lines.clear();
-
-	while (std::getline(input, line)) {
-		lines.push_back(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-
-	return init(lines);
-}
-
-int64_t Cave::get_geologic_index(int32_t x, int32_t y) {
+int64_t AoC2018_day22::get_geologic_index(int32_t x, int32_t y) {
 	if ((x == target_.x) && (y == target_.y)) {
 		return 0;
 	}
@@ -99,19 +84,19 @@ int64_t Cave::get_geologic_index(int32_t x, int32_t y) {
 	return cache_[coord_str(x, y - 1)] * cache_[coord_str(x - 1, y)];
 }
 
-int64_t Cave::get_geologic_index(coord_str coord) {
+int64_t AoC2018_day22::get_geologic_index(coord_str coord) {
 	return get_geologic_index(coord.x, coord.y);
 }
 
-int32_t Cave::get_erosion_level(int64_t geo_idx) {
+int32_t AoC2018_day22::get_erosion_level(int64_t geo_idx) {
 	return (geo_idx + depth_) % 20183;
 }
 
-area_type_t Cave::get_area_type(int32_t erosion_lvl) {
+area_type_t AoC2018_day22::get_area_type(int32_t erosion_lvl) {
 	return static_cast<area_type_t>(erosion_lvl % 3);
 }
 
-int32_t Cave::get_risk_level() {
+int32_t AoC2018_day22::get_risk_level() {
 	int32_t result = 0, size, el;
 	std::map<coord_str, int64_t> cache;
 	coord_str pt;
@@ -125,7 +110,7 @@ int32_t Cave::get_risk_level() {
 	result += get_area_type(get_erosion_level(get_geologic_index(0, 0)));
 
 	size = target_.x + target_.y;
-	size *= 2;
+	size = size * 11 / 10;
 
 	for (int32_t i = 1; i <= size; ++i) {
 		for (int32_t j = 0; j <= i; j++) {
@@ -147,20 +132,17 @@ int32_t Cave::get_risk_level() {
 
 	return result;
 }
-std::vector<path_info_str> Cave::get_next_steps(const path_info_str from) {
+std::vector<path_info_str> AoC2018_day22::get_next_steps(const path_info_str from) {
 	std::vector<path_info_str> result = {};
 	path_info_str next;
 	std::vector<coord_str> adjacents = {{0, 1}, {1, 0}, {-1, 0}, {0, -1}};
 	std::string direction = "DRLU";
-	area_type_t areat;
-
-	areat = map_[from.coord];
 
 	for (uint32_t i = 0; i < adjacents.size(); i++) {
 		next = from;
 		next.coord = next.coord + adjacents[i];
 
-		if ((next.coord.x < 0) || (next.coord.y < 0)) {
+		if (!map_.count(next.coord)) {
 			continue;
 		}
 
@@ -175,8 +157,6 @@ std::vector<path_info_str> Cave::get_next_steps(const path_info_str from) {
 						break;
 					case neither:
 						break;
-					default:
-						int z = -1;
 				}
 				break;
 			case wet:
@@ -187,8 +167,6 @@ std::vector<path_info_str> Cave::get_next_steps(const path_info_str from) {
 						break;
 					case torch:
 						break;
-					default:
-						int z = -1;
 				}
 				break;
 			case narrow:
@@ -199,12 +177,7 @@ std::vector<path_info_str> Cave::get_next_steps(const path_info_str from) {
 						break;
 					case climbing_gear:
 						break;
-					default:
-						int z = -1;
 				}
-				break;
-			default:
-				int z = -1;
 				break;
 		}
 	}
@@ -223,8 +196,7 @@ std::vector<path_info_str> Cave::get_next_steps(const path_info_str from) {
 					next.tool = torch;
 					result.push_back(next);
 					break;
-				default:
-					int z = -1;
+				case neither:
 					break;
 			}
 			break;
@@ -238,8 +210,7 @@ std::vector<path_info_str> Cave::get_next_steps(const path_info_str from) {
 					next.tool = neither;
 					result.push_back(next);
 					break;
-				default:
-					int z = -1;
+				case torch:
 					break;
 			}
 			break;
@@ -253,20 +224,18 @@ std::vector<path_info_str> Cave::get_next_steps(const path_info_str from) {
 					next.tool = torch;
 					result.push_back(next);
 					break;
-				default:
-					int z = -1;
+				case climbing_gear:
 					break;
 			}
 			break;
-		default:
-			int z = -1;
-			break;
 	}
+
+	step_cache_[from.coord] = result;
 
 	return result;
 }
 
-int32_t Cave::find_path() {
+int32_t AoC2018_day22::find_path() {
 	std::map<coord_str, std::map<tool_type_t, int32_t>> history = {};
 	std::queue<path_info_str> q = {};
 	path_info_str pi, npi;
@@ -301,10 +270,6 @@ int32_t Cave::find_path() {
 				continue;
 			}
 
-			if (!map_.count(next[i].coord)) {
-				continue;
-			}
-
 			if (history.count(next[i].coord)) {
 				if (history[next[i].coord].count(next[i].tool)) {
 					if (next[i].time < history[next[i].coord][next[i].tool]) {
@@ -325,34 +290,46 @@ int32_t Cave::find_path() {
 	return result;
 }
 
-int main(void) {
-	int32_t result1 = 0, result2 = 0;
-	Cave cave;
+int32_t AoC2018_day22::get_aoc_day() {
+	return 21;
+}
 
+int32_t AoC2018_day22::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day22::tests() {
 #if TEST
-	if (!cave.init({"depth: 510", "target: 10,10"})) {
-		return -1;
-	}
 
-	result1 = cave.get_risk_level();
-
-	result2 = cave.find_path();
+	init({"depth: 510", "target: 10,10"});
+	part1(); // 114
+	part2(); // 45
 
 #endif
+}
 
-	if (!cave.init()) {
-		return -1;
-	}
+bool AoC2018_day22::part1() {
+	int32_t result1;
 
-	std::cout << "=== Advent of Code 2018 - day 22 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+	result1 = get_risk_level();
 
-	result1 = cave.get_risk_level();
+	result1_ = std::to_string(result1);
 
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
+	return true;
+}
 
-	result2 = cave.find_path();
+bool AoC2018_day22::part2() {
+	int32_t result2;
 
-	std::cout << "Result is " << result2 << std::endl;
+	result2 = find_path();
+
+	result2_ = std::to_string(result2);
+
+	return true;
+}
+
+int main(void) {
+	AoC2018_day22 day22;
+
+	return day22.main_execution();
 }
