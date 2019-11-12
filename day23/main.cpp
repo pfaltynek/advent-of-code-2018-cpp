@@ -1,9 +1,10 @@
-#include "main.hpp"
+#include "./../common/aoc.hpp"
+#include "./../common/coord.hpp"
+#include <regex>
+
+#define TEST 1
 
 const std::regex nanobot_regex("^pos=<(-?\\d+),(-?\\d+),(-?\\d+)>, r=(\\d+)$");
-
-typedef enum AREA_TYPE { rocky = 0, wet = 1, narrow = 2 } area_type_t;
-typedef enum TOOL_TYPE { torch = 1, climbing_gear = 2, neither = 0 } tool_type_t;
 
 typedef struct NANOBOT_INFO {
 	int32_t x, y, z, r;
@@ -25,10 +26,16 @@ typedef struct CUBE_INFO {
 	}
 } cube_info_str;
 
-class ExperimentalEmergencyTransportation {
-  public:
-	bool init(const std::vector<std::string> input);
-	bool init();
+class AoC2018_day23 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
 	nanobot_info_str get_strongest_nanobot();
 	limits_str get_data_limits(const std::vector<nanobot_info_str> data);
 	int32_t get_nanobots_in_range_count();
@@ -38,17 +45,16 @@ class ExperimentalEmergencyTransportation {
 	int32_t get_nanobot_to_cube_dist_1_axis(int32_t nanobot, int32_t cube_origin, int32_t cube_edge);
 	int32_t get_nanobots_of_cube(cube_info_str cube);
 
-  private:
 	std::vector<nanobot_info_str> data_;
 };
 
-bool ExperimentalEmergencyTransportation::init(const std::vector<std::string> input) {
+bool AoC2018_day23::init(const std::vector<std::string> lines) {
 	std::smatch sm;
 	nanobot_info_str nanobot;
 	data_.clear();
 
-	for (uint32_t i = 0; i < input.size(); i++) {
-		if (std::regex_match(input[i], sm, nanobot_regex)) {
+	for (uint32_t i = 0; i < lines.size(); i++) {
+		if (std::regex_match(lines[i], sm, nanobot_regex)) {
 			nanobot.x = stoi(sm.str(1));
 			nanobot.y = stoi(sm.str(2));
 			nanobot.z = stoi(sm.str(3));
@@ -62,31 +68,6 @@ bool ExperimentalEmergencyTransportation::init(const std::vector<std::string> in
 	}
 
 	return true;
-}
-
-bool ExperimentalEmergencyTransportation::init() {
-	std::ifstream input;
-	std::string line;
-	std::vector<std::string> lines;
-
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return false;
-	}
-
-	lines.clear();
-
-	while (std::getline(input, line)) {
-		lines.push_back(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-
-	return init(lines);
 }
 
 static int get_stronger_nanobot(nanobot_info_str first, nanobot_info_str second) {
@@ -107,7 +88,8 @@ static int get_stronger_cube(cube_info_str first, cube_info_str second) {
 	}
 	return 0;
 }
-nanobot_info_str ExperimentalEmergencyTransportation::get_strongest_nanobot() {
+
+nanobot_info_str AoC2018_day23::get_strongest_nanobot() {
 	if (data_.size()) {
 		std::sort(data_.begin(), data_.end(), get_stronger_nanobot);
 		return data_[0];
@@ -116,7 +98,7 @@ nanobot_info_str ExperimentalEmergencyTransportation::get_strongest_nanobot() {
 	}
 }
 
-limits_str ExperimentalEmergencyTransportation::get_data_limits(const std::vector<nanobot_info_str> data) {
+limits_str AoC2018_day23::get_data_limits(const std::vector<nanobot_info_str> data) {
 	limits_str result = {};
 	int32_t min, max;
 
@@ -165,7 +147,7 @@ limits_str ExperimentalEmergencyTransportation::get_data_limits(const std::vecto
 	return result;
 }
 
-int32_t ExperimentalEmergencyTransportation::get_nanobot_to_cube_dist_1_axis(int32_t nanobot, int32_t cube_origin, int32_t cube_edge) {
+int32_t AoC2018_day23::get_nanobot_to_cube_dist_1_axis(int32_t nanobot, int32_t cube_origin, int32_t cube_edge) {
 	// get distance to nearest edge of cube if outside of it
 	// if inside it the distance is zero
 	if (nanobot < cube_origin) {
@@ -177,7 +159,7 @@ int32_t ExperimentalEmergencyTransportation::get_nanobot_to_cube_dist_1_axis(int
 	return 0;
 }
 
-int32_t ExperimentalEmergencyTransportation::get_nanobots_of_cube(cube_info_str cube) {
+int32_t AoC2018_day23::get_nanobots_of_cube(cube_info_str cube) {
 	int32_t range, result = 0;
 
 	for (uint32_t i = 0; i < data_.size(); ++i) {
@@ -193,7 +175,7 @@ int32_t ExperimentalEmergencyTransportation::get_nanobots_of_cube(cube_info_str 
 	return result;
 }
 
-int32_t ExperimentalEmergencyTransportation::get_coord_most_in_range() {
+int32_t AoC2018_day23::get_coord_most_in_range() {
 	int32_t edge, result = 0;
 	limits_str limits;
 	std::vector<cube_info_str> data, tmp;
@@ -279,7 +261,7 @@ int32_t ExperimentalEmergencyTransportation::get_coord_most_in_range() {
 	return result;
 }
 
-int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(const nanobot_info_str coords, const int32_t range) {
+int32_t AoC2018_day23::get_nanobots_in_range_count(const nanobot_info_str coords, const int32_t range) {
 	int32_t result = 0;
 
 	for (uint32_t i = 0; i < data_.size(); i++) {
@@ -290,7 +272,7 @@ int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(const n
 	return result;
 }
 
-int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(const nanobot_info_str coords) {
+int32_t AoC2018_day23::get_nanobots_in_range_count(const nanobot_info_str coords) {
 	int32_t result = 0;
 
 	for (uint32_t i = 0; i < data_.size(); i++) {
@@ -301,46 +283,55 @@ int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count(const n
 	return result;
 }
 
-int32_t ExperimentalEmergencyTransportation::get_nanobots_in_range_count() {
+int32_t AoC2018_day23::get_nanobots_in_range_count() {
 	nanobot_info_str strongest = get_strongest_nanobot();
 
 	return get_nanobots_in_range_count(strongest, strongest.r);
 }
 
-int main(void) {
-	int32_t result1 = 0, result2 = 0;
-	ExperimentalEmergencyTransportation eet;
+int32_t AoC2018_day23::get_aoc_day() {
+	return 23;
+}
 
+int32_t AoC2018_day23::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day23::tests() {
 #if TEST
-	if (!eet.init({"pos=<0,0,0>, r=4", "pos=<1,0,0>, r=1", "pos=<4,0,0>, r=3", "pos=<0,2,0>, r=1", "pos=<0,5,0>, r=3", "pos=<0,0,3>, r=1", "pos=<1,1,1>, r=1",
-				   "pos=<1,1,2>, r=1", "pos=<1,3,1>, r=1"})) {
-		return -1;
-	}
 
-	result1 = eet.get_nanobots_in_range_count();
+	init({"pos=<0,0,0>, r=4", "pos=<1,0,0>, r=1", "pos=<4,0,0>, r=3", "pos=<0,2,0>, r=1", "pos=<0,5,0>, r=3", "pos=<0,0,3>, r=1", "pos=<1,1,1>, r=1",
+		  "pos=<1,1,2>, r=1", "pos=<1,3,1>, r=1"});
+	part1();
 
-	if (!eet.init(
-			{"pos=<10,12,12>, r=2", "pos=<12,14,12>, r=2", "pos=<16,12,12>, r=4", "pos=<14,14,14>, r=6", "pos=<50,50,50>, r=200", "pos=<10,10,10>, r=5"})) {
-		return -1;
-	}
-
-	result2 = eet.get_coord_most_in_range();
+	init({"pos=<10,12,12>, r=2", "pos=<12,14,12>, r=2", "pos=<16,12,12>, r=4", "pos=<14,14,14>, r=6", "pos=<50,50,50>, r=200", "pos=<10,10,10>, r=5"});
+	part2();
 
 #endif
+}
 
-	if (!eet.init()) {
-		return -1;
-	}
+bool AoC2018_day23::part1() {
+	int32_t result1;
 
-	std::cout << "=== Advent of Code 2018 - day 23 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+	result1 = get_nanobots_in_range_count();
 
-	result1 = eet.get_nanobots_in_range_count();
+	result1_ = std::to_string(result1);
 
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
+	return true;
+}
 
-	result2 = eet.get_coord_most_in_range();
+bool AoC2018_day23::part2() {
+	int32_t result2;
 
-	std::cout << "Result is " << result2 << std::endl;
+	result2 = get_coord_most_in_range();
+
+	result2_ = std::to_string(result2);
+
+	return true;
+}
+
+int main(void) {
+	AoC2018_day23 day23;
+
+	return day23.main_execution();
 }
