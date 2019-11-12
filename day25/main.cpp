@@ -1,4 +1,7 @@
-#include "main.hpp"
+#include "./../common/aoc.hpp"
+#include <regex>
+
+#define TEST 1
 
 const std::regex point_regex("^(-?\\d+),(-?\\d+),(-?\\d+),(-?\\d+)$");
 
@@ -14,18 +17,23 @@ typedef struct POINT {
 	}
 } point_str;
 
-class Adventure4D {
-  public:
-	bool init(const std::vector<std::string> input);
-	bool init();
+class AoC2018_day25 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
 	int32_t find_constellation();
 	void check(point_str from);
 
-  private:
 	std::vector<point_str> points_;
 };
 
-bool Adventure4D::init(const std::vector<std::string> input) {
+bool AoC2018_day25::init(const std::vector<std::string> input) {
 	std::smatch sm;
 	point_str pt;
 
@@ -56,32 +64,7 @@ bool Adventure4D::init(const std::vector<std::string> input) {
 	return true;
 }
 
-bool Adventure4D::init() {
-	std::ifstream input;
-	std::string line;
-	std::vector<std::string> lines;
-
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return false;
-	}
-
-	lines.clear();
-
-	while (std::getline(input, line)) {
-		lines.push_back(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-
-	return init(lines);
-}
-
-int32_t Adventure4D::find_constellation() {
+int32_t AoC2018_day25::find_constellation() {
 	int32_t result = 0;
 
 	for (uint32_t i = 0; i < points_.size(); i++) {
@@ -95,7 +78,7 @@ int32_t Adventure4D::find_constellation() {
 	return result;
 }
 
-void Adventure4D::check(point_str from) {
+void AoC2018_day25::check(point_str from) {
 	for (uint32_t i = 0; i < points_.size(); i++) {
 		if (!points_[i].processed) {
 			if (from.get_distance(points_[i]) <= 3) {
@@ -106,57 +89,59 @@ void Adventure4D::check(point_str from) {
 	}
 }
 
-int main(void) {
-	int32_t result1 = 0, result2 = 0;
-	Adventure4D a4d;
+int32_t AoC2018_day25::get_aoc_day() {
+	return 25;
+}
 
+int32_t AoC2018_day25::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day25::tests() {
 #if TEST
-	if (!a4d.init({"0,0,0,0", "3,0,0,0", "0,3,0,0", "0,0,3,0", "0,0,0,3", "0,0,0,6", "9,0,0,0", "12,0,0,0"})) {
-		return -1;
-	}
 
-	result1 = a4d.find_constellation(); // 2
+	init({"0,0,0,0", "3,0,0,0", "0,3,0,0", "0,0,3,0", "0,0,0,3", "0,0,0,6", "9,0,0,0", "12,0,0,0"});
 
-	if (!a4d.init({"0,0,0,0", "3,0,0,0", "0,3,0,0", "0,0,3,0", "0,0,0,3", "0,0,0,6", "9,0,0,0", "12,0,0,0", "6,0,0,0"})) {
-		return -1;
-	}
+	part1(); // 2
 
-	result1 = a4d.find_constellation(); // 1
+	init({"0,0,0,0", "3,0,0,0", "0,3,0,0", "0,0,3,0", "0,0,0,3", "0,0,0,6", "9,0,0,0", "12,0,0,0", "6,0,0,0"});
 
-	if (!a4d.init({"-1,2,2,0", "0,0,2,-2", "0,0,0,-2", "-1,2,0,0", "-2,-2,-2,2", "3,0,2,-1", "-1,3,2,2", "-1,0,-1,0", "0,2,1,-2", "3,0,0,0"})) {
-		return -1;
-	}
+	part1(); // 1
 
-	result1 = a4d.find_constellation(); // 4
+	init({"-1,2,2,0", "0,0,2,-2", "0,0,0,-2", "-1,2,0,0", "-2,-2,-2,2", "3,0,2,-1", "-1,3,2,2", "-1,0,-1,0", "0,2,1,-2", "3,0,0,0"});
 
-	if (!a4d.init({"1,-1,0,1", "2,0,-1,0", "3,2,-1,0", "0,0,3,1", "0,0,-1,-1", "2,3,-2,0", "-2,2,0,0", "2,-2,0,-1", "1,-1,0,-1", "3,2,0,2"})) {
-		return -1;
-	}
+	part1(); // 4
 
-	result1 = a4d.find_constellation(); // 3
+	init({"1,-1,0,1", "2,0,-1,0", "3,2,-1,0", "0,0,3,1", "0,0,-1,-1", "2,3,-2,0", "-2,2,0,0", "2,-2,0,-1", "1,-1,0,-1", "3,2,0,2"});
 
-	if (!a4d.init({"1,-1,-1,-2", "-2,-2,0,1", "0,2,1,3", "-2,3,-2,1", "0,2,3,-2", "-1,-1,1,-2", "0,-2,-1,0", "-2,2,3,-1", "1,2,2,0", "-1,-2,0,-2"})) {
-		return -1;
-	}
+	part1(); // 3
 
-	result1 = a4d.find_constellation(); // 8
+	init({"1,-1,-1,-2", "-2,-2,0,1", "0,2,1,3", "-2,3,-2,1", "0,2,3,-2", "-1,-1,1,-2", "0,-2,-1,0", "-2,2,3,-1", "1,2,2,0", "-1,-2,0,-2"});
 
-	result2 = 2;
+	part1(); // 8
+
 #endif
+}
 
-	if (!a4d.init()) {
-		return -1;
-	}
+bool AoC2018_day25::part1() {
+	int32_t result1;
 
-	std::cout << "=== Advent of Code 2018 - day 25 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+	result1 = find_constellation();
 
-	result1 = a4d.find_constellation(); // 319? too low
+	result1_ = std::to_string(result1);
 
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
+	return true;
+}
 
-	result2 = 2;
+bool AoC2018_day25::part2() {
 
-	std::cout << "Result is " << result2 << std::endl;
+	result2_.clear();
+
+	return true;
+}
+
+int main(void) {
+	AoC2018_day25 day25;
+
+	return day25.main_execution();
 }
