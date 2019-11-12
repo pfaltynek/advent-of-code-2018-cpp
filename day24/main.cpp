@@ -1,4 +1,7 @@
-#include "main.hpp"
+#include "./../common/aoc.hpp"
+#include <regex>
+
+#define TEST 1
 
 const std::regex immune_header_regex("^Immune System:$");
 const std::regex infection_header_regex("^Infection:$");
@@ -155,14 +158,19 @@ typedef struct GROUP {
 
 } group_str;
 
-class ImmuneSystemSimulator {
-  public:
-	bool init(const std::vector<std::string> input);
-	bool init();
+class AoC2018_day24 : public AoC {
+  protected:
+	bool init(const std::vector<std::string> lines);
+	bool part1();
+	bool part2();
+	void tests();
+	int32_t get_aoc_day();
+	int32_t get_aoc_year();
+
+  private:
 	int32_t simulate(const int32_t boost, const bool print, bool& immune_system_won);
 	int32_t simulate_part2();
 
-  private:
 	bool init_attack_type(const std::string input, attack_type_t& attack_type);
 	bool init_weaknees_immunity(const std::string input, std::vector<attack_type_t>& weakness, std::vector<attack_type_t>& immunity);
 	bool init_attack_type_list(const std::string input, std::vector<attack_type_t>& list);
@@ -171,7 +179,7 @@ class ImmuneSystemSimulator {
 	std::vector<group_str> groups_, groups_init_;
 };
 
-bool ImmuneSystemSimulator::init_attack_type(const std::string input, attack_type_t& attack_type) {
+bool AoC2018_day24::init_attack_type(const std::string input, attack_type_t& attack_type) {
 	std::smatch sm;
 
 	if (std::regex_match(input, sm, attack_type_regex)) {
@@ -201,7 +209,7 @@ bool ImmuneSystemSimulator::init_attack_type(const std::string input, attack_typ
 	}
 }
 
-bool ImmuneSystemSimulator::init_attack_type_list(const std::string input, std::vector<attack_type_t>& list) {
+bool AoC2018_day24::init_attack_type_list(const std::string input, std::vector<attack_type_t>& list) {
 	std::smatch sm;
 	attack_type_t type;
 	std::string in = input;
@@ -230,7 +238,7 @@ bool ImmuneSystemSimulator::init_attack_type_list(const std::string input, std::
 	return true;
 }
 
-bool ImmuneSystemSimulator::init_weaknees_immunity(const std::string input, std::vector<attack_type_t>& weakness, std::vector<attack_type_t>& immunity) {
+bool AoC2018_day24::init_weaknees_immunity(const std::string input, std::vector<attack_type_t>& weakness, std::vector<attack_type_t>& immunity) {
 	std::smatch sm;
 	std::string immune, weak;
 
@@ -271,7 +279,7 @@ bool ImmuneSystemSimulator::init_weaknees_immunity(const std::string input, std:
 	return true;
 }
 
-bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
+bool AoC2018_day24::init(const std::vector<std::string> lines) {
 	std::smatch sm;
 	group_str group;
 	bool immune_section;
@@ -280,22 +288,22 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 
 	groups_.clear();
 
-	for (uint32_t i = 0; i < input.size(); i++) {
+	for (uint32_t i = 0; i < lines.size(); i++) {
 		group = {};
 
-		if (input[i].empty()) {
+		if (lines[i].empty()) {
 			continue;
 		}
 
-		if (std::regex_match(input[i], sm, immune_header_regex)) {
+		if (std::regex_match(lines[i], sm, immune_header_regex)) {
 			immune_section = true;
 			in_section = true;
 			continue;
-		} else if (std::regex_match(input[i], sm, infection_header_regex)) {
+		} else if (std::regex_match(lines[i], sm, infection_header_regex)) {
 			immune_section = false;
 			in_section = true;
 			continue;
-		} else if (std::regex_match(input[i], sm, group_regex)) {
+		} else if (std::regex_match(lines[i], sm, group_regex)) {
 			if (!in_section) {
 				std::cout << "Unknown section at input start" << std::endl;
 				return false;
@@ -343,31 +351,6 @@ bool ImmuneSystemSimulator::init(const std::vector<std::string> input) {
 	return true;
 }
 
-bool ImmuneSystemSimulator::init() {
-	std::ifstream input;
-	std::string line;
-	std::vector<std::string> lines;
-
-	input.open("input.txt", std::ifstream::in);
-
-	if (input.fail()) {
-		std::cout << "Error opening input file.\n";
-		return false;
-	}
-
-	lines.clear();
-
-	while (std::getline(input, line)) {
-		lines.push_back(line);
-	}
-
-	if (input.is_open()) {
-		input.close();
-	}
-
-	return init(lines);
-}
-
 static int sort_groups_by_effective_power(group_str first, group_str second) {
 	int32_t f, s;
 
@@ -384,7 +367,7 @@ static int sort_groups_by_iniciative(group_str first, group_str second) {
 	return (first.initiative > second.initiative);
 }
 
-int32_t ImmuneSystemSimulator::simulate(const int32_t boost, const bool print, bool& immune_system_won) {
+int32_t AoC2018_day24::simulate(const int32_t boost, const bool print, bool& immune_system_won) {
 	std::vector<uint32_t> imm, inf, all;
 	std::map<uint32_t, uint32_t> attack_plan;
 	std::vector<group_str> groups;
@@ -534,8 +517,8 @@ int32_t ImmuneSystemSimulator::simulate(const int32_t boost, const bool print, b
 	}
 }
 
-void ImmuneSystemSimulator::target_selection(const std::vector<uint32_t>& attackers, std::vector<uint32_t> defenders, const bool print,
-											 std::map<uint32_t, uint32_t>& attack_plan) {
+void AoC2018_day24::target_selection(const std::vector<uint32_t>& attackers, std::vector<uint32_t> defenders, const bool print,
+									 std::map<uint32_t, uint32_t>& attack_plan) {
 	int32_t damage, dmg, tmp_idx, tmp_grp_idx;
 	group_str attacker, target, adept;
 	bool target_found;
@@ -585,7 +568,7 @@ void ImmuneSystemSimulator::target_selection(const std::vector<uint32_t>& attack
 	}
 }
 
-int32_t ImmuneSystemSimulator::simulate_part2() {
+int32_t AoC2018_day24::simulate_part2() {
 	int32_t boost = 0;
 	int32_t min_won, max_loose, result = 0, tmp;
 	bool immune_system_won = false;
@@ -610,7 +593,7 @@ int32_t ImmuneSystemSimulator::simulate_part2() {
 			boost++;
 		}
 		tmp = simulate(boost, false, immune_system_won);
-		if (tmp <0) {
+		if (tmp < 0) {
 			ties.push_back(boost);
 		}
 
@@ -625,37 +608,53 @@ int32_t ImmuneSystemSimulator::simulate_part2() {
 	return result;
 }
 
-int main(void) {
-	int32_t result1 = 0, result2 = 0;
-	ImmuneSystemSimulator iss;
+int32_t AoC2018_day24::get_aoc_day() {
+	return 24;
+}
+
+int32_t AoC2018_day24::get_aoc_year() {
+	return 2018;
+}
+
+void AoC2018_day24::tests() {
+#if TEST
+	int32_t result;
 	bool immune_system_won;
 
-#if TEST
-	if (!iss.init(
-			{"Immune System:", "17 units each with 5390 hit points (weak to radiation, bludgeoning) with an attack that does 4507 fire damage at initiative 2",
-			 "989 units each with 1274 hit points (immune to fire; weak to bludgeoning, slashing) with an attack that does 25 slashing damage at initiative 3",
-			 "", "Infection:", "801 units each with 4706 hit points (weak to radiation) with an attack that does 116 bludgeoning damage at initiative 1",
-			 "4485 units each with 2961 hit points (immune to radiation; weak to fire, cold) with an attack that does 12 slashing damage at initiative 4"})) {
-		return -1;
-	}
+	init({"Immune System:", "17 units each with 5390 hit points (weak to radiation, bludgeoning) with an attack that does 4507 fire damage at initiative 2",
+		  "989 units each with 1274 hit points (immune to fire; weak to bludgeoning, slashing) with an attack that does 25 slashing damage at initiative 3", "",
+		  "Infection:", "801 units each with 4706 hit points (weak to radiation) with an attack that does 116 bludgeoning damage at initiative 1",
+		  "4485 units each with 2961 hit points (immune to radiation; weak to fire, cold) with an attack that does 12 slashing damage at initiative 4"});
 
-	result1 = iss.simulate(0, true, immune_system_won);	// 5216
-	result2 = iss.simulate(1570, true, immune_system_won); // 51
+	result = simulate(0, false, immune_system_won);	// 5216
+	result = simulate(1570, false, immune_system_won); // 51
+
 #endif
+}
 
-	if (!iss.init()) {
-		return -1;
-	}
+bool AoC2018_day24::part1() {
+	int32_t result1;
+	bool immune_system_won;
 
-	std::cout << "=== Advent of Code 2018 - day 24 ====" << std::endl;
-	std::cout << "--- part 1 ---" << std::endl;
+	result1 = simulate(0, false, immune_system_won);
 
-	result1 = iss.simulate(0, false, immune_system_won);
+	result1_ = std::to_string(result1);
 
-	std::cout << "Result is " << result1 << std::endl;
-	std::cout << "--- part 2 ---" << std::endl;
+	return true;
+}
 
-	result2 = iss.simulate_part2();
+bool AoC2018_day24::part2() {
+	int32_t result2;
 
-	std::cout << "Result is " << result2 << std::endl;
+	result2 = simulate_part2();
+
+	result2_ = std::to_string(result2);
+
+	return true;
+}
+
+int main(void) {
+	AoC2018_day24 day24;
+
+	return day24.main_execution();
 }
